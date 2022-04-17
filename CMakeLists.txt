@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(opengl_template)
+project(pf_rendering_playground)
 
 if (MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.29.30129 AND CMAKE_VERSION VERSION_GREATER 3.20.3)
     set(CMAKE_CXX_STANDARD 23) # /std:c++latest - unlocks the non stable cpp20 features. For new 16.11 versions
@@ -37,7 +37,7 @@ add_library(glad src/glad.c)
 
 file(GLOB GEGL_SOURCES src/geGL/*.cpp src/geGL/private/*.cpp)
 
-add_executable(opengl_template
+add_executable(pf_rendering_playground
         src/main.cpp
         src/utils/files.h
         src/utils/files.cpp
@@ -53,24 +53,24 @@ add_executable(opengl_template
         ${GEGL_SOURCES})
 
 
-target_link_libraries(opengl_template glad ${OPENGL_LIBRARIES} pf_common::pf_common pf_imgui::pf_imgui pf_mainloop::pf_mainloop pf_glfw::pf_glfw spdlog::spdlog_header_only
+target_link_libraries(pf_rendering_playground glad ${OPENGL_LIBRARIES} pf_common::pf_common pf_imgui::pf_imgui pf_mainloop::pf_mainloop pf_glfw::pf_glfw spdlog::spdlog_header_only
         )
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        "${PROJECT_SOURCE_DIR}/config.toml"
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>/config.toml)
-
-
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        "${PROJECT_SOURCE_DIR}/src/shaders/simple_shader.frag"
-        "${PROJECT_SOURCE_DIR}/resources/shaders/simple_shader.frag")
-
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        "${PROJECT_SOURCE_DIR}/src/shaders/simple_shader.vert"
-        "${PROJECT_SOURCE_DIR}/resources/shaders/simple_shader.vert")
+#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy
+#        "${PROJECT_SOURCE_DIR}/config.toml"
+#        $<TARGET_FILE_DIR:${PROJECT_NAME}>/config.toml)
+#
+#
+#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy
+#        "${PROJECT_SOURCE_DIR}/src/shaders/simple_shader.frag"
+#        "${PROJECT_SOURCE_DIR}/resources/shaders/simple_shader.frag")
+#
+#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy
+#        "${PROJECT_SOURCE_DIR}/src/shaders/simple_shader.vert"
+#        "${PROJECT_SOURCE_DIR}/resources/shaders/simple_shader.vert")
 
 
 #get_cmake_property(_variableNames VARIABLES)
