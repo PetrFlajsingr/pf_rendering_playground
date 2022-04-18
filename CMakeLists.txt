@@ -41,14 +41,26 @@ add_executable(pf_rendering_playground
         src/main.cpp
         src/utils/files.h
         src/utils/files.cpp
-        src/ui/UI.cpp
-        src/ui/UI.h
         src/imgui/ImGuiGlfwOpenGLInterface.cpp
         src/imgui/impl/imgui_impl_glfw.cpp
         src/imgui/impl/imgui_impl_opengl3.cpp
         src/geGL/Shader.cpp
         src/geGL/Shader.h
-        ${GEGL_SOURCES} src/ui/OutputWindow.cpp src/ui/OutputWindow.h src/ui/TextInputWindow.cpp src/ui/TextInputWindow.h src/renderers/ComputeToTextureRenderer.cpp src/renderers/ComputeToTextureRenderer.h)
+        ${GEGL_SOURCES}
+        src/shader_toy/ui/ShaderToyOutputWindow.cpp
+        src/shader_toy/ui/ShaderToyOutputWindow.h
+        src/shader_toy/ui/ShaderToyTextInputWindow.cpp
+        src/shader_toy/ui/ShaderToyTextInputWindow.h
+        src/modes/Mode.h
+        src/shader_toy/ShaderToyMode.cpp
+        src/shader_toy/ShaderToyMode.h
+        src/modes/ModeManager.cpp
+        src/modes/ModeManager.h
+        src/shader_toy/ui/ShaderToyUI.cpp
+        src/shader_toy/ui/ShaderToyUI.h
+        src/log/UISink.h
+        src/shader_toy/ShaderToyShaderBuilder.cpp
+        src/shader_toy/ShaderToyShaderBuilder.h)
 
 
 target_link_libraries(pf_rendering_playground glad ${OPENGL_LIBRARIES} pf_common::pf_common pf_imgui::pf_imgui pf_mainloop::pf_mainloop pf_glfw::pf_glfw spdlog::spdlog_header_only

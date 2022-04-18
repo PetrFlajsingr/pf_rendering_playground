@@ -2,8 +2,8 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_TEXTINPUTWINDOW_H
-#define PF_RENDERING_PLAYGROUND_TEXTINPUTWINDOW_H
+#ifndef PF_RENDERING_PLAYGROUND_SHADERTOYTEXTINPUTWINDOW_H
+#define PF_RENDERING_PLAYGROUND_SHADERTOYTEXTINPUTWINDOW_H
 
 #include <pf_imgui/layouts/VerticalLayout.h>
 #include <pf_imgui/elements/TextEditor.h>
@@ -11,9 +11,9 @@
 
 namespace pf {
 
-class TextInputWindow {
+class ShaderToyTextInputWindow {
  public:
-  explicit TextInputWindow(ui::ig::ImGuiInterface &imGuiInterface);
+  explicit ShaderToyTextInputWindow(ui::ig::ImGuiInterface &imGuiInterface);
 
   // clang-format off
   ui::ig::Window *window;
@@ -26,4 +26,4 @@ class TextInputWindow {
 
 }
 
-#endif//PF_RENDERING_PLAYGROUND_TEXTINPUTWINDOW_H
+#endif//PF_RENDERING_PLAYGROUND_SHADERTOYTEXTINPUTWINDOW_H

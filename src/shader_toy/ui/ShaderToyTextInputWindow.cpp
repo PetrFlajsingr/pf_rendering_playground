@@ -2,13 +2,13 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#include "TextInputWindow.h"
-#include <pf_imgui/elements/Expander.h>
+#include "ShaderToyTextInputWindow.h"
 #include <pf_imgui/elements/Button.h>
+#include <pf_imgui/elements/Expander.h>
 
 namespace pf {
 
-TextInputWindow::TextInputWindow(ui::ig::ImGuiInterface &imGuiInterface) {
+ShaderToyTextInputWindow::ShaderToyTextInputWindow(ui::ig::ImGuiInterface &imGuiInterface) {
   window = &imGuiInterface.createWindow("text_input_window", "Editor");
   window->setIsDockable(true);
   layout = &window->createChild(ui::ig::VerticalLayout::Config{
