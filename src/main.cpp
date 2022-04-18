@@ -1,15 +1,16 @@
-#include "renderers/DemoRenderer.h"
-#include "ui/DemoImGui.h"
+#include "renderers/ComputeToTextureRenderer.h"
+#include "ui/UI.h"
 #include "utils/files.h"
+#include <argparse/argparse.hpp>
 #include <filesystem>
 #include <fmt/format.h>
 #include <magic_enum.hpp>
 #include <pf_glfw/GLFW.h>
+#include <pf_imgui/elements/Image.h>
 #include <pf_mainloop/MainLoop.h>
-#include <toml++/toml.h>
-#include <ui/DemoImGui.h>
 #include <spdlog/spdlog.h>
-#include <argparse/argparse.hpp>
+#include <toml++/toml.h>
+#include <ui/UI.h>
 
 argparse::ArgumentParser createArgParser() {
   auto parser = argparse::ArgumentParser{"OpenGL template"};
@@ -45,10 +46,11 @@ void saveConfig(toml::table config, pf::ui::ig::ImGuiInterface &imguiInterface, 
 }
 
 int main(int argc, char *argv[]) {
+  spdlog::default_logger()->set_level(spdlog::level::trace);
   auto parser = createArgParser();
   try {
     parser.parse_args(argc, argv);
-  } catch(const std::runtime_error &e) {
+  } catch (const std::runtime_error &e) {
     spdlog::error("{}", e.what());
     fmt::print("{}", parser.help().str());
     return 1;
@@ -69,45 +71,56 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  auto demoUI = pf::ogl::DemoImGui{*config["imgui"].as_table(), window->getHandle()};
+  auto mainUI = pf::ogl::UI{*config["imgui"].as_table(), window};
+  pf::ComputeToTextureRenderer renderer{};
 
-  pf::ogl::DemoRenderer renderer{resourcesFolder / "shaders"};
-  if (const auto initResult = renderer.init(); initResult.has_value()) {
-    spdlog::error("Error during initialization: {}", initResult.value());
-    return -1;
-  }
+  mainUI.outputWindow->image->setTextureId(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(renderer.getOutputTexture().getId())));
 
-  window->setMouseButtonCallback([&](pf::glfw::MouseButton btn, pf::glfw::ButtonState state, pf::Flags<pf::glfw::ModifierKey> mods) {
-    if (state == pf::glfw::ButtonState::Down) { return; }
-    std::string txt = fmt::format("Clicked {} button", magic_enum::enum_name(btn));
-    if (mods.is(pf::glfw::ModifierKey::Shift)) {
-      txt += " with shift";
+  std::chrono::nanoseconds totalTime{0};
+  std::uint32_t frameCounter = 0;
+  glm::vec3 mousePos{};
+  mainUI.textInputWindow->compileButton->addClickListener([&] {
+    spdlog::info("Compiling shader: start");
+    if (auto err = renderer.setShader(mainUI.textInputWindow->editor->getText()); err.has_value()) {
+      spdlog::error(err.value());
+    } else {
+      totalTime = std::chrono::nanoseconds{0};
+      frameCounter = 0;
+      spdlog::info("Compiling shader: success");
     }
-    if (mods.is(pf::glfw::ModifierKey::Control)) {
-      txt += " with Control";
-    }
-    demoUI.imguiInterface->getNotificationManager()
-        .createNotification(pf::ui::ig::NotificationType::Info,
-                            pf::ui::ig::uniqueId(),
-                            txt)
-        .createChild<pf::ui::ig::Text>(pf::ui::ig::uniqueId(), "Demo notification");
-  },
-                                 true);
+  });
+  mainUI.outputWindow->image->addMousePositionListener([&](auto pos) {
+    const auto size = mainUI.outputWindow->image->getSize();
+    const auto nX = pos.x / static_cast<float>(size.width);
+    const auto nY = pos.y / static_cast<float>(size.height);// TODO: check this on windows
+    const auto result = glm::vec2{renderer.getTextureSize()} * glm::vec2{nX, nY};
+    mousePos.x = result.x;
+    mousePos.y = result.y;
+  });
 
-  pf::MainLoop::Get()->setOnMainLoop([&](auto) {
+  pf::MainLoop::Get()->setOnMainLoop([&](auto time) {
     if (window->shouldClose()) {
       pf::MainLoop::Get()->stop();
     }
-    renderer.render();
-    demoUI.imguiInterface->render();
+    mainUI.imguiInterface->render();
+    pf::RendererMouseState mouseState = pf::RendererMouseState::None;
+    if (mainUI.outputWindow->image->isHovered()) {
+      if (window->getLastMouseButtonState(pf::glfw::MouseButton::Left) == pf::glfw::ButtonState::Down) {
+        mouseState = pf::RendererMouseState::LeftDown;
+      } else if (window->getLastMouseButtonState(pf::glfw::MouseButton::Right) == pf::glfw::ButtonState::Down) {
+        mouseState = pf::RendererMouseState::RightDown;
+      }
+    }
+    renderer.render(totalTime, time, frameCounter, mouseState, mousePos);
     window->swapBuffers();
     glfw.pollEvents();
+    totalTime += time;
   });
 
   spdlog::info("Starting main loop");
   pf::MainLoop::Get()->run();
   spdlog::info("Main loop ended");
 
-  saveConfig(config, *demoUI.imguiInterface, window);
+  saveConfig(config, *mainUI.imguiInterface, window);
   return 0;
 }

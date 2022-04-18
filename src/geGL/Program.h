@@ -122,6 +122,8 @@ class Program : public OpenGLObject {
   GLuint static const nonExistingBufferBinding;
   GLuint getBufferBinding(std::string const &name) const;
 
+  bool isActiveUniform(const std::string &name);
+
  public:
   template<typename... ARGS>
   Program(ARGS... shaders);

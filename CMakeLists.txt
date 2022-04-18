@@ -41,16 +41,14 @@ add_executable(pf_rendering_playground
         src/main.cpp
         src/utils/files.h
         src/utils/files.cpp
-        src/ui/DemoImGui.cpp
-        src/ui/DemoImGui.h
+        src/ui/UI.cpp
+        src/ui/UI.h
         src/imgui/ImGuiGlfwOpenGLInterface.cpp
         src/imgui/impl/imgui_impl_glfw.cpp
         src/imgui/impl/imgui_impl_opengl3.cpp
-        src/renderers/DemoRenderer.cpp src/renderers/DemoRenderer.h
-        src/renderers/Renderer.h
         src/geGL/Shader.cpp
         src/geGL/Shader.h
-        ${GEGL_SOURCES})
+        ${GEGL_SOURCES} src/ui/OutputWindow.cpp src/ui/OutputWindow.h src/ui/TextInputWindow.cpp src/ui/TextInputWindow.h src/renderers/ComputeToTextureRenderer.cpp src/renderers/ComputeToTextureRenderer.h)
 
 
 target_link_libraries(pf_rendering_playground glad ${OPENGL_LIBRARIES} pf_common::pf_common pf_imgui::pf_imgui pf_mainloop::pf_mainloop pf_glfw::pf_glfw spdlog::spdlog_header_only

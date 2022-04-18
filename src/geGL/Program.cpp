@@ -777,3 +777,6 @@ Program const *Program::dispatch(GLuint nofWorkGroupsX, GLuint nofWorkGroupsY, G
   glDispatchCompute(nofWorkGroupsX, nofWorkGroupsY, nofWorkGroupsZ);
   return this;
 }
+bool Program::isActiveUniform(const std::string &name) {
+    return _getUniform(name) != -1;
+}
