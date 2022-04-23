@@ -5,6 +5,7 @@
 #ifndef PF_RENDERING_PLAYGROUND_SHADERTOYUI_H
 #define PF_RENDERING_PLAYGROUND_SHADERTOYUI_H
 
+#include "ShaderToyGlobalVariables.h"
 #include "ShaderToyOutputWindow.h"
 #include "ShaderToyTextInputWindow.h"
 #include <pf_imgui/ImGuiInterface.h>
@@ -14,7 +15,8 @@
 namespace pf {
 
 struct ShaderToyUI {
-  explicit ShaderToyUI(const std::shared_ptr<ui::ig::ImGuiInterface> &imGuiInterface);
+  explicit ShaderToyUI(const std::shared_ptr<ui::ig::ImGuiInterface> &imGuiInterface,
+                       const std::string &initShaderCode);
 
   void show();
 
@@ -30,5 +32,5 @@ struct ShaderToyUI {
   std::shared_ptr<ui::ig::ImGuiInterface> interface;
 };
 
-}// namespace pf
-#endif//PF_RENDERING_PLAYGROUND_SHADERTOYUI_H
+}  // namespace pf
+#endif  //PF_RENDERING_PLAYGROUND_SHADERTOYUI_H

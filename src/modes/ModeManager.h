@@ -16,7 +16,7 @@ class ModeManager {
   ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window);
   ~ModeManager();
 
-  void addMode(std::string name, std::shared_ptr<Mode> mode);
+  void addMode(std::shared_ptr<Mode> mode);
 
   std::optional<Error> activateMode(const std::string &name);
   std::optional<Error> activateMode(const std::shared_ptr<Mode> &mode);
@@ -38,6 +38,6 @@ class ModeManager {
   std::vector<ModeRecord> modes;
 };
 
-}// namespace pf
+}  // namespace pf
 
-#endif//PF_RENDERING_PLAYGROUND_MODEMANAGER_H
+#endif  //PF_RENDERING_PLAYGROUND_MODEMANAGER_H

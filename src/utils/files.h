@@ -6,6 +6,7 @@
 #define OPENGL_TEMPLATE_SRC_UTILS_FILES_H
 
 #include <filesystem>
+#include <optional>
 #include <string>
 
 namespace pf {
@@ -17,6 +18,6 @@ namespace pf {
 
 [[nodiscard]] std::optional<std::string> readFile(const std::filesystem::path &path);
 
-}// namespace pf
+}  // namespace pf
 
-#endif//OPENGL_TEMPLATE_SRC_UTILS_FILES_H
+#endif  //OPENGL_TEMPLATE_SRC_UTILS_FILES_H

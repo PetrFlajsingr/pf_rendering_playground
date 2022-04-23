@@ -1,0 +1,111 @@
+//
+// Created by xflajs00 on 22.04.2022.
+//
+
+#ifndef PF_RENDERING_PLAYGROUND_SHADERTOYGLOBALVARIABLES_H
+#define PF_RENDERING_PLAYGROUND_SHADERTOYGLOBALVARIABLES_H
+
+#include "TEMP_MatrixDragInput.h"
+#include <algorithm>
+#include <glm/glm.hpp>
+#include <pf_imgui/ImGuiInterface.h>
+#include <pf_imgui/elements/Checkbox.h>
+#include <pf_imgui/elements/ColorChooser.h>
+#include <pf_imgui/elements/DragInput.h>
+#include <pf_imgui/interface/Element.h>
+#include <pf_imgui/interface/Savable.h>
+#include <pf_imgui/layouts/VerticalLayout.h>
+#include <range/v3/range/conversion.hpp>
+#include <range/v3/view/addressof.hpp>
+#include <utils/glsl_typenames.h>
+
+namespace pf {
+
+struct ValueRecord {
+  template<typename T>
+  explicit ValueRecord(T initValue);
+
+  std::variant<PF_GLSL_TYPES> data;
+  const std::string typeName;
+};
+
+// TODO: make this persistent
+// TODO: support all glsl types
+class ShaderToyGlobalVariablesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui::ig::Savable {
+ public:
+  ShaderToyGlobalVariablesPanel(const std::string &name, ui::ig::Size s, ui::ig::Persistent persistent);
+
+  template<OneOf<PF_GLSL_TYPES> T>
+    requires(OneOf<T, IMGUI_DRAG_TYPE_LIST> || OneOf<T, PF_IMGUI_GLM_MAT_TYPES>)
+  void addDragVariable(std::string_view name, T initialValue);
+
+  void addBoolVariable(std::string_view name, bool initialValue);
+
+  void addColorVariable(std::string_view name, ui::ig::Color initialValue);
+
+  [[nodiscard]] toml::table toToml() const override;
+  void setFromToml(const toml::table &src) override;
+
+  [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<ValueRecord>> &getValueRecords() const;
+
+ protected:
+  void renderImpl() override;
+
+ private:
+  [[nodiscard]] bool variableExists(std::string_view name);
+
+  template<typename T>
+  void addValueRecord(ui::ig::ValueObservable<T> &observable, std::string_view name);
+  void removeValueRecord(std::string_view name);
+
+  static std::string getElementName(std::string_view varName);
+  static std::string getVarNameFromElementName(std::string_view elementName);
+
+  std::vector<std::unique_ptr<ui::ig::Element>> elements;
+  std::unordered_map<std::string, std::shared_ptr<ValueRecord>> valueRecords;
+};
+
+template<typename T>
+ValueRecord::ValueRecord(T initValue)
+    : data(initValue), typeName(getGLSLTypeName<T>()) {}
+
+template<OneOf<PF_GLSL_TYPES> T>
+  requires(OneOf<T, IMGUI_DRAG_TYPE_LIST> || OneOf<T, PF_IMGUI_GLM_MAT_TYPES>)
+void ShaderToyGlobalVariablesPanel::addDragVariable(std::string_view name, T initialValue) {
+  if (variableExists(name)) { return; }
+  if constexpr (OneOf<T, PF_IMGUI_GLM_MAT_TYPES>) {
+    using ParamType = typename ui::ig::MatrixDragInput<T>::ParamType;
+    constexpr auto speed = static_cast<ParamType>(std::same_as<ParamType, float> ? 0.1f : 1.f);
+    constexpr auto min = std::numeric_limits<ParamType>::lowest();
+    constexpr auto max = std::numeric_limits<ParamType>::max();
+    auto newDragElement = std::make_unique<ui::ig::MatrixDragInput<T>>(getElementName(name), std::string{name}, speed,
+                                                                       min, max, initialValue);
+    addValueRecord(*newDragElement, name);
+    elements.emplace_back(std::move(newDragElement));
+  } else {
+    using ParamType = typename ui::ig::DragInput<T>::ParamType;
+    constexpr auto speed = static_cast<ParamType>(std::same_as<ParamType, float> ? 0.1f : 1.f);
+    constexpr auto min = std::numeric_limits<ParamType>::lowest();
+    constexpr auto max = std::numeric_limits<ParamType>::max();
+    auto newDragElement =
+        std::make_unique<ui::ig::DragInput<T>>(typename ui::ig::DragInput<T>::Config{.name = getElementName(name),
+                                                                                     .label = name,
+                                                                                     .speed = speed,
+                                                                                     .min = min,
+                                                                                     .max = max,
+                                                                                     .value = initialValue});
+    addValueRecord(*newDragElement, name);
+    elements.emplace_back(std::move(newDragElement));
+  }
+}
+
+template<typename T>
+void ShaderToyGlobalVariablesPanel::addValueRecord(ui::ig::ValueObservable<T> &observable, std::string_view name) {
+  auto newRecord = valueRecords.emplace(std::string{name}, std::make_shared<ValueRecord>(observable.getValue()));
+  observable.addValueListener([valueRecord = newRecord.first->second.get()](const T &newValue) mutable {
+    valueRecord->data = newValue;
+  });
+}
+
+}  // namespace pf
+#endif  //PF_RENDERING_PLAYGROUND_SHADERTOYGLOBALVARIABLES_H

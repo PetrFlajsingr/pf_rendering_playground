@@ -10,50 +10,38 @@
 
 namespace pf {
 
+enum class ModeState { Uninitialised, Initialised, Active };
+
 class Mode {
   friend class ModeManager;
 
  public:
   virtual ~Mode() = default;
 
-  [[nodiscard]] inline bool isInitialized() const {
-    return initialized;
-  }
-  [[nodiscard]] inline bool isActive() const {
-    return active;
-  }
+  [[nodiscard]] ModeState getState() const;
+
+  [[nodiscard]] virtual std::string getName() const = 0;
 
  protected:
-  inline void initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface, const std::shared_ptr<glfw::Window> &window) {
-    initialize_impl(imguiInterface, window);
-    initialized = true;
-  }
-  virtual void initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface, const std::shared_ptr<glfw::Window> &window) = 0;
+  void initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
+                  const std::shared_ptr<glfw::Window> &window);
+  virtual void initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
+                               const std::shared_ptr<glfw::Window> &window) = 0;
 
-  inline void activate() {
-    activate_impl();
-    active = true;
-  }
+  void activate();
   virtual void activate_impl() = 0;
 
-  inline void deactivate() {
-    deactivate_impl();
-    active = false;
-  }
+  void deactivate();
   virtual void deactivate_impl() = 0;
-  inline void deinitialize() {
-    deinitialize_impl();
-    initialized = false;
-  }
+  void deinitialize();
   virtual void deinitialize_impl() = 0;
 
   virtual void render(std::chrono::nanoseconds timeDelta) = 0;
 
  private:
-  bool initialized = false;
-  bool active = false;
+  ModeState state = ModeState::Uninitialised;
 };
 
-}// namespace pf
+}  // namespace pf
 
-#endif//PF_RENDERING_PLAYGROUND_MODE_H
+#endif  //PF_RENDERING_PLAYGROUND_MODE_H

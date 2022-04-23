@@ -20,7 +20,8 @@ std::string ShaderToyShaderBuilder::uniformsAsString(const std::vector<UniformIn
 std::string ShaderToyShaderBuilder::image2DsAsString(const std::vector<Image2DInfo> &uniforms) {
   std::string result;
   std::ranges::for_each(uniforms, [&](const Image2DInfo &imageInfo) {
-    result.append(fmt::format("layout({}, binding = {}) uniform image2D {};\n", imageInfo.format, imageInfo.binding, imageInfo.name));
+    result.append(fmt::format("layout({}, binding = {}) uniform image2D {};\n", imageInfo.format, imageInfo.binding,
+                              imageInfo.name));
   });
   return result;
 }
@@ -59,7 +60,8 @@ ShaderToyShaderBuilder &ShaderToyShaderBuilder::addUniform(std::string type, std
   return *this;
 }
 
-ShaderToyShaderBuilder &ShaderToyShaderBuilder::addImage2D(std::string format, std::uint32_t binding, std::string name) {
+ShaderToyShaderBuilder &ShaderToyShaderBuilder::addImage2D(std::string format, std::uint32_t binding,
+                                                           std::string name) {
   image2Ds.emplace_back(std::move(format), binding, std::move(name));
   return *this;
 }
@@ -75,9 +77,7 @@ ShaderToyShaderBuilder &ShaderToyShaderBuilder::setLocalGroupSize(glm::uvec2 siz
 }
 
 std::string ShaderToyShaderBuilder::build(std::string userCode) {
-  if (!image2Ds.empty()) {
-    userCode = addTextureAccessCheck(userCode, image2Ds[0].name);
-  }
+  if (!image2Ds.empty()) { userCode = addTextureAccessCheck(userCode, image2Ds[0].name); }
   constexpr auto srcTemplate = R"glsl(
 #version 460 core
 
@@ -92,7 +92,8 @@ layout(local_size_x={}, local_size_y={})in;
 {}
 )glsl";
 
-  return fmt::format(srcTemplate, localGroupSize.x, localGroupSize.y, definesAsString(defines), uniformsAsString(uniforms), image2DsAsString(image2Ds), userCode);
+  return fmt::format(srcTemplate, localGroupSize.x, localGroupSize.y, definesAsString(defines),
+                     uniformsAsString(uniforms), image2DsAsString(image2Ds), userCode);
 }
 
-}// namespace pf
+}  // namespace pf

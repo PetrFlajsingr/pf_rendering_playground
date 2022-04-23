@@ -83,9 +83,10 @@ int main(int argc, char *argv[]) {
 
   pf::ModeManager modeManager{imguiInterface, window};
 
-  modeManager.addMode("ShaderToy", std::make_shared<pf::ShaderToyMode>());
+  modeManager.addMode(std::make_shared<pf::ShaderToyMode>());
   modeManager.activateMode("ShaderToy");
 
+  //glfw.setSwapInterval(0);
   pf::MainLoop::Get()->setOnMainLoop([&](auto time) {
     if (window->shouldClose()) {
       pf::MainLoop::Get()->stop();

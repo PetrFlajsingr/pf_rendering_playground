@@ -7,12 +7,12 @@
 
 #include <glm/glm.hpp>
 #include <pf_common/concepts/OneOf.h>
+#include <pf_common/enums.h>
 #include <string>
+#include <utils/glsl_typenames.h>
 #include <vector>
 
 namespace pf {
-
-#define GLSL_TYPES bool, float, unsigned int, int, glm::vec2, glm::vec3, glm::vec4, glm::ivec2, glm::ivec3, glm::ivec4, glm::bvec2, glm::bvec3, glm::bvec4, glm::uvec2, glm::uvec3, glm::uvec4, glm::mat2, glm::mat3, glm::mat4
 
 struct UniformInfo {
   std::string type;
@@ -32,9 +32,13 @@ struct ShaderDefine {
 
 class ShaderToyShaderBuilder {
  public:
-  template<OneOf<GLSL_TYPES> T>
+  template<typename T>
+    requires(OneOf<T, PF_GLSL_TYPES> || Enum<T>)
   ShaderToyShaderBuilder &addUniform(std::string name);
   ShaderToyShaderBuilder &addUniform(std::string type, std::string name);
+  template<Enum E>
+    requires(std::same_as<std::underlying_type_t<E>, int>)  // for now int only
+  ShaderToyShaderBuilder &addEnum();
 
   ShaderToyShaderBuilder &addImage2D(std::string format, std::uint32_t binding, std::string name);
 
@@ -51,6 +55,9 @@ class ShaderToyShaderBuilder {
 
   std::string addTextureAccessCheck(std::string src, const std::string &textureName);
 
+  template<Enum E>
+  [[nodiscard]] std::string getEnumTypeName() const;
+
   std::vector<UniformInfo> uniforms;
   std::vector<Image2DInfo> image2Ds;
   std::vector<ShaderDefine> defines;
@@ -58,76 +65,51 @@ class ShaderToyShaderBuilder {
   glm::uvec2 localGroupSize;
 };
 
-template<OneOf<GLSL_TYPES> T>
-consteval const char *getGLSLTypeName() {
-  if (std::same_as<T, bool>) {
-    return "bool";
-  }
-  if (std::same_as<T, float>) {
-    return "float";
-  }
-  if (std::same_as<T, unsigned int>) {
-    return "uint";
-  }
-  if (std::same_as<T, int>) {
-    return "int";
-  }
-  if (std::same_as<T, glm::vec2>) {
-    return "vec2";
-  }
-  if (std::same_as<T, glm::vec3>) {
-    return "vec3";
-  }
-  if (std::same_as<T, glm::vec4>) {
-    return "vec4";
-  }
-  if (std::same_as<T, glm::ivec2>) {
-    return "ivec2";
-  }
-  if (std::same_as<T, glm::ivec3>) {
-    return "ivec3";
-  }
-  if (std::same_as<T, glm::ivec4>) {
-    return "ivec4";
-  }
-  if (std::same_as<T, glm::bvec2>) {
-    return "bvec2";
-  }
-  if (std::same_as<T, glm::bvec3>) {
-    return "bvec3";
-  }
-  if (std::same_as<T, glm::bvec4>) {
-    return "bvec4";
-  }
-  if (std::same_as<T, glm::uvec2>) {
-    return "uvec2";
-  }
-  if (std::same_as<T, glm::uvec3>) {
-    return "uvec3";
-  }
-  if (std::same_as<T, glm::uvec4>) {
-    return "uvec4";
-  }
-  if (std::same_as<T, glm::mat2>) {
-    return "mat2";
-  }
-  if (std::same_as<T, glm::mat3>) {
-    return "mat3";
-  }
-  if (std::same_as<T, glm::mat4>) {
-    return "mat4";
-  }
-  return "<unknown>";
-}
-
-template<OneOf<GLSL_TYPES> T>
+template<typename T>
+  requires(OneOf<T, PF_GLSL_TYPES> || Enum<T>)
 ShaderToyShaderBuilder &ShaderToyShaderBuilder::addUniform(std::string name) {
-  const auto typeName = getGLSLTypeName<T>();
-  uniforms.emplace_back(typeName, std::move(name));
+  if constexpr (Enum<T>) {
+    uniforms.emplace_back(getEnumTypeName<T>(), std::move(name));
+  } else {
+    const auto typeName = getGLSLTypeName<T>();
+    uniforms.emplace_back(typeName, std::move(name));
+  }
   return *this;
 }
 
-}// namespace pf
+template<Enum E>
+  requires(std::same_as<std::underlying_type_t<E>, int>)  // for now int only
+ShaderToyShaderBuilder &ShaderToyShaderBuilder::addEnum() {
+  const auto enumTypeName = getEnumTypeName<E>();
+  addDefine(enumTypeName, "int");  //for now int only
+  std::ranges::for_each(magic_enum::enum_values<E>(), [enumTypeName, this](auto enumValue) {
+    auto enumValueName = std::string{magic_enum::enum_name(enumValue)};
+    std::ranges::transform(enumValueName, enumValueName.begin(), ::toupper);
+    addDefine(enumTypeName + "_" + enumValueName, std::to_string(static_cast<int>(enumValue)));
+  });
+  return *this;
+}
 
-#undef GLSL_TYPES
-#endif//PF_RENDERING_PLAYGROUND_SHADERTOYSHADERBUILDER_H
+template<Enum E>
+std::string ShaderToyShaderBuilder::getEnumTypeName() const {
+  auto enumTypeName = std::string{magic_enum::enum_type_name<E>()};
+  if (const auto lastDividerPos = enumTypeName.find_last_of("::"); lastDividerPos != std::string::npos) {
+    enumTypeName =
+        std::string{enumTypeName.begin() + static_cast<std::string::iterator::difference_type>(lastDividerPos) + 1,
+                    enumTypeName.end()};
+  }
+  std::string result{};
+  result.reserve(enumTypeName.size());
+
+  auto iter1 = enumTypeName.begin();
+  auto iter2 = iter1 + 1;
+  for (; iter2 != enumTypeName.end(); ++iter1, ++iter2) {
+    result.push_back(::toupper(*iter1));
+    if (::islower(*iter1) && ::isupper(*iter2)) { result.push_back('_'); }
+  }
+  result.push_back(::toupper(*iter1));
+  return result;
+}
+}  // namespace pf
+
+#endif  //PF_RENDERING_PLAYGROUND_SHADERTOYSHADERBUILDER_H

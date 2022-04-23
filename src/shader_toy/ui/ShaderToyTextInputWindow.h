@@ -5,9 +5,15 @@
 #ifndef PF_RENDERING_PLAYGROUND_SHADERTOYTEXTINPUTWINDOW_H
 #define PF_RENDERING_PLAYGROUND_SHADERTOYTEXTINPUTWINDOW_H
 
-#include <pf_imgui/layouts/VerticalLayout.h>
-#include <pf_imgui/elements/TextEditor.h>
+#include "ShaderToyGlobalVariables.h"
 #include <pf_imgui/ImGuiInterface.h>
+#include <pf_imgui/elements/Button.h>
+#include <pf_imgui/elements/Checkbox.h>
+#include <pf_imgui/elements/Separator.h>
+#include <pf_imgui/elements/TabBar.h>
+#include <pf_imgui/elements/Text.h>
+#include <pf_imgui/elements/TextEditor.h>
+#include <pf_imgui/layouts/VerticalLayout.h>
 
 namespace pf {
 
@@ -18,12 +24,22 @@ class ShaderToyTextInputWindow {
   // clang-format off
   ui::ig::Window *window;
     ui::ig::VerticalLayout *layout;
-      ui::ig::HorizontalLayout *controlsLayout;
-        ui::ig::Button *compileButton;
-      ui::ig::TextEditor *editor;
+      ui::ig::TabBar *tabBar;
+        ui::ig::Tab *mainShaderTab;
+          ui::ig::HorizontalLayout *controlsLayout;
+            ui::ig::Button *compileButton;
+            //ui::ig::Separator *sep1;
+            ui::ig::Checkbox *timePausedCheckbox;
+            ui::ig::Button *restartButton;
+          ui::ig::Text *infoText;
+          ui::ig::TextEditor *editor;
+        ui::ig::Tab *globalVarsTab;
+          ui::ig::VerticalLayout *globalVarsLayout;
+            ui::ig::Button *addVarButton;
+            ShaderToyGlobalVariablesPanel *varPanel;
   // clang-format on
 };
 
-}
+}  // namespace pf
 
-#endif//PF_RENDERING_PLAYGROUND_SHADERTOYTEXTINPUTWINDOW_H
+#endif  //PF_RENDERING_PLAYGROUND_SHADERTOYTEXTINPUTWINDOW_H
