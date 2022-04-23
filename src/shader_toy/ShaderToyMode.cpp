@@ -5,6 +5,9 @@
 #include "ShaderToyMode.h"
 #include "ShaderToyShaderBuilder.h"
 #include <pf_imgui/elements/Image.h>
+#include <range/v3/view/split.hpp>
+#include <range/v3/view/trim.hpp>
+#include <range/v3/range/conversion.hpp>
 
 namespace pf {
 
@@ -26,6 +29,19 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
     spdlog::info("[ShaderToy] Compiling shader");
     if (auto err = compileShader(ui->textInputWindow->editor->getText()); err.has_value()) {
       spdlog::error("[ShaderToy] {}", err.value());
+      std::ranges::for_each(err.value() | ranges::view::split('\n'), [&] (const auto &line) {
+        auto parts = line | ranges::view::split(':') | ranges::view::transform([] (auto part) {
+                       return part | ranges::to<std::string>;
+                     }) | ranges::to_vector;
+        if (parts.size() < 3) {
+          return;
+        }
+        auto openBracketPos = std::ranges::find(parts[0], '(') + 1;
+        auto closeBracketPos = std::ranges::find(parts[0], ')');
+        int lineNum;
+        std::from_chars(&*openBracketPos, &*closeBracketPos, lineNum);
+        spdlog::debug("{}", shaderLineMapping(lineNum));
+      });
     } else {
       totalTime = std::chrono::nanoseconds{0};
       frameCounter = 0;
@@ -174,10 +190,13 @@ std::optional<std::string> ShaderToyMode::compileShader(const std::string &shade
     builder.addUniform(value->typeName, name);
   }
   // clang-format on
-  const auto source = builder.build(shaderCode);
+  const auto &[source, lineMapping] = builder.build(shaderCode);
+  shaderLineMapping = lineMapping;
   spdlog::trace(source);
   auto renderShader = std::make_shared<Shader>(GL_COMPUTE_SHADER, source);
-  if (!renderShader->getCompileStatus()) { return renderShader->getInfoLog(); }
+  if (!renderShader->getCompileStatus()) {
+    return renderShader->getInfoLog();
+  }
   renderProgram = std::make_shared<Program>(std::move(renderShader));
   userDefinedUniforms = ui->textInputWindow->varPanel->getValueRecords();
   return std::nullopt;

@@ -11,6 +11,7 @@
 #include <string>
 #include <utils/glsl_typenames.h>
 #include <vector>
+#include <functional>
 
 namespace pf {
 
@@ -32,6 +33,10 @@ struct ShaderDefine {
 
 class ShaderToyShaderBuilder {
  public:
+  struct Result {
+    std::string sourceCode;
+    std::function<std::size_t(std::size_t)> sourceLineToUserSourceLine;
+  };
   template<typename T>
     requires(OneOf<T, PF_GLSL_TYPES> || Enum<T>)
   ShaderToyShaderBuilder &addUniform(std::string name);
@@ -46,7 +51,7 @@ class ShaderToyShaderBuilder {
 
   ShaderToyShaderBuilder &setLocalGroupSize(glm::uvec2 size);
 
-  [[nodiscard]] std::string build(std::string userCode);
+  [[nodiscard]] Result build(std::string userCode);
 
  private:
   std::string uniformsAsString(const std::vector<UniformInfo> &uniforms);

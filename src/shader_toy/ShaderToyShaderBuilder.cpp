@@ -8,6 +8,17 @@
 #include <regex>
 
 namespace pf {
+using namespace std::string_view_literals;
+constexpr auto dimensionCheckTemplate = R"glsl(
+const ivec2 _pf_generated_renderTextureSize = imageSize({});
+
+if (gl_GlobalInvocationID.x >= _pf_generated_renderTextureSize.x) {{
+    return;
+}}
+if (gl_GlobalInvocationID.y >= _pf_generated_renderTextureSize.y) {{
+    return;
+}}
+)glsl"sv;
 
 std::string ShaderToyShaderBuilder::uniformsAsString(const std::vector<UniformInfo> &uniforms) {
   std::string result;
@@ -35,17 +46,7 @@ std::string ShaderToyShaderBuilder::definesAsString(const std::vector<ShaderDefi
 }
 
 std::string ShaderToyShaderBuilder::addTextureAccessCheck(std::string src, const std::string &textureName) {
-  constexpr auto dimensionCheckTemplate = R"glsl(
-const ivec2 _pf_generated_renderTextureSize = imageSize({});
-
-if (gl_GlobalInvocationID.x >= _pf_generated_renderTextureSize.x) {{
-    return;
-}}
-if (gl_GlobalInvocationID.y >= _pf_generated_renderTextureSize.y) {{
-    return;
-}}
-)glsl";
-  std::regex regex{R"(void\s+main\s*\(\s*\)\s*\{)", std::regex_constants::ECMAScript | std::regex_constants::icase};
+  std::regex regex{R"(void\s+main\s*\(\s*\)\s*\{[^\n]*)", std::regex_constants::ECMAScript | std::regex_constants::icase};
   std::smatch match;
   std::regex_search(src, match, regex);
   if (match.empty()) { return src; }
@@ -76,24 +77,33 @@ ShaderToyShaderBuilder &ShaderToyShaderBuilder::setLocalGroupSize(glm::uvec2 siz
   return *this;
 }
 
-std::string ShaderToyShaderBuilder::build(std::string userCode) {
-  if (!image2Ds.empty()) { userCode = addTextureAccessCheck(userCode, image2Ds[0].name); }
-  constexpr auto srcTemplate = R"glsl(
-#version 460 core
+ShaderToyShaderBuilder::Result ShaderToyShaderBuilder::build(std::string userCode) {
+  constexpr auto srcTemplate = R"glsl(#version 460 core
 
 layout(local_size_x={}, local_size_y={})in;
-
 {}
-
 {}
-
-{}
-
 {}
 )glsl";
+  const auto sourceWithoutUserCode = fmt::format(srcTemplate, localGroupSize.x, localGroupSize.y, definesAsString(defines),
+                                                 uniformsAsString(uniforms), image2DsAsString(image2Ds));
+  if (!image2Ds.empty()) { userCode = addTextureAccessCheck(userCode, image2Ds[0].name); }
+  const auto sourceWithUserCode = sourceWithoutUserCode + userCode;
+  const auto startOffset = std::ranges::count(sourceWithoutUserCode, '\n') + 1;
+  const auto dimensionCheckPos = sourceWithUserCode.find("_pf_generated_renderTextureSize");
+  const auto dimensionCheckLine = dimensionCheckPos != std::string::npos ? std::ranges::count(sourceWithUserCode.begin(), sourceWithUserCode.begin() + dimensionCheckPos, '\n'): -1;
+  const auto dimensionCheckLineCount = std::ranges::count(dimensionCheckTemplate, '\n');
 
-  return fmt::format(srcTemplate, localGroupSize.x, localGroupSize.y, definesAsString(defines),
-                     uniformsAsString(uniforms), image2DsAsString(image2Ds), userCode);
+  Result result;
+  result.sourceLineToUserSourceLine = [=] (std::size_t line) {
+    if (line > dimensionCheckLine) {
+      line -= dimensionCheckLineCount;
+    }
+    line -= startOffset;
+    return line + 1;
+  };
+  result.sourceCode = sourceWithUserCode;
+  return result;
 }
 
 }  // namespace pf

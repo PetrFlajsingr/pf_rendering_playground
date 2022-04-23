@@ -17,7 +17,7 @@
 namespace pf {
 
 enum class MouseState { None = 0, LeftDown = 1, RightDown = 2 };
-
+// todo: divide this up into more classes
 class ShaderToyMode : public Mode {
  public:
   constexpr static glm::uvec2 COMPUTE_LOCAL_GROUP_SIZE{8, 8};
@@ -56,6 +56,8 @@ class ShaderToyMode : public Mode {
   glm::vec2 mousePos{};
 
   std::unordered_map<std::string, std::shared_ptr<ValueRecord>> userDefinedUniforms;
+
+  std::function<std::size_t(std::size_t)> shaderLineMapping;
 
   FPSCounter fpsCounter;
 
