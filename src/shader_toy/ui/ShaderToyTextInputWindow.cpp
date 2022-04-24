@@ -32,7 +32,7 @@ ShaderToyTextInputWindow::ShaderToyTextInputWindow(gui::ImGuiInterface &imGuiInt
   restartButton = &controlsLayout->createChild(gui::Button::Config{"restart_btn", "Restart"});
 
   infoText = &mainShaderTab->createChild<gui::Text>("info_txt", "Info");
-  auto &tooltip = infoText->createTooltip();
+  auto &tooltip = infoText->createOrGetTooltip();
 
   const auto INFO_MD_TEXT = u8R"md(### Variables
   * float time - time since start in seconds
@@ -53,7 +53,7 @@ ShaderToyTextInputWindow::ShaderToyTextInputWindow(gui::ImGuiInterface &imGuiInt
                                                                            gui::Persistent::Yes);
 
   addVarButton->addClickListener([&] {
-    constexpr auto COLOR_RECORD = "Color (vec3)";
+    constexpr auto COLOR_RECORD = "Color (vec4)";
     auto &dlg = imGuiInterface.createDialog("add_var_dlg", "Select variable type and name");
     dlg.setSize(gui::Size{300, 110});
     auto &inLayout = dlg.createChild(

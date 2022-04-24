@@ -149,7 +149,6 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
           renderProgram->setMatrix4fv(name, glm::value_ptr(uniformValue));
         }
       }, value->data);
-      renderProgram->set3fv("mousePos", &mousePos[0]);
     }
   }
   renderProgram->dispatch(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y);
