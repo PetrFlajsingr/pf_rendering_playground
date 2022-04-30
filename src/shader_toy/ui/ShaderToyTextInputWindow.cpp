@@ -3,6 +3,7 @@
 //
 
 #include "ShaderToyTextInputWindow.h"
+#include "shader_toy/ui/dialogs/ShaderToyGLSLVariableInputDialog.h"
 #include "shader_toy/utils.h"
 #include <pf_imgui/elements/Button.h>
 #include <pf_imgui/elements/Combobox.h>
@@ -52,65 +53,41 @@ ShaderToyTextInputWindow::ShaderToyTextInputWindow(gui::ImGuiInterface &imGuiInt
   varPanel = &globalVarsLayout->createChild<ShaderToyGlobalVariablesPanel>("global_vars_panel", gui::Size::Auto(),
                                                                            gui::Persistent::Yes);
 
+  constexpr static auto isUnsupportedType = []<typename T>() {
+    return OneOf<T, unsigned int, glm::uvec2, glm::uvec3, glm::uvec4, glm::bvec2, glm::bvec3, glm::bvec4>;
+  };
+
   addVarButton->addClickListener([&] {
     constexpr auto COLOR_RECORD = "Color (vec4)";
-    auto &dlg = imGuiInterface.createDialog("add_var_dlg", "Select variable type and name");
-    dlg.setSize(gui::Size{300, 110});
-    auto &inLayout = dlg.createChild(
-        gui::HorizontalLayout::Config{.name = "add_var_in_lay", .size = gui::Size{gui::Width::Auto(), 30}});
-    auto &typeCombobox = inLayout.createChild(gui::WidthDecorator<gui::Combobox<std::string>>::Config{
-        .width = 120,
-        .config = {.name = "var_type_cb",
-                   .label = "Type",
-                   .preview = "Select type",
-                   .shownItemCount = gui::ComboBoxCount::ItemsAll}});
-    typeCombobox.setItems(getGlslTypeNames());
-    typeCombobox.addItem(COLOR_RECORD);
-    auto &varNameInput = inLayout.createChild(
-        gui::WidthDecorator<gui::InputText>::Config{.width = 120,
-                                                    .config = {.name = "var_name_txt", .label = "Name", .value = ""}});
-    auto &errorText = dlg.createChild<gui::Text>("var_add_err_txt", "");
-    errorText.setColor<gui::style::ColorOf::Text>(gui::Color::Red);
-    auto &btnLayout = dlg.createChild(
-        gui::HorizontalLayout::Config{.name = "add_var_btn_lay", .size = gui::Size{gui::Width::Auto(), 20}});
-    auto &okBtn = btnLayout.createChild<gui::Button>("ok_btn", "Ok");
-    auto &cancelBtn = btnLayout.createChild<gui::Button>("cancel_btn", "Cancel");
-    okBtn.addClickListener([&] {
-      if (const auto selectedTypeName = typeCombobox.getSelectedItem(); selectedTypeName.has_value()) {
-        const auto varName = varNameInput.getValue();
-        // TODO: valid identifier check
-        if (!isValidGlslIdentifier(varName)) {
-          errorText.setText("Invalid variable name");
-          return;
-        }
-        if (*selectedTypeName == COLOR_RECORD) {
-          varPanel->addColorVariable(varName, gui::Color::White);
-        } else {
-          auto createdVariable = true;
-          getTypeForGlslName(*selectedTypeName, [&]<typename T>() {
-            if constexpr (std::same_as<T, bool>) {
-              varPanel->addBoolVariable(varName, false);
-            } else if constexpr (OneOf<T, unsigned int, glm::uvec2, glm::uvec3, glm::uvec4>) {
-              errorText.setText("Unsigned int is not supported for now");
-              createdVariable = false;
-            } else if constexpr (OneOf<T, glm::bvec2, glm::bvec3, glm::bvec4>) {
-              errorText.setText("Bool vectors are not supported for now");
-              createdVariable = false;
-            } else {
-              varPanel->addDragVariable<T>(varName, T{});
-            }
-          });
-          if (!createdVariable) { return; }
-        }
-      } else {
-        errorText.setText("Select type");
-        return;
-      }
-      dlg.close();
+    shader_toy::GLSLVariableInputDialogBuilder{imGuiInterface}
+        .addTypeNames(getGlslTypeNames())
+        .addTypeName(COLOR_RECORD)
+        .inputValidator([&](std::string_view typeName, std::string_view varName) -> std::optional<std::string> {
+          if (typeName.empty()) { return "Select a type"; }
+          if (!isValidGlslIdentifier(varName)) { return "Invalid variable name"; }
+          bool unsupportedType = false;
+          getTypeForGlslName(typeName, [&]<typename T>() { unsupportedType = isUnsupportedType.operator()<T>(); });
+          if (unsupportedType) { return "Selected type is not currently supported"; }
+          return std::nullopt;
+        })
+        .onInput([&](std::string_view typeName, std::string_view varName) {
+          if (typeName == COLOR_RECORD) {
+            varPanel->addColorVariable(varName, gui::Color::White);
+          } else {
+            getTypeForGlslName(typeName, [&]<typename T>() {
+              if constexpr (isUnsupportedType.operator()<T>()) {
+                assert(false
+                       && "This should never happen");  // this needs to be here due to template instantiation errors
+              } else if constexpr (std::same_as<T, bool>) {
+                varPanel->addBoolVariable(varName, false);
+              } else {
+                varPanel->addDragVariable<T>(varName, T{});
+              }
+            });
+          }
+        })
+        .show();
     });
-    cancelBtn.addClickListener([&dlg] { dlg.close(); });
-  });
-
   editor = &mainShaderTab->createChild(gui::TextEditor::Config{.name = "text_editor", .persistent = true});
 }
 
