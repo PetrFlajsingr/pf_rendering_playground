@@ -2,13 +2,13 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#include "ShaderToyOutputWindow.h"
+#include "OutputWindow.h"
 #include <pf_imgui/elements/Image.h>
 #include <pf_imgui/interface/decorators/WidthDecorator.h>
 
-namespace pf {
+namespace pf::shader_toy {
 namespace gui = ui::ig;
-ShaderToyOutputWindow::ShaderToyOutputWindow(ui::ig::ImGuiInterface &imGuiInterface) {
+OutputWindow::OutputWindow(ui::ig::ImGuiInterface &imGuiInterface) {
   window = &imGuiInterface.createWindow("output_window", "Output");
   window->setIsDockable(true);
 

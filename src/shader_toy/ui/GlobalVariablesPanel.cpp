@@ -2,20 +2,20 @@
 // Created by xflajs00 on 22.04.2022.
 //
 
-#include "ShaderToyGlobalVariables.h"
+#include "GlobalVariablesPanel.h"
 
-namespace pf {
+namespace pf::shader_toy {
 namespace gui = ui::ig;
 
-ShaderToyGlobalVariablesPanel::ShaderToyGlobalVariablesPanel(const std::string &name, gui::Size s,
+GlobalVariablesPanel::GlobalVariablesPanel(const std::string &name, gui::Size s,
                                                              gui::Persistent persistent)
     : Element(name), Resizable(s), Savable(persistent) {}
 
-toml::table ShaderToyGlobalVariablesPanel::toToml() const { return toml::table(); }
+toml::table GlobalVariablesPanel::toToml() const { return toml::table(); }
 
-void ShaderToyGlobalVariablesPanel::setFromToml(const toml::table &src) {}
+void GlobalVariablesPanel::setFromToml(const toml::table &src) {}
 
-void ShaderToyGlobalVariablesPanel::renderImpl() {
+void GlobalVariablesPanel::renderImpl() {
   gui::Element *toRemove = nullptr;
   std::size_t index = 0;
   std::ranges::for_each(elements, [&](auto &element) {
@@ -32,22 +32,22 @@ void ShaderToyGlobalVariablesPanel::renderImpl() {
 }
 constexpr static auto ELEMENT_POSTFIX = "glsl_var";
 static auto ELEMENT_POSTFIX_LEN = std::strlen(ELEMENT_POSTFIX);
-std::string ShaderToyGlobalVariablesPanel::getElementName(std::string_view varName) {
+std::string GlobalVariablesPanel::getElementName(std::string_view varName) {
   return std::string{varName} + ELEMENT_POSTFIX;
 }
 
-std::string ShaderToyGlobalVariablesPanel::getVarNameFromElementName(std::string_view elementName) {
+std::string GlobalVariablesPanel::getVarNameFromElementName(std::string_view elementName) {
   return std::string{elementName.substr(0, elementName.size() - ELEMENT_POSTFIX_LEN)};
 }
 
-void ShaderToyGlobalVariablesPanel::addBoolVariable(std::string_view name, bool initialValue) {
+void GlobalVariablesPanel::addBoolVariable(std::string_view name, bool initialValue) {
   if (variableExists(name)) { return; }
   auto newCheckboxElement = std::make_unique<gui::Checkbox>(getElementName(name), std::string{name}, initialValue);
   addValueRecord(*newCheckboxElement, name);
   elements.emplace_back(std::move(newCheckboxElement));
 }
 
-void ShaderToyGlobalVariablesPanel::addColorVariable(std::string_view name, gui::Color initialValue) {
+void GlobalVariablesPanel::addColorVariable(std::string_view name, gui::Color initialValue) {
   if (variableExists(name)) { return; }
   auto newColorElement = std::make_unique<gui::ColorEdit<gui::ColorChooserFormat::RGBA>>(
       typename gui::ColorEdit<gui::ColorChooserFormat::RGBA>::Config{.name = getElementName(name),
@@ -65,15 +65,14 @@ void ShaderToyGlobalVariablesPanel::addColorVariable(std::string_view name, gui:
   elements.emplace_back(std::move(newColorElement));
 }
 
-const std::unordered_map<std::string, std::shared_ptr<ValueRecord>> &
-ShaderToyGlobalVariablesPanel::getValueRecords() const {
+const std::unordered_map<std::string, std::shared_ptr<ValueRecord>> &GlobalVariablesPanel::getValueRecords() const {
   return valueRecords;
 }
 
-bool ShaderToyGlobalVariablesPanel::variableExists(std::string_view name) {
+bool GlobalVariablesPanel::variableExists(std::string_view name) {
   return valueRecords.find(std::string{name}) != valueRecords.end();
 }
 
-void ShaderToyGlobalVariablesPanel::removeValueRecord(std::string_view name) { valueRecords.erase(std::string{name}); }
+void GlobalVariablesPanel::removeValueRecord(std::string_view name) { valueRecords.erase(std::string{name}); }
 
 }  // namespace pf

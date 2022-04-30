@@ -47,25 +47,25 @@ add_executable(pf_rendering_playground
         src/geGL/Shader.cpp
         src/geGL/Shader.h
         ${GEGL_SOURCES}
-        src/shader_toy/ui/ShaderToyOutputWindow.cpp
-        src/shader_toy/ui/ShaderToyOutputWindow.h
-        src/shader_toy/ui/ShaderToyTextInputWindow.cpp
-        src/shader_toy/ui/ShaderToyTextInputWindow.h
+        src/shader_toy/ui/OutputWindow.cpp
+        src/shader_toy/ui/OutputWindow.h
+        src/shader_toy/ui/InputWindow.cpp
+        src/shader_toy/ui/InputWindow.h
         src/modes/Mode.h
         src/shader_toy/ShaderToyMode.cpp
         src/shader_toy/ShaderToyMode.h
         src/modes/ModeManager.cpp
         src/modes/ModeManager.h
-        src/shader_toy/ui/ShaderToyUI.cpp
-        src/shader_toy/ui/ShaderToyUI.h
+        src/shader_toy/ui/UI.cpp
+        src/shader_toy/ui/UI.h
         src/log/UISink.h
         src/utils/FPSCounter.cpp
-        src/shader_toy/ShaderToyShaderBuilder.cpp
-        src/shader_toy/ShaderToyShaderBuilder.h
-        src/shader_toy/ui/ShaderToyGlobalVariables.cpp
-        src/shader_toy/ui/ShaderToyGlobalVariables.h
+        src/shader_toy/ShaderBuilder.cpp
+        src/shader_toy/ShaderBuilder.h
+        src/shader_toy/ui/GlobalVariablesPanel.cpp
+        src/shader_toy/ui/GlobalVariablesPanel.h
         src/utils/glsl_typenames.h
-        src/modes/Mode.cpp src/shader_toy/utils.h src/shader_toy/ui/TEMP_MatrixDragInput.h src/shader_toy/ui/dialogs/ShaderToyGLSLVariableInputDialog.cpp src/shader_toy/ui/dialogs/ShaderToyGLSLVariableInputDialog.h)
+        src/modes/Mode.cpp src/shader_toy/utils.h src/shader_toy/ui/TEMP_MatrixDragInput.h src/shader_toy/ui/dialogs/GlslLVariableInputDialog.cpp src/shader_toy/ui/dialogs/GlslLVariableInputDialog.h)
 
 
 target_link_libraries(pf_rendering_playground glad ${OPENGL_LIBRARIES} pf_common::pf_common pf_imgui::pf_imgui pf_mainloop::pf_mainloop pf_glfw::pf_glfw spdlog::spdlog_header_only

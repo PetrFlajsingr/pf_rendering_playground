@@ -2,8 +2,8 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_SHADERTOYSHADERBUILDER_H
-#define PF_RENDERING_PLAYGROUND_SHADERTOYSHADERBUILDER_H
+#ifndef PF_RENDERING_PLAYGROUND_SHADERBUILDER_H
+#define PF_RENDERING_PLAYGROUND_SHADERBUILDER_H
 
 #include <glm/glm.hpp>
 #include <pf_common/concepts/OneOf.h>
@@ -13,7 +13,7 @@
 #include <vector>
 #include <functional>
 
-namespace pf {
+namespace pf::shader_toy {
 
 struct UniformInfo {
   std::string type;
@@ -31,7 +31,7 @@ struct ShaderDefine {
   std::string value;
 };
 
-class ShaderToyShaderBuilder {
+class ShaderBuilder {
  public:
   struct Result {
     std::string sourceCode;
@@ -39,17 +39,17 @@ class ShaderToyShaderBuilder {
   };
   template<typename T>
     requires(OneOf<T, PF_GLSL_TYPES> || Enum<T>)
-  ShaderToyShaderBuilder &addUniform(std::string name);
-  ShaderToyShaderBuilder &addUniform(std::string type, std::string name);
+  ShaderBuilder &addUniform(std::string name);
+  ShaderBuilder &addUniform(std::string type, std::string name);
   template<Enum E>
     requires(std::same_as<std::underlying_type_t<E>, int>)  // for now int only
-  ShaderToyShaderBuilder &addEnum();
+  ShaderBuilder &addEnum();
 
-  ShaderToyShaderBuilder &addImage2D(std::string format, std::uint32_t binding, std::string name);
+  ShaderBuilder &addImage2D(std::string format, std::uint32_t binding, std::string name);
 
-  ShaderToyShaderBuilder &addDefine(std::string name, std::string value = "");
+  ShaderBuilder &addDefine(std::string name, std::string value = "");
 
-  ShaderToyShaderBuilder &setLocalGroupSize(glm::uvec2 size);
+  ShaderBuilder &setLocalGroupSize(glm::uvec2 size);
 
   [[nodiscard]] Result build(std::string userCode);
 
@@ -72,7 +72,7 @@ class ShaderToyShaderBuilder {
 
 template<typename T>
   requires(OneOf<T, PF_GLSL_TYPES> || Enum<T>)
-ShaderToyShaderBuilder &ShaderToyShaderBuilder::addUniform(std::string name) {
+ShaderBuilder &ShaderBuilder::addUniform(std::string name) {
   if constexpr (Enum<T>) {
     uniforms.emplace_back(getEnumTypeName<T>(), std::move(name));
   } else {
@@ -84,7 +84,7 @@ ShaderToyShaderBuilder &ShaderToyShaderBuilder::addUniform(std::string name) {
 
 template<Enum E>
   requires(std::same_as<std::underlying_type_t<E>, int>)  // for now int only
-ShaderToyShaderBuilder &ShaderToyShaderBuilder::addEnum() {
+ShaderBuilder &ShaderBuilder::addEnum() {
   const auto enumTypeName = getEnumTypeName<E>();
   addDefine(enumTypeName, "int");  //for now int only
   std::ranges::for_each(magic_enum::enum_values<E>(), [enumTypeName, this](auto enumValue) {
@@ -96,7 +96,7 @@ ShaderToyShaderBuilder &ShaderToyShaderBuilder::addEnum() {
 }
 
 template<Enum E>
-std::string ShaderToyShaderBuilder::getEnumTypeName() const {
+std::string ShaderBuilder::getEnumTypeName() const {
   auto enumTypeName = std::string{magic_enum::enum_type_name<E>()};
   if (const auto lastDividerPos = enumTypeName.find_last_of("::"); lastDividerPos != std::string::npos) {
     enumTypeName =
@@ -117,4 +117,4 @@ std::string ShaderToyShaderBuilder::getEnumTypeName() const {
 }
 }  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_SHADERTOYSHADERBUILDER_H
+#endif  //PF_RENDERING_PLAYGROUND_SHADERBUILDER_H

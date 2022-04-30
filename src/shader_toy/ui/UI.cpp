@@ -2,22 +2,22 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#include "ShaderToyUI.h"
+#include "UI.h"
 #include "log/UISink.h"
 #include <pf_imgui/styles/dark.h>
 
 #undef RGB
-namespace pf {
+namespace pf::shader_toy {
 
 namespace gui = ui::ig;
-ShaderToyUI::ShaderToyUI(const std::shared_ptr<gui::ImGuiInterface> &imGuiInterface, const std::string &initShaderCode)
+UI::UI(const std::shared_ptr<gui::ImGuiInterface> &imGuiInterface, const std::string &initShaderCode)
     : interface(imGuiInterface) {
   gui::setDarkStyle(*imGuiInterface);
 
   dockingArea = &imGuiInterface->createOrGetBackgroundDockingArea();
 
-  outputWindow = std::make_unique<ShaderToyOutputWindow>(*imGuiInterface);
-  textInputWindow = std::make_unique<ShaderToyTextInputWindow>(*imGuiInterface);
+  outputWindow = std::make_unique<OutputWindow>(*imGuiInterface);
+  textInputWindow = std::make_unique<InputWindow>(*imGuiInterface);
 
   textInputWindow->editor->setText(initShaderCode);
 
@@ -35,14 +35,14 @@ ShaderToyUI::ShaderToyUI(const std::shared_ptr<gui::ImGuiInterface> &imGuiInterf
   imGuiInterface->setStateFromConfig();
 }
 
-void ShaderToyUI::show() {
+void UI::show() {
   dockingArea->setVisibility(gui::Visibility::Visible);
   outputWindow->window->setVisibility(gui::Visibility::Visible);
   textInputWindow->window->setVisibility(gui::Visibility::Visible);
   logWindow->setVisibility(gui::Visibility::Visible);
 }
 
-void ShaderToyUI::hide() {
+void UI::hide() {
   dockingArea->setVisibility(gui::Visibility::Invisible);
   outputWindow->window->setVisibility(gui::Visibility::Invisible);
   textInputWindow->window->setVisibility(gui::Visibility::Invisible);

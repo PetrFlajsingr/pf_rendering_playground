@@ -2,20 +2,20 @@
 // Created by Petr on 30/04/2022.
 //
 
-#include "ShaderToyGLSLVariableInputDialog.h"
+#include "GlslLVariableInputDialog.h"
 #include <pf_imgui/elements/Combobox.h>
 #include <pf_imgui/interface/decorators/WidthDecorator.h>
 
 namespace gui = pf::ui::ig;
 namespace pf::shader_toy {
 
-GLSLVariableInputDialogBuilder &
-GLSLVariableInputDialogBuilder::addTypeName(GLSLVariableInputDialogBuilder::TypeName typeName) {
+GlslVariableInputDialogBuilder &
+GlslVariableInputDialogBuilder::addTypeName(GlslVariableInputDialogBuilder::TypeName typeName) {
   typeNames_.emplace_back(std::string{typeName});
   return *this;
 }
 
-void GLSLVariableInputDialogBuilder::show() {
+void GlslVariableInputDialogBuilder::show() {
   auto &dlg = interface_.createDialog("add_var_dlg", "Select variable type and name");
   dlg.setSize(gui::Size{300, 110});
   auto &inLayout = dlg.createChild(

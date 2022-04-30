@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 
   pf::ModeManager modeManager{imguiInterface, window};
 
-  modeManager.addMode(std::make_shared<pf::ShaderToyMode>());
+  modeManager.addMode(std::make_shared<pf::shader_toy::ShaderToyMode>());
   modeManager.activateMode("ShaderToy");
 
   //glfw.setSwapInterval(0);

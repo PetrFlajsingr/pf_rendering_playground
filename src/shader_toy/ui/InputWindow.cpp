@@ -2,8 +2,8 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#include "ShaderToyTextInputWindow.h"
-#include "shader_toy/ui/dialogs/ShaderToyGLSLVariableInputDialog.h"
+#include "InputWindow.h"
+#include "shader_toy/ui/dialogs/GlslLVariableInputDialog.h"
 #include "shader_toy/utils.h"
 #include <pf_imgui/elements/Button.h>
 #include <pf_imgui/elements/Combobox.h>
@@ -12,11 +12,11 @@
 #include <pf_imgui/interface/decorators/WidthDecorator.h>
 #include <spdlog/spdlog.h>
 
-namespace pf {
+namespace pf::shader_toy {
 
 namespace gui = ui::ig;
 
-ShaderToyTextInputWindow::ShaderToyTextInputWindow(gui::ImGuiInterface &imGuiInterface) {
+InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
   window = &imGuiInterface.createWindow("text_input_window", "Editor");
   window->setIsDockable(true);
   layout = &window->createChild(gui::VerticalLayout::Config{.name = "text_input_layout", .size = gui::Size::Auto()});
@@ -50,7 +50,7 @@ ShaderToyTextInputWindow::ShaderToyTextInputWindow(gui::ImGuiInterface &imGuiInt
 
   globalVarsLayout = &globalVarsTab->createChild<gui::VerticalLayout>("globalvars_layout", gui::Size::Auto());
   addVarButton = &globalVarsLayout->createChild<gui::Button>("add_var_btn", "Add variable");
-  varPanel = &globalVarsLayout->createChild<ShaderToyGlobalVariablesPanel>("global_vars_panel", gui::Size::Auto(),
+  varPanel = &globalVarsLayout->createChild<GlobalVariablesPanel>("global_vars_panel", gui::Size::Auto(),
                                                                            gui::Persistent::Yes);
 
   constexpr static auto isUnsupportedType = []<typename T>() {
@@ -59,7 +59,7 @@ ShaderToyTextInputWindow::ShaderToyTextInputWindow(gui::ImGuiInterface &imGuiInt
 
   addVarButton->addClickListener([&] {
     constexpr auto COLOR_RECORD = "Color (vec4)";
-    shader_toy::GLSLVariableInputDialogBuilder{imGuiInterface}
+    GlslVariableInputDialogBuilder{imGuiInterface}
         .addTypeNames(getGlslTypeNames())
         .addTypeName(COLOR_RECORD)
         .inputValidator([&](std::string_view typeName, std::string_view varName) -> std::optional<std::string> {

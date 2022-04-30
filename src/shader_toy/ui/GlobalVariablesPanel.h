@@ -2,8 +2,8 @@
 // Created by xflajs00 on 22.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_SHADERTOYGLOBALVARIABLES_H
-#define PF_RENDERING_PLAYGROUND_SHADERTOYGLOBALVARIABLES_H
+#ifndef PF_RENDERING_PLAYGROUND_GLOBALVARIABLESPANEL_H
+#define PF_RENDERING_PLAYGROUND_GLOBALVARIABLESPANEL_H
 
 #include "TEMP_MatrixDragInput.h"
 #include <algorithm>
@@ -19,7 +19,7 @@
 #include <range/v3/view/addressof.hpp>
 #include <utils/glsl_typenames.h>
 
-namespace pf {
+namespace pf::shader_toy {
 
 struct ValueRecord {
   template<typename T>
@@ -31,9 +31,9 @@ struct ValueRecord {
 
 // TODO: make this persistent
 // TODO: support all glsl types
-class ShaderToyGlobalVariablesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui::ig::Savable {
+class GlobalVariablesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui::ig::Savable {
  public:
-  ShaderToyGlobalVariablesPanel(const std::string &name, ui::ig::Size s, ui::ig::Persistent persistent);
+  GlobalVariablesPanel(const std::string &name, ui::ig::Size s, ui::ig::Persistent persistent);
 
   template<OneOf<PF_GLSL_TYPES> T>
     requires(OneOf<T, IMGUI_DRAG_TYPE_LIST> || OneOf<T, PF_IMGUI_GLM_MAT_TYPES>)
@@ -71,7 +71,7 @@ ValueRecord::ValueRecord(T initValue)
 
 template<OneOf<PF_GLSL_TYPES> T>
   requires(OneOf<T, IMGUI_DRAG_TYPE_LIST> || OneOf<T, PF_IMGUI_GLM_MAT_TYPES>)
-void ShaderToyGlobalVariablesPanel::addDragVariable(std::string_view name, T initialValue) {
+void GlobalVariablesPanel::addDragVariable(std::string_view name, T initialValue) {
   if (variableExists(name)) { return; }
   if constexpr (OneOf<T, PF_IMGUI_GLM_MAT_TYPES>) {
     using ParamType = typename ui::ig::MatrixDragInput<T>::ParamType;
@@ -100,7 +100,7 @@ void ShaderToyGlobalVariablesPanel::addDragVariable(std::string_view name, T ini
 }
 
 template<typename T>
-void ShaderToyGlobalVariablesPanel::addValueRecord(ui::ig::ValueObservable<T> &observable, std::string_view name) {
+void GlobalVariablesPanel::addValueRecord(ui::ig::ValueObservable<T> &observable, std::string_view name) {
   auto newRecord = valueRecords.emplace(std::string{name}, std::make_shared<ValueRecord>(observable.getValue()));
   observable.addValueListener([valueRecord = newRecord.first->second.get()](const T &newValue) mutable {
     valueRecord->data = newValue;
@@ -108,4 +108,4 @@ void ShaderToyGlobalVariablesPanel::addValueRecord(ui::ig::ValueObservable<T> &o
 }
 
 }  // namespace pf
-#endif  //PF_RENDERING_PLAYGROUND_SHADERTOYGLOBALVARIABLES_H
+#endif  //PF_RENDERING_PLAYGROUND_GLOBALVARIABLESPANEL_H

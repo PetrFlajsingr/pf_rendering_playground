@@ -7,14 +7,14 @@
 
 #include "glm/ext/vector_uint2.hpp"
 #include "modes/Mode.h"
-#include "ui/ShaderToyUI.h"
+#include "ui/UI.h"
 #include <geGL/Program.h>
 #include <geGL/Shader.h>
 #include <geGL/Texture.h>
 #include <glm/glm.hpp>
 #include <utils/FPSCounter.h>
 
-namespace pf {
+namespace pf::shader_toy {
 
 enum class MouseState { None = 0, LeftDown = 1, RightDown = 2 };
 // todo: divide this up into more classes
@@ -43,7 +43,7 @@ class ShaderToyMode : public Mode {
 
   void updateUI();
 
-  std::unique_ptr<ShaderToyUI> ui = nullptr;
+  std::unique_ptr<UI> ui = nullptr;
 
   std::int32_t frameCounter = 0;
   std::chrono::nanoseconds totalTime{0};

@@ -2,12 +2,12 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#include "ShaderToyShaderBuilder.h"
+#include "ShaderBuilder.h"
 #include <algorithm>
 #include <fmt/format.h>
 #include <regex>
 
-namespace pf {
+namespace pf::shader_toy {
 using namespace std::string_view_literals;
 constexpr auto dimensionCheckTemplate = R"glsl(
 const ivec2 _pf_generated_renderTextureSize = imageSize({});
@@ -20,7 +20,7 @@ if (gl_GlobalInvocationID.y >= _pf_generated_renderTextureSize.y) {{
 }}
 )glsl"sv;
 
-std::string ShaderToyShaderBuilder::uniformsAsString(const std::vector<UniformInfo> &uniforms) {
+std::string ShaderBuilder::uniformsAsString(const std::vector<UniformInfo> &uniforms) {
   std::string result;
   std::ranges::for_each(uniforms, [&](const UniformInfo &uniformInfo) {
     result.append(fmt::format("uniform {} {};\n", uniformInfo.type, uniformInfo.varName));
@@ -28,7 +28,7 @@ std::string ShaderToyShaderBuilder::uniformsAsString(const std::vector<UniformIn
   return result;
 }
 
-std::string ShaderToyShaderBuilder::image2DsAsString(const std::vector<Image2DInfo> &uniforms) {
+std::string ShaderBuilder::image2DsAsString(const std::vector<Image2DInfo> &uniforms) {
   std::string result;
   std::ranges::for_each(uniforms, [&](const Image2DInfo &imageInfo) {
     result.append(fmt::format("layout({}, binding = {}) uniform image2D {};\n", imageInfo.format, imageInfo.binding,
@@ -37,7 +37,7 @@ std::string ShaderToyShaderBuilder::image2DsAsString(const std::vector<Image2DIn
   return result;
 }
 
-std::string ShaderToyShaderBuilder::definesAsString(const std::vector<ShaderDefine> &defines) {
+std::string ShaderBuilder::definesAsString(const std::vector<ShaderDefine> &defines) {
   std::string result;
   std::ranges::for_each(defines, [&](const ShaderDefine &defineInfo) {
     result.append(fmt::format("#define {} {}\n", defineInfo.name, defineInfo.value));
@@ -45,7 +45,7 @@ std::string ShaderToyShaderBuilder::definesAsString(const std::vector<ShaderDefi
   return result;
 }
 
-std::string ShaderToyShaderBuilder::addTextureAccessCheck(std::string src, const std::string &textureName) {
+std::string ShaderBuilder::addTextureAccessCheck(std::string src, const std::string &textureName) {
   std::regex regex{R"(void\s+main\s*\(\s*\)\s*\{[^\n]*)", std::regex_constants::ECMAScript | std::regex_constants::icase};
   std::smatch match;
   std::regex_search(src, match, regex);
@@ -56,28 +56,28 @@ std::string ShaderToyShaderBuilder::addTextureAccessCheck(std::string src, const
   return src;
 }
 
-ShaderToyShaderBuilder &ShaderToyShaderBuilder::addUniform(std::string type, std::string name) {
+ShaderBuilder &ShaderBuilder::addUniform(std::string type, std::string name) {
   uniforms.emplace_back(std::move(type), std::move(name));
   return *this;
 }
 
-ShaderToyShaderBuilder &ShaderToyShaderBuilder::addImage2D(std::string format, std::uint32_t binding,
+ShaderBuilder &ShaderBuilder::addImage2D(std::string format, std::uint32_t binding,
                                                            std::string name) {
   image2Ds.emplace_back(std::move(format), binding, std::move(name));
   return *this;
 }
 
-ShaderToyShaderBuilder &ShaderToyShaderBuilder::addDefine(std::string name, std::string value) {
+ShaderBuilder &ShaderBuilder::addDefine(std::string name, std::string value) {
   defines.emplace_back(std::move(name), std::move(value));
   return *this;
 }
 
-ShaderToyShaderBuilder &ShaderToyShaderBuilder::setLocalGroupSize(glm::uvec2 size) {
+ShaderBuilder &ShaderBuilder::setLocalGroupSize(glm::uvec2 size) {
   localGroupSize = size;
   return *this;
 }
 
-ShaderToyShaderBuilder::Result ShaderToyShaderBuilder::build(std::string userCode) {
+ShaderBuilder::Result ShaderBuilder::build(std::string userCode) {
   constexpr auto srcTemplate = R"glsl(#version 460 core
 
 layout(local_size_x={}, local_size_y={})in;

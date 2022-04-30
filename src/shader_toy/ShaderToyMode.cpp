@@ -3,20 +3,20 @@
 //
 
 #include "ShaderToyMode.h"
-#include "ShaderToyShaderBuilder.h"
+#include "ShaderBuilder.h"
 #include <pf_imgui/elements/Image.h>
+#include <range/v3/range/conversion.hpp>
 #include <range/v3/view/split.hpp>
 #include <range/v3/view/trim.hpp>
-#include <range/v3/range/conversion.hpp>
 
-namespace pf {
+namespace pf::shader_toy {
 
 std::string ShaderToyMode::getName() const { return "ShaderToy"; }
 
 void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                                     const std::shared_ptr<glfw::Window> &window) {
   glfwWindow = window;
-  ui = std::make_unique<ShaderToyUI>(imguiInterface, DEFAULT_SHADER_SOURCE);
+  ui = std::make_unique<UI>(imguiInterface, DEFAULT_SHADER_SOURCE);
 
   const auto updateTextureSizeFromUI = [this](auto) {
     initializeTexture({ui->outputWindow->widthCombobox->getValue(), ui->outputWindow->heightCombobox->getValue()});
@@ -176,7 +176,7 @@ glm::uvec2 ShaderToyMode::getTextureSize() const { return {outputTexture->getWid
 
 std::optional<std::string> ShaderToyMode::compileShader(const std::string &shaderCode) {
   // clang-format off
-  auto builder = ShaderToyShaderBuilder{};
+  auto builder = ShaderBuilder{};
   builder.addUniform<float>("time")
       .addUniform<float>("timeDelta")
       .addUniform<int>("frameNum")

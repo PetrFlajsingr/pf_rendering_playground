@@ -2,10 +2,10 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_SHADERTOYTEXTINPUTWINDOW_H
-#define PF_RENDERING_PLAYGROUND_SHADERTOYTEXTINPUTWINDOW_H
+#ifndef PF_RENDERING_PLAYGROUND_INPUTWINDOW_H
+#define PF_RENDERING_PLAYGROUND_INPUTWINDOW_H
 
-#include "ShaderToyGlobalVariables.h"
+#include "GlobalVariablesPanel.h"
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/Button.h>
 #include <pf_imgui/elements/Checkbox.h>
@@ -15,11 +15,11 @@
 #include <pf_imgui/elements/TextEditor.h>
 #include <pf_imgui/layouts/VerticalLayout.h>
 
-namespace pf {
+namespace pf::shader_toy {
 
-class ShaderToyTextInputWindow {
+class InputWindow {
  public:
-  explicit ShaderToyTextInputWindow(ui::ig::ImGuiInterface &imGuiInterface);
+  explicit InputWindow(ui::ig::ImGuiInterface &imGuiInterface);
 
   // clang-format off
   ui::ig::Window *window;
@@ -36,10 +36,10 @@ class ShaderToyTextInputWindow {
         ui::ig::Tab *globalVarsTab;
           ui::ig::VerticalLayout *globalVarsLayout;
             ui::ig::Button *addVarButton;
-            ShaderToyGlobalVariablesPanel *varPanel;
+            GlobalVariablesPanel *varPanel;
   // clang-format on
 };
 
 }  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_SHADERTOYTEXTINPUTWINDOW_H
+#endif  //PF_RENDERING_PLAYGROUND_INPUTWINDOW_H
