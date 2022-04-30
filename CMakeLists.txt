@@ -69,6 +69,7 @@ add_executable(pf_rendering_playground
 
 
 target_link_libraries(pf_rendering_playground glad ${OPENGL_LIBRARIES} pf_common::pf_common pf_imgui::pf_imgui pf_mainloop::pf_mainloop pf_glfw::pf_glfw spdlog::spdlog_header_only
+        unofficial::shaderc::shaderc unofficial::shaderc::shaderc_util
         )
 
 #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
