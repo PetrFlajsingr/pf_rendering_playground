@@ -68,6 +68,8 @@ class ShaderBuilder {
   std::vector<ShaderDefine> defines;
 
   glm::uvec2 localGroupSize;
+
+  std::size_t layoutLocationCounter{};
 };
 
 template<typename T>
