@@ -71,7 +71,7 @@ add_executable(pf_rendering_playground
         src/shader_toy/ui/dialogs/GlslLVariableInputDialog.cpp
         src/shader_toy/ui/dialogs/GlslLVariableInputDialog.h
         src/utils/GlslToSpirv.cpp
-        src/utils/GlslToSpirv.h)
+        src/utils/GlslToSpirv.h src/utils/algorithms.h)
 
 
 target_link_libraries(pf_rendering_playground glad

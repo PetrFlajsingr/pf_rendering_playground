@@ -223,6 +223,11 @@ std::optional<std::string> ShaderToyMode::compileShader(const std::string &shade
   } else {
     spdlog::error(spirvResult.error().info);
     spdlog::debug(spirvResult.error().debugInfo);
+
+    auto errors = spirvResult.error().getInfoRecords();
+    for (SpirvErrorRecord rec : errors) {
+      spdlog::debug("type {}, err {}, desc {}", magic_enum::enum_name(rec.type), rec.error, rec.errorDesc);
+    }
   }
 
 

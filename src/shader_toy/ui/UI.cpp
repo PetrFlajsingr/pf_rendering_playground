@@ -29,6 +29,7 @@ UI::UI(const std::shared_ptr<gui::ImGuiInterface> &imGuiInterface, const std::st
   logPanel->setCategoryColor(spdlog::level::warn, gui::Color::RGB(255, 213, 97));
   logPanel->setCategoryColor(spdlog::level::err, gui::Color::RGB(173, 23, 23));
   logPanel->setCategoryColor(spdlog::level::info, gui::Color::RGB(44, 161, 21));
+  logPanel->setCategoryColor(spdlog::level::debug, gui::Color::RGB(235, 161, 52));
 
   spdlog::default_logger()->sinks().emplace_back(std::make_shared<PfImguiLogSink_st>(*logPanel));
 
