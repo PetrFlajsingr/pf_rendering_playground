@@ -232,7 +232,7 @@ std::optional<std::string> ShaderToyMode::compileShader(const std::string &shade
   shaderLineMapping = lineMapping;
   spdlog::trace(source);
 
-  const auto spirvResult = glslSourceToSpirv(source);
+  const auto spirvResult = glslComputeShaderSourceToSpirv(source);
   if (spirvResult.has_value()) {
     spdlog::info(spirvResult->messages);
     static GLuint gl_shader = -1;

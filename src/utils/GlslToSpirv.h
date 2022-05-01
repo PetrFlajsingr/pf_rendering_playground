@@ -41,7 +41,7 @@ struct SpirvCompilationError {
 };
 
 [[nodiscard]] tl::expected<SpirvCompilationResult, SpirvCompilationError>
-glslSourceToSpirv(const std::string &glslSource);
+glslComputeShaderSourceToSpirv(const std::string &glslSource);
 
 
 auto SpirvCompilationError::getInfoRecords() const {

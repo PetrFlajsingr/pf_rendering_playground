@@ -3,12 +3,108 @@
 //
 
 #include "GlslToSpirv.h"
+#include <algorithm>
+#include <fstream>
 #include <glslang/Include/ResourceLimits.h>
-#include <glslang/Include/glslang_c_interface.h>
+#include <glslang/Public/ShaderLang.h>
+#include <glslang/SPIRV/GlslangToSpv.h>
+#include <glslang/SPIRV/Logger.h>
+#include <glslang/SPIRV/SpvTools.h>
 #include <pf_common/RAII.h>
+#include <set>
+#include <string>
+#include <vector>
 
-namespace pf {
+// TODO: move this outta here
+// Default include class for normal include convention of search backward
+// through the stack of active include paths (for nested includes).
+// Can be overridden to customize.
+class DirStackFileIncluder : public glslang::TShader::Includer {
+ public:
+  DirStackFileIncluder() : externalLocalDirectoryCount(0) {}
 
+  virtual IncludeResult *includeLocal(const char *headerName, const char *includerName,
+                                      size_t inclusionDepth) override {
+    return readLocalPath(headerName, includerName, (int) inclusionDepth);
+  }
+
+  virtual IncludeResult *includeSystem(const char *headerName, const char * /*includerName*/,
+                                       size_t /*inclusionDepth*/) override {
+    return readSystemPath(headerName);
+  }
+
+  // Externally set directories. E.g., from a command-line -I<dir>.
+  //  - Most-recently pushed are checked first.
+  //  - All these are checked after the parse-time stack of local directories
+  //    is checked.
+  //  - This only applies to the "local" form of #include.
+  //  - Makes its own copy of the path.
+  virtual void pushExternalLocalDirectory(const std::string &dir) {
+    directoryStack.push_back(dir);
+    externalLocalDirectoryCount = (int) directoryStack.size();
+  }
+
+  virtual void releaseInclude(IncludeResult *result) override {
+    if (result != nullptr) {
+      delete[] static_cast<tUserDataElement *>(result->userData);
+      delete result;
+    }
+  }
+
+  virtual std::set<std::string> getIncludedFiles() { return includedFiles; }
+
+  virtual ~DirStackFileIncluder() override {}
+
+ protected:
+  typedef char tUserDataElement;
+  std::vector<std::string> directoryStack;
+  int externalLocalDirectoryCount;
+  std::set<std::string> includedFiles;
+
+  // Search for a valid "local" path based on combining the stack of include
+  // directories and the nominal name of the header.
+  virtual IncludeResult *readLocalPath(const char *headerName, const char *includerName, int depth) {
+    // Discard popped include directories, and
+    // initialize when at parse-time first level.
+    directoryStack.resize(depth + externalLocalDirectoryCount);
+    if (depth == 1) directoryStack.back() = getDirectory(includerName);
+
+    // Find a directory that works, using a reverse search of the include stack.
+    for (auto it = directoryStack.rbegin(); it != directoryStack.rend(); ++it) {
+      std::string path = *it + '/' + headerName;
+      std::replace(path.begin(), path.end(), '\\', '/');
+      std::ifstream file(path, std::ios_base::binary | std::ios_base::ate);
+      if (file) {
+        directoryStack.push_back(getDirectory(path));
+        includedFiles.insert(path);
+        return newIncludeResult(path, file, (int) file.tellg());
+      }
+    }
+
+    return nullptr;
+  }
+
+  // Search for a valid <system> path.
+  // Not implemented yet; returning nullptr signals failure to find.
+  virtual IncludeResult *readSystemPath(const char * /*headerName*/) const { return nullptr; }
+
+  // Do actual reading of the file, filling in a new include result.
+  virtual IncludeResult *newIncludeResult(const std::string &path, std::ifstream &file, int length) const {
+    char *content = new tUserDataElement[length];
+    file.seekg(0, file.beg);
+    file.read(content, length);
+    return new IncludeResult(path, content, length, content);
+  }
+
+  // If no path markers, return current working directory.
+  // Otherwise, strip file name and return path leading up to it.
+  virtual std::string getDirectory(const std::string path) const {
+    size_t last = path.find_last_of("/\\");
+    return last == std::string::npos ? "." : path.substr(0, last);
+  }
+};
+
+// TODO: move this outta here
 static TBuiltInResource TBuiltInResource_Default() {
   TBuiltInResource Resources{};
 
@@ -118,60 +214,51 @@ static TBuiltInResource TBuiltInResource_Default() {
   return Resources;
 }
 
-tl::expected<SpirvCompilationResult, SpirvCompilationError> glslSourceToSpirv(const std::string &glslSource) {
-  glslang_initialize_process();
-  RAII finalizeProcess{glslang_initialize_process};
+namespace pf {
+
+tl::expected<SpirvCompilationResult, SpirvCompilationError>
+glslComputeShaderSourceToSpirv(const std::string &glslSource) {
+  glslang::InitializeProcess();
+  RAII finalizeProcess{glslang::FinalizeProcess};
   {
+    constexpr static auto DEFAULT_VERSION = 100;
+    auto shader = glslang::TShader{EShLanguage::EShLangCompute};
+    auto srcPtr = glslSource.c_str();
+    shader.setStrings(&srcPtr, 1);
+    shader.setEnvInput(glslang::EShSourceGlsl, EShLangCompute, glslang::EShClientOpenGL, DEFAULT_VERSION);
+    shader.setEnvClient(glslang::EShClientOpenGL, glslang::EShTargetOpenGL_450);
+    shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
+
     const auto resources = TBuiltInResource_Default();
-    const glslang_input_t input = {.language = GLSLANG_SOURCE_GLSL,
-                                   .stage = GLSLANG_STAGE_COMPUTE,
-                                   .client = GLSLANG_CLIENT_OPENGL,
-                                   .client_version = GLSLANG_TARGET_OPENGL_450,
-                                   .target_language = GLSLANG_TARGET_SPV,
-                                   .target_language_version = GLSLANG_TARGET_SPV_1_3,
-                                   .code = glslSource.c_str(),
-                                   .default_version = 100,
-                                   .default_profile = GLSLANG_NO_PROFILE,
-                                   .force_default_version_and_profile = false,
-                                   .forward_compatible = false,
-                                   .messages = GLSLANG_MSG_DEFAULT_BIT,
-                                   .resource = reinterpret_cast<const glslang_resource_t *>(&resources)};
-
-    glslang_shader_t *shader = glslang_shader_create(&input);
-    RAII deleteShader{[shader] { glslang_shader_delete(shader); }};
     {
-      if (!glslang_shader_preprocess(shader, &input)) {
-        return tl::make_unexpected(
-            SpirvCompilationError{glslang_shader_get_info_log(shader), glslang_shader_get_info_debug_log(shader)});
+      std::string preprocessedGlsl;
+      DirStackFileIncluder Includer;
+      /* TODO: use custom callbacks if they are available in 'i->callbacks' */
+      if (!shader.preprocess(&resources, DEFAULT_VERSION, EProfile::ENoProfile, false, false,
+                             EShMessages::EShMsgDefault, &preprocessedGlsl, Includer)) {
+        return tl::make_unexpected(SpirvCompilationError{shader.getInfoLog(), shader.getInfoDebugLog()});
       }
 
-      if (!glslang_shader_parse(shader, &input)) {
-        return tl::make_unexpected(
-            SpirvCompilationError{glslang_shader_get_info_log(shader), glslang_shader_get_info_debug_log(shader)});
+      if (!shader.parse(&resources, DEFAULT_VERSION, false, EShMessages::EShMsgDefault)) {
+        return tl::make_unexpected(SpirvCompilationError{shader.getInfoLog(), shader.getInfoDebugLog()});
       }
-
-      glslang_program_t *program = glslang_program_create();
-      RAII deleteProgram([program] { glslang_program_delete(program); });
       {
-        glslang_program_add_shader(program, shader);
-
-        if (!glslang_program_link(program, GLSLANG_MSG_SPV_RULES_BIT)) {
-          return tl::make_unexpected(SpirvCompilationError{glslang_program_get_info_log(program),
-                                                           glslang_program_get_info_debug_log(program)});
+        auto program = glslang::TProgram{};
+        program.addShader(&shader);
+        if (!program.link(EShMessages::EShMsgSpvRules)) {
+          return tl::make_unexpected(SpirvCompilationError{shader.getInfoLog(), shader.getInfoDebugLog()});
         }
 
-        glslang_program_SPIRV_generate(program, input.stage);
+        std::vector<unsigned int> spirvData;
+        const auto intermediate = program.getIntermediate(EShLangCompute);
+        spv::SpvBuildLogger logger;
+        glslang::SpvOptions spvOptions;
+        spvOptions.validate = true;
+        glslang::GlslangToSpv(*intermediate, spirvData, &logger, &spvOptions);
 
         auto result = SpirvCompilationResult{};
-
-        if (glslang_program_SPIRV_get_messages(program)) {
-          result.messages = glslang_program_SPIRV_get_messages(program);
-        }
-
-        const auto spirvBuffer = glslang_program_SPIRV_get_ptr(program);
-        const auto spirvBufferSize = glslang_program_SPIRV_get_size(program);
-
-        result.spirvData = std::vector<unsigned int>{spirvBuffer, spirvBuffer + spirvBufferSize};
+        result.messages = logger.getAllMessages();
+        result.spirvData = std::move(spirvData);
         return result;
       }
     }
