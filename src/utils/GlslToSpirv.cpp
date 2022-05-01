@@ -128,7 +128,7 @@ tl::expected<SpirvCompilationResult, SpirvCompilationError> glslSourceToSpirv(co
                                    .client = GLSLANG_CLIENT_OPENGL,
                                    .client_version = GLSLANG_TARGET_OPENGL_450,
                                    .target_language = GLSLANG_TARGET_SPV,
-                                   .target_language_version = GLSLANG_TARGET_SPV_1_6,
+                                   .target_language_version = GLSLANG_TARGET_SPV_1_3,
                                    .code = glslSource.c_str(),
                                    .default_version = 100,
                                    .default_profile = GLSLANG_NO_PROFILE,

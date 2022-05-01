@@ -231,14 +231,6 @@ std::optional<std::string> ShaderToyMode::compileShader(const std::string &shade
     GLint compiled = 0;
     glGetShaderiv(gl_shader, GL_COMPILE_STATUS, &compiled);
     if (GL_FALSE != compiled) {
-      int tmpLen;
-      glGetShaderiv(gl_shader, GL_INFO_LOG_LENGTH, &tmpLen);
-      if(tmpLen != 0) {
-        std::string hihi;
-        hihi.resize(tmpLen);
-        glGetShaderInfoLog(gl_shader, tmpLen, nullptr, hihi.data());
-        spdlog::debug("dsadasf {}", hihi);
-      }
 
 
       if (programHandle != -1) { glDeleteProgram(programHandle); }
@@ -256,7 +248,14 @@ std::optional<std::string> ShaderToyMode::compileShader(const std::string &shade
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
       }
     } else {
-      spdlog::error("This is fucked up");
+      int tmpLen;
+      glGetShaderiv(gl_shader, GL_INFO_LOG_LENGTH, &tmpLen);
+      if(tmpLen != 0) {
+        std::string hihi;
+        hihi.resize(tmpLen);
+        glGetShaderInfoLog(gl_shader, tmpLen, nullptr, hihi.data());
+        spdlog::debug("{}", hihi);
+      }
     }
   } else {
     spdlog::error(spirvResult.error().info);
