@@ -62,7 +62,7 @@ auto SpirvCompilationError::getInfoRecords() const {
            if (parts.size() < 3) { return std::nullopt; }
            int lineNumber;
            const auto [ptr, ec] = std::from_chars(parts[2].c_str(), parts[2].c_str() + parts[2].size(), lineNumber);
-           if (ec != std::errc()) { result.line = lineNumber; }
+           if (ec == std::errc()) { result.line = lineNumber; }
 
            if (parts.size() >= 4) { result.error = parts[3]; }
            if (parts.size() >= 5) { result.errorDesc = parts[4]; }

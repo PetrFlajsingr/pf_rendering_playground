@@ -212,6 +212,8 @@ glm::uvec2 ShaderToyMode::getTextureSize() const { return {outputTexture->getWid
 // TODO: clean this up
 // TODO: create a class that takes care of the compiled shader program & uniform setting etc
 std::optional<std::string> ShaderToyMode::compileShader(const std::string &shaderCode) {
+  ui->textInputWindow->editor->clearWarningMarkers();
+  ui->textInputWindow->editor->clearErrorMarkers();
   // clang-format off
   auto builder = ShaderBuilder{};
   builder.addUniform<float>("time")
@@ -274,7 +276,14 @@ std::optional<std::string> ShaderToyMode::compileShader(const std::string &shade
 
     auto errors = spirvResult.error().getInfoRecords();
     for (SpirvErrorRecord rec : errors) {
-      spdlog::debug("type {}, err {}, desc {}", magic_enum::enum_name(rec.type), rec.error, rec.errorDesc);
+      using enum SpirvErrorRecord::Type;
+      if (!rec.line.has_value()) { continue; }
+      const auto marker = ui::ig::TextEditorMarker{static_cast<uint32_t>(shaderLineMapping(rec.line.value())),
+                                                   fmt::format("{}: {}", rec.error, rec.errorDesc)};
+      switch (rec.type) {
+        case Warning: ui->textInputWindow->editor->addWarningMarker(marker); break;
+        case Error: ui->textInputWindow->editor->addErrorMarker(marker); break;
+      }
     }
   }
 
