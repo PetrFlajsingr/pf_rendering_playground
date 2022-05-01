@@ -51,7 +51,6 @@ class ShaderToyMode : public Mode {
 
   std::shared_ptr<Texture> outputTexture = nullptr;
 
-  //std::shared_ptr<Program> renderProgram = nullptr;
   GLuint programHandle = -1;
 
   std::string currentShaderSrc{};

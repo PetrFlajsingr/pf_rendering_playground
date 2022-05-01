@@ -4,13 +4,19 @@
 
 #include "ShaderToyMode.h"
 #include "ShaderBuilder.h"
+#include <glslang/Include/ResourceLimits.h>
+#include <glslang/Include/glslang_c_interface.h>
 #include <pf_imgui/elements/Image.h>
 #include <range/v3/range/conversion.hpp>
 #include <range/v3/view/split.hpp>
 #include <range/v3/view/trim.hpp>
-#include <glslang/Include/glslang_c_interface.h>
-#include <glslang/Include/ResourceLimits.h>
 #include <utils/GlslToSpirv.h>
+#include <geGL/DebugMessage.h>
+
+
+void debugOpengl(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam) {
+  spdlog::error("{} {}, {}, {}, {}", source, type, id, severity, std::string_view{message, message + length});
+}
 
 namespace pf::shader_toy {
 
@@ -18,6 +24,9 @@ std::string ShaderToyMode::getName() const { return "ShaderToy"; }
 
 void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                                     const std::shared_ptr<glfw::Window> &window) {
+  setDefaultDebugMessage();
+  setDebugMessage(debugOpengl, nullptr);
+
   glfwWindow = window;
   ui = std::make_unique<UI>(imguiInterface, DEFAULT_SHADER_SOURCE);
 
@@ -32,13 +41,10 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
     spdlog::info("[ShaderToy] Compiling shader");
     if (auto err = compileShader(ui->textInputWindow->editor->getText()); err.has_value()) {
       spdlog::error("[ShaderToy] {}", err.value());
-      std::ranges::for_each(err.value() | ranges::view::split('\n'), [&] (const auto &line) {
-        auto parts = line | ranges::view::split(':') | ranges::view::transform([] (auto part) {
-                       return part | ranges::to<std::string>;
-                     }) | ranges::to_vector;
-        if (parts.size() < 3) {
-          return;
-        }
+      std::ranges::for_each(err.value() | ranges::view::split('\n'), [&](const auto &line) {
+        auto parts = line | ranges::view::split(':')
+            | ranges::view::transform([](auto part) { return part | ranges::to<std::string>; }) | ranges::to_vector;
+        if (parts.size() < 3) { return; }
         auto openBracketPos = std::ranges::find(parts[0], '(') + 1;
         auto closeBracketPos = std::ranges::find(parts[0], ')');
         int lineNum;
@@ -98,8 +104,16 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   const auto timeDeltaFloat = static_cast<float>(timeDelta.count()) / 1'000'000'000.0f;
 
   glUseProgram(programHandle);
+
+  outputTexture->bindImage(0);
   const auto textureSize = getTextureSize();
- /* renderProgram->use();
+
+  const auto timeLoc = glGetUniformLocation(programHandle, "time");
+  if (timeLoc != -1) { glProgramUniform1f(programHandle, timeLoc, timeFloat); }
+
+  glDispatchCompute(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y, 1);
+
+  /* renderProgram->use();
   outputTexture->bindImage(0);
   const auto textureSize = getTextureSize();
   // todo: change this
@@ -202,21 +216,45 @@ std::optional<std::string> ShaderToyMode::compileShader(const std::string &shade
   if (spirvResult.has_value()) {
     spdlog::info(spirvResult->messages);
     static GLuint gl_shader = -1;
-    if (gl_shader != -1) {
-      glDeleteShader(gl_shader);
-    }
+    if (gl_shader != -1) { glDeleteShader(gl_shader); }
     gl_shader = glCreateShader(GL_COMPUTE_SHADER);
 
-    if (programHandle != -1) {
-      glDeleteProgram(programHandle);
-    }
-    glShaderBinary(1, &gl_shader, GL_SHADER_BINARY_FORMAT_SPIR_V, spirvResult->spirvData.data(), spirvResult->spirvData.size() * sizeof(decltype(spirvResult->spirvData)::value_type));
-    glSpecializeShader(gl_shader, "main", 0, 0, 0);
+    std::vector<const GLchar *> ptr{source.data()};
 
-    int compiled = 0;
+    //glShaderSource(gl_shader, 1, ptr.data(), nullptr);
+    //glCompileShader(gl_shader);
+
+    glShaderBinary(1, &gl_shader, GL_SHADER_BINARY_FORMAT_SPIR_V, spirvResult->spirvData.data(),
+                   spirvResult->spirvData.size() * sizeof(decltype(spirvResult->spirvData)::value_type));
+    glSpecializeShader(gl_shader, "main", 0, nullptr, nullptr);
+
+    GLint compiled = 0;
     glGetShaderiv(gl_shader, GL_COMPILE_STATUS, &compiled);
-    if (compiled) {
+    if (GL_FALSE != compiled) {
+      int tmpLen;
+      glGetShaderiv(gl_shader, GL_INFO_LOG_LENGTH, &tmpLen);
+      if(tmpLen != 0) {
+        std::string hihi;
+        hihi.resize(tmpLen);
+        glGetShaderInfoLog(gl_shader, tmpLen, nullptr, hihi.data());
+        spdlog::debug("dsadasf {}", hihi);
+      }
+
+
+      if (programHandle != -1) { glDeleteProgram(programHandle); }
+      programHandle = glCreateProgram();
       glAttachShader(programHandle, gl_shader);
+
+      glLinkProgram(programHandle);
+
+      GLint success;
+      glGetProgramiv(programHandle, GL_LINK_STATUS, &success);
+      if(!success)
+      {
+        char infoLog[512];
+        glGetProgramInfoLog(programHandle, 512, nullptr, infoLog);
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+      }
     } else {
       spdlog::error("This is fucked up");
     }
@@ -230,13 +268,6 @@ std::optional<std::string> ShaderToyMode::compileShader(const std::string &shade
     }
   }
 
-
-
-  /*auto renderShader = std::make_shared<Shader>(GL_COMPUTE_SHADER, source);
-  if (!renderShader->getCompileStatus()) {
-    return renderShader->getInfoLog();
-  }
-  renderProgram = std::make_shared<Program>(std::move(renderShader));*/
   userDefinedUniforms = ui->textInputWindow->varPanel->getValueRecords();
   return std::nullopt;
 }
@@ -246,4 +277,4 @@ void ShaderToyMode::updateUI() {
   ui->outputWindow->fpsText->setText("FPS: {}", fpsCounter.averageFPS());
 }
 
-}  // namespace pf
+}  // namespace pf::shader_toy

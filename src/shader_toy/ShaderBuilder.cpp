@@ -32,8 +32,8 @@ std::string ShaderBuilder::uniformsAsString(const std::vector<UniformInfo> &unif
 std::string ShaderBuilder::image2DsAsString(const std::vector<Image2DInfo> &uniforms) {
   std::string result;
   std::ranges::for_each(uniforms, [&](const Image2DInfo &imageInfo) {
-    result.append(fmt::format("layout({}, binding = {}, location = {}) uniform image2D {};\n", imageInfo.format,
-                              imageInfo.binding, layoutLocationCounter++, imageInfo.name));
+    result.append(fmt::format("layout({}, binding = {}) uniform image2D {};\n", imageInfo.format,
+                              imageInfo.binding, imageInfo.name));
   });
   return result;
 }

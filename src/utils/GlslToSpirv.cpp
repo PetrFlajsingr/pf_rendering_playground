@@ -128,7 +128,7 @@ tl::expected<SpirvCompilationResult, SpirvCompilationError> glslSourceToSpirv(co
                                    .client = GLSLANG_CLIENT_OPENGL,
                                    .client_version = GLSLANG_TARGET_OPENGL_450,
                                    .target_language = GLSLANG_TARGET_SPV,
-                                   .target_language_version = GLSLANG_TARGET_SPV_1_3,
+                                   .target_language_version = GLSLANG_TARGET_SPV_1_6,
                                    .code = glslSource.c_str(),
                                    .default_version = 100,
                                    .default_profile = GLSLANG_NO_PROFILE,
@@ -155,7 +155,7 @@ tl::expected<SpirvCompilationResult, SpirvCompilationError> glslSourceToSpirv(co
       {
         glslang_program_add_shader(program, shader);
 
-        if (!glslang_program_link(program, GLSLANG_MSG_SPV_RULES_BIT | GLSLANG_MSG_VULKAN_RULES_BIT)) {
+        if (!glslang_program_link(program, GLSLANG_MSG_SPV_RULES_BIT)) {
           return tl::make_unexpected(SpirvCompilationError{glslang_program_get_info_log(program),
                                                            glslang_program_get_info_debug_log(program)});
         }
