@@ -50,7 +50,9 @@ class ShaderToyMode : public Mode {
   bool timeCounterPaused = false;
 
   std::shared_ptr<Texture> outputTexture = nullptr;
-  std::shared_ptr<Program> renderProgram = nullptr;
+
+  GLuint programHandle = -1;
+
   std::string currentShaderSrc{};
   std::shared_ptr<glfw::Window> glfwWindow = nullptr;
   glm::vec2 mousePos{};

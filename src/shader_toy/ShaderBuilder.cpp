@@ -23,7 +23,8 @@ if (gl_GlobalInvocationID.y >= _pf_generated_renderTextureSize.y) {{
 std::string ShaderBuilder::uniformsAsString(const std::vector<UniformInfo> &uniforms) {
   std::string result;
   std::ranges::for_each(uniforms, [&](const UniformInfo &uniformInfo) {
-    result.append(fmt::format("uniform {} {};\n", uniformInfo.type, uniformInfo.varName));
+    result.append(fmt::format("layout(location = {}) uniform {} {};\n", layoutLocationCounter++, uniformInfo.type,
+                              uniformInfo.varName));
   });
   return result;
 }
@@ -31,8 +32,8 @@ std::string ShaderBuilder::uniformsAsString(const std::vector<UniformInfo> &unif
 std::string ShaderBuilder::image2DsAsString(const std::vector<Image2DInfo> &uniforms) {
   std::string result;
   std::ranges::for_each(uniforms, [&](const Image2DInfo &imageInfo) {
-    result.append(fmt::format("layout({}, binding = {}) uniform image2D {};\n", imageInfo.format, imageInfo.binding,
-                              imageInfo.name));
+    result.append(fmt::format("layout({}, binding = {}) uniform image2D {};\n", imageInfo.format,
+                              imageInfo.binding, imageInfo.name));
   });
   return result;
 }
@@ -46,7 +47,8 @@ std::string ShaderBuilder::definesAsString(const std::vector<ShaderDefine> &defi
 }
 
 std::string ShaderBuilder::addTextureAccessCheck(std::string src, const std::string &textureName) {
-  std::regex regex{R"(void\s+main\s*\(\s*\)\s*\{[^\n]*)", std::regex_constants::ECMAScript | std::regex_constants::icase};
+  std::regex regex{R"(void\s+main\s*\(\s*\)\s*\{[^\n]*)",
+                   std::regex_constants::ECMAScript | std::regex_constants::icase};
   std::smatch match;
   std::regex_search(src, match, regex);
   if (match.empty()) { return src; }
@@ -61,8 +63,7 @@ ShaderBuilder &ShaderBuilder::addUniform(std::string type, std::string name) {
   return *this;
 }
 
-ShaderBuilder &ShaderBuilder::addImage2D(std::string format, std::uint32_t binding,
-                                                           std::string name) {
+ShaderBuilder &ShaderBuilder::addImage2D(std::string format, std::uint32_t binding, std::string name) {
   image2Ds.emplace_back(std::move(format), binding, std::move(name));
   return *this;
 }
@@ -85,20 +86,21 @@ layout(local_size_x={}, local_size_y={})in;
 {}
 {}
 )glsl";
-  const auto sourceWithoutUserCode = fmt::format(srcTemplate, localGroupSize.x, localGroupSize.y, definesAsString(defines),
-                                                 uniformsAsString(uniforms), image2DsAsString(image2Ds));
+  const auto sourceWithoutUserCode =
+      fmt::format(srcTemplate, localGroupSize.x, localGroupSize.y, definesAsString(defines), uniformsAsString(uniforms),
+                  image2DsAsString(image2Ds));
   if (!image2Ds.empty()) { userCode = addTextureAccessCheck(userCode, image2Ds[0].name); }
   const auto sourceWithUserCode = sourceWithoutUserCode + userCode;
   const auto startOffset = std::ranges::count(sourceWithoutUserCode, '\n') + 1;
   const auto dimensionCheckPos = sourceWithUserCode.find("_pf_generated_renderTextureSize");
-  const auto dimensionCheckLine = dimensionCheckPos != std::string::npos ? std::ranges::count(sourceWithUserCode.begin(), sourceWithUserCode.begin() + dimensionCheckPos, '\n'): -1;
+  const auto dimensionCheckLine = dimensionCheckPos != std::string::npos
+      ? std::ranges::count(sourceWithUserCode.begin(), sourceWithUserCode.begin() + dimensionCheckPos, '\n')
+      : -1;
   const auto dimensionCheckLineCount = std::ranges::count(dimensionCheckTemplate, '\n');
 
   Result result;
-  result.sourceLineToUserSourceLine = [=] (std::size_t line) {
-    if (line > dimensionCheckLine) {
-      line -= dimensionCheckLineCount;
-    }
+  result.sourceLineToUserSourceLine = [=](std::size_t line) {
+    if (line > dimensionCheckLine) { line -= dimensionCheckLineCount; }
     line -= startOffset;
     return line + 1;
   };
@@ -106,4 +108,4 @@ layout(local_size_x={}, local_size_y={})in;
   return result;
 }
 
-}  // namespace pf
+}  // namespace pf::shader_toy

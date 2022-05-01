@@ -33,6 +33,7 @@ find_package(pf_mainloop CONFIG REQUIRED)
 find_package(pf_imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
+find_package(glslang CONFIG REQUIRED)
 add_library(glad src/glad.c)
 
 file(GLOB GEGL_SOURCES src/geGL/*.cpp src/geGL/private/*.cpp)
@@ -65,10 +66,19 @@ add_executable(pf_rendering_playground
         src/shader_toy/ui/GlobalVariablesPanel.cpp
         src/shader_toy/ui/GlobalVariablesPanel.h
         src/utils/glsl_typenames.h
-        src/modes/Mode.cpp src/shader_toy/utils.h src/shader_toy/ui/TEMP_MatrixDragInput.h src/shader_toy/ui/dialogs/GlslLVariableInputDialog.cpp src/shader_toy/ui/dialogs/GlslLVariableInputDialog.h)
+        src/modes/Mode.cpp src/shader_toy/utils.h
+        src/shader_toy/ui/TEMP_MatrixDragInput.h
+        src/shader_toy/ui/dialogs/GlslLVariableInputDialog.cpp
+        src/shader_toy/ui/dialogs/GlslLVariableInputDialog.h
+        src/utils/GlslToSpirv.cpp
+        src/utils/GlslToSpirv.h src/utils/algorithms.h)
 
 
-target_link_libraries(pf_rendering_playground glad ${OPENGL_LIBRARIES} pf_common::pf_common pf_imgui::pf_imgui pf_mainloop::pf_mainloop pf_glfw::pf_glfw spdlog::spdlog_header_only
+target_link_libraries(pf_rendering_playground glad
+        ${OPENGL_LIBRARIES}
+        pf_common::pf_common pf_imgui::pf_imgui pf_mainloop::pf_mainloop pf_glfw::pf_glfw
+        spdlog::spdlog_header_only
+        HLSL SPIRV glslang OGLCompiler
         )
 
 #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
