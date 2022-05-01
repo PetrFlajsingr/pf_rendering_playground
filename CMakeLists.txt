@@ -69,7 +69,9 @@ add_executable(pf_rendering_playground
         src/modes/Mode.cpp src/shader_toy/utils.h
         src/shader_toy/ui/TEMP_MatrixDragInput.h
         src/shader_toy/ui/dialogs/GlslLVariableInputDialog.cpp
-        src/shader_toy/ui/dialogs/GlslLVariableInputDialog.h)
+        src/shader_toy/ui/dialogs/GlslLVariableInputDialog.h
+        src/utils/GlslToSpirv.cpp
+        src/utils/GlslToSpirv.h)
 
 
 target_link_libraries(pf_rendering_playground glad
