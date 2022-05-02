@@ -16,7 +16,7 @@ class ModeManager {
   ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window);
   ~ModeManager();
 
-  void addMode(std::shared_ptr<Mode> mode);
+  std::optional<Error> addMode(std::shared_ptr<Mode> mode);
 
   std::optional<Error> activateMode(const std::string &name);
   std::optional<Error> activateMode(const std::shared_ptr<Mode> &mode);
@@ -24,18 +24,27 @@ class ModeManager {
   void render(std::chrono::nanoseconds timeDelta);
 
  private:
+  struct ModeRecord {
+    std::string name;
+    std::shared_ptr<Mode> mode;
+    ui::ig::MenuButtonItem &buttonItem;
+  };
+
   void deactivateModes();
   void deinitializeModes();
+
+  void activateMode_impl(ModeManager::ModeRecord *mode);
+
+  [[nodiscard]] std::optional<ModeRecord *> findModeByName(const std::string &name);
 
   std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface;
   std::shared_ptr<glfw::Window> window;
 
-  std::shared_ptr<Mode> activeMode = nullptr;
-  struct ModeRecord {
-    std::string name;
-    std::shared_ptr<Mode> mode;
-  };
-  std::vector<ModeRecord> modes;
+  ModeRecord *activeMode = nullptr;
+  std::list<ModeRecord> modes;
+
+  ui::ig::SubMenu &subMenu;
+  ui::ig::Text &statusBarText;
 };
 
 }  // namespace pf

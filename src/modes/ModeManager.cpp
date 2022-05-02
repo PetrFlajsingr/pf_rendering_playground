@@ -9,26 +9,40 @@
 
 namespace pf {
 ModeManager::ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window)
-    : imGuiInterface(std::move(imGuiInterface)), window(std::move(window)) {}
+    : imGuiInterface(std::move(imGuiInterface)), window(std::move(window)),
+      subMenu(this->imGuiInterface->getMenuBar().createChild(
+          ui::ig::SubMenu::Config{.name = "modes_menu", .label = "Modes"})),
+      statusBarText(this->imGuiInterface->createStatusBar("mode_manager_status_bar")
+                        .createChild<ui::ig::Text>("mode_mgr_sb_text", "Current mode: <none>")) {}
+
 ModeManager::~ModeManager() {
+  imGuiInterface->getMenuBar().removeChild(subMenu.getName());
   deactivateModes();
   deinitializeModes();
 }
 
-void ModeManager::addMode(std::shared_ptr<Mode> mode) {
+std::optional<ModeManager::Error> ModeManager::addMode(std::shared_ptr<Mode> mode) {
+  if (const auto modeOpt = findModeByName(mode->getName()); modeOpt.has_value()) {
+    return "Model with the same name is already in ModeManager";
+  }
   auto name = mode->getName();
   spdlog::info("[ModeManager] Adding mode '{}'", name);
-  modes.emplace_back(std::move(name), std::move(mode));
+  auto &menuItem = subMenu.createChild(
+      ui::ig::MenuButtonItem::Config{.name = mode->getName() + "_menu_item", .label = mode->getName()});
+  menuItem.addClickListener([this, mode] { activateMode(mode); });
+  modes.emplace_back(std::move(name), std::move(mode), menuItem);
+  return std::nullopt;
 }
 
 std::optional<ModeManager::Error> ModeManager::activateMode(const std::string &name) {
   spdlog::info("[ModeManager] Activating mode '{}'", name);
-  if (const auto iter = std::ranges::find(modes, name, &ModeRecord::name); iter != modes.end()) {
-    deactivateModes();
-    if (iter->mode->getState() != ModeState::Initialised) { iter->mode->initialize(imGuiInterface, window); }
-    if (iter->mode->getState() != ModeState::Active) { iter->mode->activate(); }
-    spdlog::info("[ModeManager] Mode activated '{}'", name);
-    activeMode = iter->mode;
+  if (activeMode != nullptr && activeMode->name == name) {
+    spdlog::info("[NodeManager] Mode already active '{}'", name);
+    return std::nullopt;
+  }
+  if (const auto modeOpt = findModeByName(name); modeOpt.has_value()) {
+    const auto &mode = modeOpt.value();
+    activateMode_impl(mode);
     return std::nullopt;
   }
   spdlog::error("[ModeManager] Mode '{}' not managed by ModeManager", name);
@@ -37,20 +51,22 @@ std::optional<ModeManager::Error> ModeManager::activateMode(const std::string &n
 
 std::optional<ModeManager::Error> ModeManager::activateMode(const std::shared_ptr<Mode> &mode) {
   spdlog::info("[ModeManager] Activating mode '{}'", mode->getName());
-  if (const auto iter = std::ranges::find(modes, mode, &ModeRecord::mode); iter == modes.end()) {
-    spdlog::error("[ModeManager] Mode '{}' not managed by ModeManager", mode->getName());
-    return "Mode not managed by ModeManager";
+  if (activeMode != nullptr && activeMode->mode == mode) {
+    spdlog::info("[NodeManager] Mode already active '{}'", mode->getName());
+    return std::nullopt;
   }
-  deactivateModes();
-  if (mode->getState() != ModeState::Initialised) { mode->initialize(imGuiInterface, window); }
-  if (mode->getState() != ModeState::Active) { mode->activate(); }
-  activeMode = mode;
-  spdlog::info("[ModeManager] Mode '{}' activated", mode->getName());
-  return std::nullopt;
+  if (const auto iter = std::ranges::find(modes, mode, &ModeRecord::mode); iter != modes.end()) {
+    const auto mode = &*iter;
+    activateMode_impl(mode);
+    spdlog::info("[ModeManager] Mode '{}' activated", mode->name);
+    return std::nullopt;
+  }
+  spdlog::error("[ModeManager] Mode '{}' not managed by ModeManager", mode->getName());
+  return "Mode not managed by ModeManager";
 }
 
 void ModeManager::render(std::chrono::nanoseconds timeDelta) {
-  if (activeMode != nullptr) { activeMode->render(timeDelta); }
+  if (activeMode != nullptr) { activeMode->mode->render(timeDelta); }
 }
 
 void ModeManager::deactivateModes() {
@@ -69,6 +85,28 @@ void ModeManager::deinitializeModes() {
       mode.mode->deinitialize();
     }
   });
+}
+
+std::optional<ModeManager::ModeRecord *> ModeManager::findModeByName(const std::string &name) {
+  if (const auto iter = std::ranges::find(modes, name, &ModeRecord::name); iter != modes.end()) { return &*iter; }
+  return std::nullopt;
+}
+
+void ModeManager::activateMode_impl(ModeManager::ModeRecord *mode) {
+  deactivateModes();
+  if (mode->mode->getState() != ModeState::Initialised) { mode->mode->initialize(imGuiInterface, window); }
+  if (mode->mode->getState() != ModeState::Active) { mode->mode->activate(); }
+
+  if (activeMode != nullptr) {
+    using namespace ui::ig;
+    activeMode->buttonItem.setColor<style::ColorOf::Text>(
+        Color{ImGui::GetColorU32(static_cast<ImGuiCol>(style::ColorOf::Text))});
+  }
+  activeMode = mode;
+  using namespace ui::ig;
+  activeMode->buttonItem.setColor<style::ColorOf::Text>(
+      Color{ImGui::GetColorU32(static_cast<ImGuiCol>(style::ColorOf::NavHighlight))});
+  statusBarText.setText("Current mode: {}", activeMode->name);
 }
 
 }  // namespace pf

@@ -1,6 +1,7 @@
 #include "glad/glad.h"
 #include "imgui/ImGuiGlfwOpenGLInterface.h"
 #include "modes/ModeManager.h"
+#include "modes/DummyMode.h"
 #include "shader_toy/ShaderToyMode.h"
 #include "utils/files.h"
 #include <argparse/argparse.hpp>
@@ -85,6 +86,7 @@ int main(int argc, char *argv[]) {
 
   modeManager.addMode(std::make_shared<pf::shader_toy::ShaderToyMode>());
   modeManager.activateMode("ShaderToy");
+  modeManager.addMode(std::make_shared<pf::DummyMode>());
 
   //glfw.setSwapInterval(0);
   pf::MainLoop::Get()->setOnMainLoop([&](auto time) {

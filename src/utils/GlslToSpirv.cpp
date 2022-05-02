@@ -23,12 +23,12 @@ class DirStackFileIncluder : public glslang::TShader::Includer {
  public:
   DirStackFileIncluder() : externalLocalDirectoryCount(0) {}
 
-  virtual IncludeResult *includeLocal(const char *headerName, const char *includerName,
+  IncludeResult *includeLocal(const char *headerName, const char *includerName,
                                       size_t inclusionDepth) override {
     return readLocalPath(headerName, includerName, (int) inclusionDepth);
   }
 
-  virtual IncludeResult *includeSystem(const char *headerName, const char * /*includerName*/,
+  IncludeResult *includeSystem(const char *headerName, const char * /*includerName*/,
                                        size_t /*inclusionDepth*/) override {
     return readSystemPath(headerName);
   }
@@ -44,7 +44,7 @@ class DirStackFileIncluder : public glslang::TShader::Includer {
     externalLocalDirectoryCount = (int) directoryStack.size();
   }
 
-  virtual void releaseInclude(IncludeResult *result) override {
+  void releaseInclude(IncludeResult *result) override {
     if (result != nullptr) {
       delete[] static_cast<tUserDataElement *>(result->userData);
       delete result;
@@ -53,7 +53,7 @@ class DirStackFileIncluder : public glslang::TShader::Includer {
 
   virtual std::set<std::string> getIncludedFiles() { return includedFiles; }
 
-  virtual ~DirStackFileIncluder() override {}
+  ~DirStackFileIncluder() override {}
 
  protected:
   typedef char tUserDataElement;
