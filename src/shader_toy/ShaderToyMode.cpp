@@ -11,14 +11,17 @@
 #include <range/v3/range/conversion.hpp>
 #include <range/v3/view/split.hpp>
 #include <range/v3/view/trim.hpp>
+#include <utility>
 #include <utils/GlslToSpirv.h>
 
 void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
-                 const void *userParam) {
+                 const void *) {
   spdlog::error("{} {}, {}, {}, {}", source, type, id, severity, std::string_view{message, message + length});
 }
 
 namespace pf::shader_toy {
+
+ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{std::move(resourcesPath)} {}
 
 std::string ShaderToyMode::getName() const { return "ShaderToy"; }
 
@@ -28,7 +31,7 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   //setDebugMessage(debugOpengl, nullptr);
 
   glfwWindow = window;
-  ui = std::make_unique<UI>(imguiInterface, DEFAULT_SHADER_SOURCE);
+  ui = std::make_unique<UI>(imguiInterface, DEFAULT_SHADER_SOURCE, configData.resourcesPath);
 
   const auto updateTextureSizeFromUI = [this](auto) {
     initializeTexture({ui->outputWindow->widthCombobox->getValue(), ui->outputWindow->heightCombobox->getValue()});

@@ -15,8 +15,8 @@
 namespace pf::shader_toy {
 
 struct UI {
-  explicit UI(const std::shared_ptr<ui::ig::ImGuiInterface> &imGuiInterface,
-                       const std::string &initShaderCode);
+  UI(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, const std::string &initShaderCode,
+     const std::filesystem::path &resourcesPath);
 
   void show();
 
@@ -32,5 +32,5 @@ struct UI {
   std::shared_ptr<ui::ig::ImGuiInterface> interface;
 };
 
-}  // namespace pf
+}  // namespace pf::shader_toy
 #endif  //PF_RENDERING_PLAYGROUND_UI_H
