@@ -15,7 +15,7 @@
 #include <utils/GlslToSpirv.h>
 
 void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
-                 const void *userParam) {
+                 const void *) {
   spdlog::error("{} {}, {}, {}, {}", source, type, id, severity, std::string_view{message, message + length});
 }
 
