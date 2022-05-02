@@ -9,7 +9,10 @@
 
 namespace pf {
 ModeManager::ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window)
-    : imGuiInterface(std::move(imGuiInterface)), window(std::move(window)) {}
+    : imGuiInterface(std::move(imGuiInterface)), window(std::move(window)),
+      subMenu(this->imGuiInterface->getMenuBar().createChild(
+          ui::ig::SubMenu::Config{.name = "modes_menu", .label = "Modes"})) {}
+
 ModeManager::~ModeManager() {
   deactivateModes();
   deinitializeModes();

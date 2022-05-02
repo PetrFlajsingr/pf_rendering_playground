@@ -36,6 +36,8 @@ class ModeManager {
     std::shared_ptr<Mode> mode;
   };
   std::vector<ModeRecord> modes;
+
+  ui::ig::SubMenu &subMenu;
 };
 
 }  // namespace pf
