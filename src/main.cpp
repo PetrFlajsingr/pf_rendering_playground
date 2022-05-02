@@ -15,14 +15,15 @@
 #include <toml++/toml.h>
 
 argparse::ArgumentParser createArgParser() {
-  auto parser = argparse::ArgumentParser{"OpenGL template"};
-  parser.add_description("OpenGL template project using pf_ libraries");
+  auto parser = argparse::ArgumentParser{"pf_rendering_playground"};
+  parser.add_description("Toy rendering project");
   return parser;
 }
 
 /**
  * Load toml config located next to the exe - config.toml
  * @return
+ * @todo: make config optional
  */
 toml::table loadConfig() {
   const auto configPath = pf::getExeFolder() / "config.toml";
