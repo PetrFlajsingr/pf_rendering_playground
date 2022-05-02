@@ -51,7 +51,7 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
   globalVarsLayout = &globalVarsTab->createChild<gui::VerticalLayout>("globalvars_layout", gui::Size::Auto());
   addVarButton = &globalVarsLayout->createChild<gui::Button>("add_var_btn", "Add variable");
   varPanel = &globalVarsLayout->createChild<GlobalVariablesPanel>("global_vars_panel", gui::Size::Auto(),
-                                                                           gui::Persistent::Yes);
+                                                                  gui::Persistent::Yes);
 
   constexpr static auto isUnsupportedType = []<typename T>() {
     return OneOf<T, unsigned int, glm::uvec2, glm::uvec3, glm::uvec4, glm::bvec2, glm::bvec3, glm::bvec4>;
@@ -65,6 +65,7 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
         .inputValidator([&](std::string_view typeName, std::string_view varName) -> std::optional<std::string> {
           if (typeName.empty()) { return "Select a type"; }
           if (!isValidGlslIdentifier(varName)) { return "Invalid variable name"; }
+          if (varPanel->getValueRecords().contains(std::string{varName})) { return "Name is already in use"; }
           bool unsupportedType = false;
           getTypeForGlslName(typeName, [&]<typename T>() { unsupportedType = isUnsupportedType.operator()<T>(); });
           if (unsupportedType) { return "Selected type is not currently supported"; }
@@ -87,8 +88,8 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
           }
         })
         .show();
-    });
+  });
   editor = &mainShaderTab->createChild(gui::TextEditor::Config{.name = "text_editor", .persistent = true});
 }
 
-}  // namespace pf
+}  // namespace pf::shader_toy

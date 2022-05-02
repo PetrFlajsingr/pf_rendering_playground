@@ -7,11 +7,21 @@
 namespace pf::shader_toy {
 namespace gui = ui::ig;
 
-GlobalVariablesPanel::GlobalVariablesPanel(const std::string &name, gui::Size s,
-                                                             gui::Persistent persistent)
+GlobalVariablesPanel::GlobalVariablesPanel(const std::string &name, gui::Size s, gui::Persistent persistent)
     : Element(name), Resizable(s), Savable(persistent) {}
 
-toml::table GlobalVariablesPanel::toToml() const { return toml::table(); }
+toml::table GlobalVariablesPanel::toToml() const {
+  auto values = toml::array{};
+
+  std::ranges::for_each(valueRecords, [&](const auto &record) {
+    const auto &[name, valueRecord] = record;
+    auto recordToml = toml::table{{"name", name}, {"typeName", valueRecord->typeName}};
+
+    values.push_back(recordToml);
+  });
+
+  return toml::table{{"values", values}};
+}
 
 void GlobalVariablesPanel::setFromToml(const toml::table &src) {}
 
@@ -75,4 +85,4 @@ bool GlobalVariablesPanel::variableExists(std::string_view name) {
 
 void GlobalVariablesPanel::removeValueRecord(std::string_view name) { valueRecords.erase(std::string{name}); }
 
-}  // namespace pf
+}  // namespace pf::shader_toy
