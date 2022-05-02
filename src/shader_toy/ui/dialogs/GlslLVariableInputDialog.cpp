@@ -41,7 +41,7 @@ void GlslVariableInputDialogBuilder::show() {
       const auto varName = varNameInput.getValue();
 
       if (const auto err = inputValidator_(*selectedTypeName, varName); err.has_value()) {
-        errorText.setText("Invalid variable name");
+        errorText.setText(err.value());
         return;
       }
 

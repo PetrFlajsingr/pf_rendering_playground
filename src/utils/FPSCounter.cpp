@@ -11,11 +11,13 @@ namespace pf {
 using namespace std::chrono_literals;
 
 float FPSCounter::averageFPS() const {
-  return 1.f / static_cast<float>(rollingAverage.count() * std::chrono::duration_cast<Duration>(1s).count());
+  return 1.f / static_cast<float>(rollingAverage.count())
+      * static_cast<float>(std::chrono::duration_cast<Duration>(1s).count());
 }
 
 float FPSCounter::currentFPS() const {
-  return 1.f / static_cast<float>(frameDuration.count() * std::chrono::duration_cast<Duration>(1s).count());
+  return 1.f / static_cast<float>(frameDuration.count())
+      * static_cast<float>(std::chrono::duration_cast<Duration>(1s).count());
 }
 
 FPSCounter::Duration FPSCounter::currentDuration() const { return frameDuration; }

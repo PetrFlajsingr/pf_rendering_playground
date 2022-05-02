@@ -7,13 +7,107 @@
 namespace pf::shader_toy {
 namespace gui = ui::ig;
 
-GlobalVariablesPanel::GlobalVariablesPanel(const std::string &name, gui::Size s,
-                                                             gui::Persistent persistent)
+GlobalVariablesPanel::GlobalVariablesPanel(const std::string &name, gui::Size s, gui::Persistent persistent)
     : Element(name), Resizable(s), Savable(persistent) {}
+// FIXME: doesn't support color type
+toml::table GlobalVariablesPanel::toToml() const {
+  auto values = toml::array{};
 
-toml::table GlobalVariablesPanel::toToml() const { return toml::table(); }
+  std::ranges::for_each(valueRecords, [&](const auto &record) {
+    const auto &[name, valueRecord] = record;
+    auto recordToml = toml::table{{"name", name}, {"typeName", valueRecord->typeName}};
 
-void GlobalVariablesPanel::setFromToml(const toml::table &src) {}
+    std::visit(
+        [&]<typename T>(T value) {
+          if constexpr (OneOf<T, bool, float, unsigned int, int>) { recordToml.insert("value", value); }
+          if constexpr (OneOf<T, glm::vec2, glm::vec3, glm::vec4, glm::ivec2, glm::ivec3, glm::ivec4, glm::uvec2,
+                              glm::uvec3, glm::uvec4, glm::bvec2, glm::bvec3, glm::bvec4>) {
+            recordToml.insert("value", ui::ig::serializeGlmVec(value));
+          }
+          if constexpr (OneOf<T, glm::mat2, glm::mat3, glm::mat4>) {
+            toml::array rows;
+            for (std::size_t row = 0; row < T::length(); ++row) { rows.push_back(ui::ig::serializeGlmVec(value[row])); }
+            recordToml.insert("value", rows);
+          }
+        },
+        valueRecord->data);
+
+    values.push_back(recordToml);
+  });
+
+  return toml::table{{"values", values}};
+}
+
+void GlobalVariablesPanel::setFromToml(const toml::table &src) {
+  if (const auto valArrToml = src.find("values"); valArrToml != src.end()) {
+    if (const auto valArr = valArrToml->second.as_array(); valArr != nullptr) {
+      for (const auto &valToml : *valArr) {
+        if (const auto val = valToml.as_table(); val != nullptr) {
+          const auto nameIter = val->find("name");
+          if (nameIter == val->end()) { continue; }
+          const auto typeNameIter = val->find("typeName");
+          if (typeNameIter == val->end()) { continue; }
+          const auto valueIter = val->find("value");
+          if (valueIter == val->end()) { continue; }
+
+          if (auto name = nameIter->second.as_string(); name != nullptr) {
+            if (auto typeName = typeNameIter->second.as_string(); typeName != nullptr) {
+              getTypeForGlslName(typeName->get(), [&]<typename T> {
+                if constexpr (std::same_as<T, bool>) {
+                  if (auto value = valueIter->second.as_boolean(); value != nullptr) {
+                    addBoolVariable(name->get(), value->get());
+                  }
+                }
+                if constexpr (OneOf<T, IMGUI_DRAG_TYPE_LIST> || OneOf<T, PF_IMGUI_GLM_MAT_TYPES>) {
+                  if constexpr (std::same_as<T, float>) {
+                    if (auto value = valueIter->second.as_floating_point(); value != nullptr) {
+                      addDragVariable(name->get(), static_cast<float>(value->get()));
+                    }
+                  }
+                  if constexpr (OneOf<T, unsigned int, int>) {
+                    if (auto value = valueIter->second.as_integer(); value != nullptr) {
+                      addDragVariable(name->get(), static_cast<T>(value->get()));
+                    }
+                  }
+                  if constexpr (OneOf<T, glm::vec2, glm::vec3, glm::vec4, glm::ivec2, glm::ivec3, glm::ivec4,
+                                      glm::uvec2, glm::uvec3, glm::uvec4, glm::bvec2, glm::bvec3, glm::bvec4>) {
+                    if (auto value = valueIter->second.as_array(); value != nullptr) {
+                      if (auto vecValue = ui::ig::safeDeserializeGlmVec<T>(*value); vecValue.has_value()) {
+                        addDragVariable(name->get(), vecValue.value());
+                      }
+                    }
+                  }
+                  if constexpr (OneOf<T, glm::mat2, glm::mat3, glm::mat4>) {
+                    if (auto value = valueIter->second.as_array(); value != nullptr) {
+                      if (value->size() != T::length()) { return; }
+                      T matValue;
+                      std::size_t i{};
+                      for (const auto &row : *value) {
+                        if (auto rowArray = row.as_array(); rowArray != nullptr) {
+                          if (auto vecValue = ui::ig::safeDeserializeGlmVec<T::col_type>(*rowArray);
+                              vecValue.has_value()) {
+                            matValue[i] = vecValue.value();
+                          } else {
+                            return;
+                          }
+                        } else {
+                          return;
+                        }
+                        ++i;
+                      }
+                      addDragVariable(name->get(), matValue);
+                    }
+                  }
+                }
+                // FIXME: missing color
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+}
 
 void GlobalVariablesPanel::renderImpl() {
   gui::Element *toRemove = nullptr;
@@ -75,4 +169,4 @@ bool GlobalVariablesPanel::variableExists(std::string_view name) {
 
 void GlobalVariablesPanel::removeValueRecord(std::string_view name) { valueRecords.erase(std::string{name}); }
 
-}  // namespace pf
+}  // namespace pf::shader_toy
