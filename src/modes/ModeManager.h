@@ -16,7 +16,7 @@ class ModeManager {
   ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window);
   ~ModeManager();
 
-  void addMode(std::shared_ptr<Mode> mode);
+  std::optional<Error> addMode(std::shared_ptr<Mode> mode);
 
   std::optional<Error> activateMode(const std::string &name);
   std::optional<Error> activateMode(const std::shared_ptr<Mode> &mode);
@@ -26,6 +26,8 @@ class ModeManager {
  private:
   void deactivateModes();
   void deinitializeModes();
+
+  [[nodiscard]] std::optional<std::shared_ptr<Mode>> findModeByName(const std::string &name);
 
   std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface;
   std::shared_ptr<glfw::Window> window;
