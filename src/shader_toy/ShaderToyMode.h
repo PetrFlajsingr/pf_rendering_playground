@@ -21,6 +21,7 @@ enum class MouseState { None = 0, LeftDown = 1, RightDown = 2 };
 class ShaderToyMode : public Mode {
  public:
   constexpr static glm::uvec2 COMPUTE_LOCAL_GROUP_SIZE{8, 8};
+  explicit ShaderToyMode(std::filesystem::path resourcesPath);
 
   [[nodiscard]] std::string getName() const override;
 
@@ -42,6 +43,10 @@ class ShaderToyMode : public Mode {
   std::optional<std::string> compileShader(const std::string &shaderCode);
 
   void updateUI();
+
+  struct ConfigData {
+    std::filesystem::path resourcesPath;
+  } configData;
 
   std::unique_ptr<UI> ui = nullptr;
 

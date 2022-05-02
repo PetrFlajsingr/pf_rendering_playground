@@ -6,22 +6,25 @@
 #include "log/UISink.h"
 #include <pf_imgui/styles/dark.h>
 
+#include <utility>
+
 #undef RGB
 namespace pf::shader_toy {
 
 namespace gui = ui::ig;
-UI::UI(const std::shared_ptr<gui::ImGuiInterface> &imGuiInterface, const std::string &initShaderCode)
-    : interface(imGuiInterface) {
-  gui::setDarkStyle(*imGuiInterface);
+UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, const std::string &initShaderCode,
+       const std::filesystem::path &resourcesPath)
+    : interface(std::move(imGuiInterface)) {
+  gui::setDarkStyle(*interface);
 
-  dockingArea = &imGuiInterface->createOrGetBackgroundDockingArea();
+  dockingArea = &interface->createOrGetBackgroundDockingArea();
 
-  outputWindow = std::make_unique<OutputWindow>(*imGuiInterface);
-  textInputWindow = std::make_unique<InputWindow>(*imGuiInterface);
+  outputWindow = std::make_unique<OutputWindow>(*interface);
+  textInputWindow = std::make_unique<InputWindow>(*interface);
 
   textInputWindow->editor->setText(initShaderCode);
 
-  logWindow = &imGuiInterface->createWindow("log_window", "Log");
+  logWindow = &interface->createWindow("log_window", "Log");
   logWindow->setIsDockable(true);
   logPanel = &logWindow->createChild(gui::LogPanel<spdlog::level::level_enum, 512>::Config{.name = "log_panel"});
   logPanel->setCategoryAllowed(spdlog::level::level_enum::n_levels, false);
@@ -33,7 +36,13 @@ UI::UI(const std::shared_ptr<gui::ImGuiInterface> &imGuiInterface, const std::st
 
   spdlog::default_logger()->sinks().emplace_back(std::make_shared<PfImguiLogSink_st>(*logPanel));
 
-  imGuiInterface->setStateFromConfig();
+  const auto fontPath = resourcesPath / "fonts" / "RobotoMono-Regular.ttf";
+  if (std::filesystem::exists(fontPath)) {
+    auto codeFont = interface->getFontManager().fontBuilder("RobotoMono-Regular", fontPath).setFontSize(15.f).build();
+    textInputWindow->editor->setFont(codeFont);
+  }
+
+  interface->setStateFromConfig();
 }
 
 void UI::show() {
@@ -50,4 +59,4 @@ void UI::hide() {
   logWindow->setVisibility(gui::Visibility::Invisible);
 }
 
-}  // namespace pf
+}  // namespace pf::shader_toy

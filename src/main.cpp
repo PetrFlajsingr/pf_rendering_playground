@@ -84,13 +84,13 @@ int main(int argc, char *argv[]) {
 
   const auto fontPath = resourcesFolder / "fonts" / "Roboto-Regular.ttf";
   if (std::filesystem::exists(fontPath)) {
-    auto robotoFont = imguiInterface->getFontManager().fontBuilder("roboto", fontPath).setFontSize(14.f).build();
+    auto robotoFont = imguiInterface->getFontManager().fontBuilder("Roboto-Regular", fontPath).setFontSize(14.f).build();
     imguiInterface->setGlobalFont(robotoFont);
   }
 
   pf::ModeManager modeManager{imguiInterface, window};
 
-  modeManager.addMode(std::make_shared<pf::shader_toy::ShaderToyMode>());
+  modeManager.addMode(std::make_shared<pf::shader_toy::ShaderToyMode>(resourcesFolder));
   modeManager.activateMode("ShaderToy");
   modeManager.addMode(std::make_shared<pf::DummyMode>());
 
