@@ -17,6 +17,21 @@ toml::table GlobalVariablesPanel::toToml() const {
     const auto &[name, valueRecord] = record;
     auto recordToml = toml::table{{"name", name}, {"typeName", valueRecord->typeName}};
 
+    std::visit(
+        [&]<typename T>(T value) {
+          if constexpr (OneOf<T, bool, float, unsigned int, int>) { recordToml.insert("value", value); }
+          if constexpr (OneOf<T, glm::vec2, glm::vec3, glm::vec4, glm::ivec2, glm::ivec3, glm::ivec4, glm::uvec2,
+                              glm::uvec3, glm::uvec4, glm::bvec2, glm::bvec3, glm::bvec4>) {
+            recordToml.insert("value", ui::ig::serializeGlmVec(value));
+          }
+          if constexpr (OneOf<T, glm::mat2, glm::mat3, glm::mat4>) {
+            toml::array rows;
+            for (std::size_t row = 0; row < T::length(); ++row) { rows.push_back(ui::ig::serializeGlmVec(value[row])); }
+            recordToml.insert("value", rows);
+          }
+        },
+        valueRecord->data);
+
     values.push_back(recordToml);
   });
 
