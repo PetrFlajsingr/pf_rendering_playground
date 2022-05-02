@@ -24,22 +24,27 @@ class ModeManager {
   void render(std::chrono::nanoseconds timeDelta);
 
  private:
+  struct ModeRecord {
+    std::string name;
+    std::shared_ptr<Mode> mode;
+    ui::ig::MenuButtonItem &buttonItem;
+  };
+
   void deactivateModes();
   void deinitializeModes();
 
-  [[nodiscard]] std::optional<std::shared_ptr<Mode>> findModeByName(const std::string &name);
+  void activateMode_impl(ModeManager::ModeRecord *mode);
+
+  [[nodiscard]] std::optional<ModeRecord *> findModeByName(const std::string &name);
 
   std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface;
   std::shared_ptr<glfw::Window> window;
 
-  std::shared_ptr<Mode> activeMode = nullptr;
-  struct ModeRecord {
-    std::string name;
-    std::shared_ptr<Mode> mode;
-  };
-  std::vector<ModeRecord> modes;
+  ModeRecord *activeMode = nullptr;
+  std::list<ModeRecord> modes;
 
   ui::ig::SubMenu &subMenu;
+  ui::ig::Text &statusBarText;
 };
 
 }  // namespace pf
