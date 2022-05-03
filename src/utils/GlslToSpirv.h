@@ -45,8 +45,8 @@ glslComputeShaderSourceToSpirv(const std::string &glslSource);
 
 
 auto SpirvCompilationError::getInfoRecords() const {
-  return info | ranges::view::split('\n')
-      | ranges::view::transform([](auto &&line) -> std::optional<SpirvErrorRecord> {
+  return info | ranges::views::split('\n')
+      | ranges::views::transform([](auto &&line) -> std::optional<SpirvErrorRecord> {
            auto lineView =
                std::string_view{&*line.begin(), static_cast<std::string_view::size_type>(ranges::distance(line))};
            auto result = SpirvErrorRecord{};
@@ -68,8 +68,8 @@ auto SpirvCompilationError::getInfoRecords() const {
            if (parts.size() >= 5) { result.errorDesc = parts[4]; }
            return result;
          })
-      | ranges::view::filter(&std::optional<SpirvErrorRecord>::has_value)
-      | ranges::view::transform([](const auto &val) { return val.value(); });
+      | ranges::views::filter(&std::optional<SpirvErrorRecord>::has_value)
+      | ranges::views::transform([](const auto &val) { return val.value(); });
 }
 
 }  // namespace pf

@@ -5,13 +5,13 @@
 #ifndef PF_RENDERING_PLAYGROUND_SHADERBUILDER_H
 #define PF_RENDERING_PLAYGROUND_SHADERBUILDER_H
 
+#include <functional>
 #include <glm/glm.hpp>
 #include <pf_common/concepts/OneOf.h>
 #include <pf_common/enums.h>
 #include <string>
 #include <utils/glsl_typenames.h>
 #include <vector>
-#include <functional>
 
 namespace pf::shader_toy {
 
@@ -78,8 +78,7 @@ ShaderBuilder &ShaderBuilder::addUniform(std::string name) {
   if constexpr (Enum<T>) {
     uniforms.emplace_back(getEnumTypeName<T>(), std::move(name));
   } else {
-    const auto typeName = getGLSLTypeName<T>();
-    uniforms.emplace_back(typeName, std::move(name));
+    uniforms.emplace_back(std::string{getGLSLTypeName<T>()}, std::move(name));
   }
   return *this;
 }
@@ -117,6 +116,6 @@ std::string ShaderBuilder::getEnumTypeName() const {
   result.push_back(::toupper(*iter1));
   return result;
 }
-}  // namespace pf
+}  // namespace pf::shader_toy
 
 #endif  //PF_RENDERING_PLAYGROUND_SHADERBUILDER_H
