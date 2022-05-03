@@ -111,8 +111,7 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   mainProgram->setUniformValue("timeDelta", timeDeltaFloat);
   mainProgram->setUniformValue("frameNum", frameCounter);
   mainProgram->setUniformValue("mouseState", static_cast<int>(mouseState));
-  //mainProgram->setUniformValue("mousePos", glm::vec3{mousePos, 0.f});
-  mainProgram->setUniformValue("mousePos", mousePos);
+  mainProgram->setUniformValue("mousePos", glm::vec3{mousePos, 0.f});
 
   for (const auto &[name, value] : userDefinedUniforms) {
     std::visit([&]<typename T>(T uniformValue) { mainProgram->setUniformValue(name, uniformValue); }, value->data);
