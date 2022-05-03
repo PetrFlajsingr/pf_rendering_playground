@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#undef RGB
 namespace pf::shader_toy {
 
 namespace gui = ui::ig;

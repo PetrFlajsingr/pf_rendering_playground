@@ -13,6 +13,7 @@
 #include <range/v3/view/trim.hpp>
 #include <utility>
 #include <utils/GlslToSpirv.h>
+#include <utils/opengl.h>
 
 void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
                  const void *) {
@@ -92,7 +93,7 @@ void ShaderToyMode::deactivate_impl() {
 void ShaderToyMode::deinitialize_impl() {}
 
 void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
-  if (programHandle == -1) { return; }
+  if (mainProgram == nullptr) { return; }
 
   auto mouseState = MouseState::None;
   if (ui->outputWindow->image->isHovered()) {
@@ -106,89 +107,23 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   const auto timeFloat = static_cast<float>(totalTime.count()) / 1'000'000'000.0f;
   const auto timeDeltaFloat = static_cast<float>(timeDelta.count()) / 1'000'000'000.0f;
 
-  glUseProgram(programHandle);
-
-  // TODO: move all this to a separate shader program class
-  outputTexture->bindImage(0);
-  const auto textureSize = getTextureSize();
-
-  const auto timeLoc = glGetUniformLocation(programHandle, "time");
-  if (timeLoc != -1) { glProgramUniform1f(programHandle, timeLoc, timeFloat); }
-  const auto timeDeltaLoc = glGetUniformLocation(programHandle, "timeDelta");
-  if (timeDeltaLoc != -1) { glProgramUniform1f(programHandle, timeDeltaLoc, timeDeltaFloat); }
-  const auto frameNumLoc = glGetUniformLocation(programHandle, "frameNum");
-  if (frameNumLoc != -1) { glProgramUniform1i(programHandle, frameNumLoc, frameCounter); }
-  const auto mouseStateLoc = glGetUniformLocation(programHandle, "mouseState");
-  if (mouseStateLoc != -1) { glProgramUniform1i(programHandle, mouseStateLoc, static_cast<int>(mouseState)); }
-  const auto mousePosLos = glGetUniformLocation(programHandle, "mousePos");
-  if (mousePosLos != -1) { glProgramUniform3fv(programHandle, mousePosLos, 1, glm::value_ptr(mousePos)); }
+  mainProgram->setUniformValue("time", timeFloat);
+  mainProgram->setUniformValue("timeDelta", timeDeltaFloat);
+  mainProgram->setUniformValue("frameNum", frameCounter);
+  mainProgram->setUniformValue("mouseState", static_cast<int>(mouseState));
+  //mainProgram->setUniformValue("mousePos", glm::vec3{mousePos, 0.f});
+  mainProgram->setUniformValue("mousePos", mousePos);
 
   for (const auto &[name, value] : userDefinedUniforms) {
-    const auto uniformLoc = glGetUniformLocation(programHandle, name.c_str());
-    if (uniformLoc != -1) {
-      std::visit(
-          [&]<typename T>(T uniformValue) {
-            if constexpr (std::same_as<T, bool>) {
-              glProgramUniform1i(programHandle, uniformLoc, static_cast<int>(uniformValue));
-            }
-            if constexpr (std::same_as<T, float>) { glProgramUniform1f(programHandle, uniformLoc, uniformValue); }
-            if constexpr (std::same_as<T, unsigned int>) {
-              glProgramUniform1ui(programHandle, uniformLoc, uniformValue);
-            }
-            if constexpr (std::same_as<T, int>) { glProgramUniform1i(programHandle, uniformLoc, uniformValue); }
-            if constexpr (std::same_as<T, glm::vec2>) {
-              glProgramUniform2fv(programHandle, uniformLoc, 1, glm::value_ptr(uniformValue));
-            }
-            if constexpr (std::same_as<T, glm::vec3>) {
-              glProgramUniform3fv(programHandle, uniformLoc, 1, glm::value_ptr(uniformValue));
-            }
-            if constexpr (std::same_as<T, glm::vec4>) {
-              glProgramUniform4fv(programHandle, uniformLoc, 1, glm::value_ptr(uniformValue));
-            }
-            if constexpr (std::same_as<T, glm::ivec2>) {
-              glProgramUniform2iv(programHandle, uniformLoc, 1, glm::value_ptr(uniformValue));
-            }
-            if constexpr (std::same_as<T, glm::ivec3>) {
-              glProgramUniform3iv(programHandle, uniformLoc, 1, glm::value_ptr(uniformValue));
-            }
-            if constexpr (std::same_as<T, glm::ivec4>) {
-              glProgramUniform4iv(programHandle, uniformLoc, 1, glm::value_ptr(uniformValue));
-            }
-            if constexpr (std::same_as<T, glm::bvec2>) {
-              const glm::ivec2 data = uniformValue;
-              glProgramUniform3iv(programHandle, uniformLoc, 1, glm::value_ptr(data));
-            }
-            if constexpr (std::same_as<T, glm::bvec3>) {
-              const glm::ivec3 data = uniformValue;
-              glProgramUniform3iv(programHandle, uniformLoc, 1, glm::value_ptr(data));
-            }
-            if constexpr (std::same_as<T, glm::bvec4>) {
-              const glm::ivec4 data = uniformValue;
-              glProgramUniform4iv(programHandle, uniformLoc, 1, glm::value_ptr(data));
-            }
-            if constexpr (std::same_as<T, glm::uvec2>) {
-              glProgramUniform2uiv(programHandle, uniformLoc, 1, glm::value_ptr(uniformValue));
-            }
-            if constexpr (std::same_as<T, glm::uvec3>) {
-              glProgramUniform3uiv(programHandle, uniformLoc, 1, glm::value_ptr(uniformValue));
-            }
-            if constexpr (std::same_as<T, glm::uvec4>) {
-              glProgramUniform4uiv(programHandle, uniformLoc, 1, glm::value_ptr(uniformValue));
-            }
-            if constexpr (std::same_as<T, glm::mat2>) {
-              glProgramUniformMatrix2fv(programHandle, uniformLoc, 1, GL_FALSE, glm::value_ptr(uniformValue));
-            }
-            if constexpr (std::same_as<T, glm::mat3>) {
-              glProgramUniformMatrix3fv(programHandle, uniformLoc, 1, GL_FALSE, glm::value_ptr(uniformValue));
-            }
-            if constexpr (std::same_as<T, glm::mat4>) {
-              glProgramUniformMatrix4fv(programHandle, uniformLoc, 1, GL_FALSE, glm::value_ptr(uniformValue));
-            }
-          },
-          value->data);
-    }
+    std::visit([&]<typename T>(T uniformValue) { mainProgram->setUniformValue(name, uniformValue); }, value->data);
   }
 
+  mainProgram->activate();
+
+  // TODO: move auto binding to mainProgram as well
+  outputTexture->bindImage(0);
+
+  const auto textureSize = getTextureSize();
   glDispatchCompute(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y, 1);
 
   fpsCounter.onFrame();
@@ -217,6 +152,13 @@ glm::uvec2 ShaderToyMode::getTextureSize() const { return {outputTexture->getWid
 std::optional<std::string> ShaderToyMode::compileShader(const std::string &shaderCode) {
   ui->textInputWindow->editor->clearWarningMarkers();
   ui->textInputWindow->editor->clearErrorMarkers();
+  using Uniform = ComputeShaderProgram::Uniform;
+  auto computeShaderUniforms = std::vector<Uniform>{};
+  computeShaderUniforms.emplace_back(Uniform::Create<float>("time"));
+  computeShaderUniforms.emplace_back(Uniform::Create<float>("timeDelta"));
+  computeShaderUniforms.emplace_back(Uniform::Create<int>("frameNum"));
+  computeShaderUniforms.emplace_back(Uniform::Create<int>("mouseState"));
+  computeShaderUniforms.emplace_back(Uniform::Create<glm::vec3>("mousePos"));
   // clang-format off
   auto builder = ShaderBuilder{};
   builder.addUniform<float>("time")
@@ -229,6 +171,9 @@ std::optional<std::string> ShaderToyMode::compileShader(const std::string &shade
       .setLocalGroupSize(COMPUTE_LOCAL_GROUP_SIZE);
   for (const auto &[name, value] : ui->textInputWindow->varPanel->getValueRecords()) {
     builder.addUniform(value->typeName, name);
+    getTypeForGlslName(value->typeName, [&]<typename T> {
+        computeShaderUniforms.emplace_back(Uniform::Create<T>(name));
+    });
   }
   // clang-format on
   const auto &[source, lineMapping] = builder.build(shaderCode);
@@ -237,41 +182,13 @@ std::optional<std::string> ShaderToyMode::compileShader(const std::string &shade
 
   const auto spirvResult = glslComputeShaderSourceToSpirv(source);
   if (spirvResult.has_value()) {
-    spdlog::info(spirvResult->messages);
-    static GLuint gl_shader = -1;
-    if (gl_shader != -1) { glDeleteShader(gl_shader); }
-    gl_shader = glCreateShader(GL_COMPUTE_SHADER);
-
-    glShaderBinary(1, &gl_shader, GL_SHADER_BINARY_FORMAT_SPIR_V, spirvResult->spirvData.data(),
-                   spirvResult->spirvData.size() * sizeof(decltype(spirvResult->spirvData)::value_type));
-    glSpecializeShader(gl_shader, "main", 0, nullptr, nullptr);
-
-    GLint compiled = 0;
-    glGetShaderiv(gl_shader, GL_COMPILE_STATUS, &compiled);
-    if (GL_FALSE != compiled) {
-
-      if (programHandle != -1) { glDeleteProgram(programHandle); }
-      programHandle = glCreateProgram();
-      glAttachShader(programHandle, gl_shader);
-
-      glLinkProgram(programHandle);
-
-      GLint success;
-      glGetProgramiv(programHandle, GL_LINK_STATUS, &success);
-      if (!success) {
-        char infoLog[512];
-        glGetProgramInfoLog(programHandle, 512, nullptr, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-      }
+    auto newProgram =
+        ComputeShaderProgram::CreateUnique(std::span{spirvResult.value().spirvData}, std::move(computeShaderUniforms));
+    if (newProgram.has_value()) {
+      mainProgram = std::move(newProgram.value());
     } else {
-      int tmpLen;
-      glGetShaderiv(gl_shader, GL_INFO_LOG_LENGTH, &tmpLen);
-      if (tmpLen != 0) {
-        std::string hihi;
-        hihi.resize(tmpLen);
-        glGetShaderInfoLog(gl_shader, tmpLen, nullptr, hihi.data());
-        spdlog::debug("{}", hihi);
-      }
+      spdlog::error("Shader creation failed:");
+      spdlog::error("\t{}", newProgram.error());
     }
   } else {
     spdlog::error(spirvResult.error().info);

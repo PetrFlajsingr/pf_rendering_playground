@@ -12,6 +12,8 @@
 #include <tl/expected.hpp>
 #include <unordered_map>
 #include <utils/glsl_typenames.h>
+#include <utils/opengl.h>
+#include <variant>
 
 namespace pf {
 
@@ -23,16 +25,26 @@ class ComputeShaderProgram {
 
    public:
     template<OneOf<PF_GLSL_TYPES> T>
-    explicit Uniform(std::string uniformName) : name(std::move(uniformName)), typeName(getGLSLTypeName<T>()) {}
+    [[nodiscard]] static Uniform Create(std::string uniformName) {
+      return Uniform{std::move(uniformName), std::string{getGLSLTypeName<T>()}};
+    }
 
    private:
+    inline explicit Uniform(std::string uniformName, std::string typeName)
+        : name(std::move(uniformName)), typeName(std::move(typeName)) {}
     std::string name;
-    std::string typeName;
+    std::string typeName;  // TODO: replace internal usage of types with an enum
     std::optional<GLint> location = std::nullopt;
+    std::variant<std::monostate, PF_GLSL_TYPES> newValue = std::monostate{};
+    std::variant<std::monostate, PF_GLSL_TYPES> previousValue = std::monostate{};
   };
-
-  [[nodiscard]] static tl::expected<ComputeShaderProgram, Error> Create(std::span<unsigned int> spirvData,
+  // TODO: maybe create some CRTP interface for this
+  [[nodiscard]] static tl::expected<ComputeShaderProgram, Error> Create(std::span<const unsigned int> spirvData,
                                                                         RangeOf<Uniform> auto &&shaderUniforms);
+  [[nodiscard]] static tl::expected<std::unique_ptr<ComputeShaderProgram>, Error>
+  CreateUnique(std::span<const unsigned int> spirvData, RangeOf<Uniform> auto &&shaderUniforms);
+  [[nodiscard]] static tl::expected<std::shared_ptr<ComputeShaderProgram>, Error>
+  CreateShared(std::span<const unsigned int> spirvData, RangeOf<Uniform> auto &&shaderUniforms);
 
   ComputeShaderProgram(GLuint programHandle, RangeOf<Uniform> auto &&shaderUniforms)
       : programHandle(programHandle), uniforms{std::ranges::begin(shaderUniforms), std::ranges::end(shaderUniforms)} {
@@ -40,9 +52,19 @@ class ComputeShaderProgram {
   }
   ~ComputeShaderProgram();
 
+  [[nodiscard]] bool isUniformActive(const std::string &name);
+  template<OneOf<PF_GLSL_TYPES> T>
+  std::optional<Error> setUniformValue(const std::string &name, T newValue);
+
+  void activate();
+
  private:
-  [[nodiscard]] static std::optional<GLuint> CreateShaderHandle(std::span<unsigned int> spirvData);
+  [[nodiscard]] static tl::expected<GLuint, Error> Create_impl(std::span<const unsigned int> spirvData);
+
+  [[nodiscard]] static std::optional<GLuint> CreateShaderHandle(std::span<const unsigned int> spirvData);
   [[nodiscard]] static std::optional<GLuint> CreateProgramHandle(GLuint shaderHandle);
+
+  [[nodiscard]] std::optional<Uniform *> findUniformByName(const std::string &name);
 
   void findUniformLocations();
 
@@ -51,19 +73,57 @@ class ComputeShaderProgram {
 };
 
 tl::expected<ComputeShaderProgram, ComputeShaderProgram::Error>
-ComputeShaderProgram::Create(std::span<unsigned int> spirvData, RangeOf<Uniform> auto &&shaderUniforms) {
-  const auto shaderHandle = CreateShaderHandle(spirvData);
-  if (!shaderHandle.has_value()) { return tl::make_unexpected("Shader creation failed"); }
-
-  const auto programHandle = CreateProgramHandle(shaderHandle.value());
-  // either we need to delete shader because program is not valid or mark it for deletion when program gets deleted
-  glDeleteShader(shaderHandle.value());
-  if (!programHandle.has_value()) { return tl::make_unexpected("Program creation failed"); }
-
-  return ComputeShaderProgram{
-      programHandle.value(),
-      std::vector<Uniform>{std::ranges::begin(shaderUniforms), std::ranges::end(shaderUniforms)}};
+ComputeShaderProgram::Create(std::span<const unsigned int> spirvData, RangeOf<Uniform> auto &&shaderUniforms) {
+  const auto programHandle = Create_impl(spirvData);
+  if (programHandle.has_value()) {
+    return ComputeShaderProgram{
+        programHandle.value(),
+        std::vector<Uniform>{std::ranges::begin(shaderUniforms), std::ranges::end(shaderUniforms)}};
+  } else {
+    return tl::make_unexpected(programHandle.error());
+  }
+}
+tl::expected<std::unique_ptr<ComputeShaderProgram>, ComputeShaderProgram::Error>
+ComputeShaderProgram::CreateUnique(std::span<const unsigned int> spirvData, RangeOf<Uniform> auto &&shaderUniforms) {
+  const auto programHandle = Create_impl(spirvData);
+  if (programHandle.has_value()) {
+    return std::make_unique<ComputeShaderProgram>(
+        programHandle.value(),
+        std::vector<Uniform>{std::ranges::begin(shaderUniforms), std::ranges::end(shaderUniforms)});
+  } else {
+    return tl::make_unexpected(programHandle.error());
+  }
+}
+tl::expected<std::shared_ptr<ComputeShaderProgram>, ComputeShaderProgram::Error>
+ComputeShaderProgram::CreateShared(std::span<const unsigned int> spirvData, RangeOf<Uniform> auto &&shaderUniforms) {
+  const auto programHandle = Create_impl(spirvData);
+  if (programHandle.has_value()) {
+    return std::make_shared<ComputeShaderProgram>(
+        programHandle.value(),
+        std::vector<Uniform>{std::ranges::begin(shaderUniforms), std::ranges::end(shaderUniforms)});
+  } else {
+    return tl::make_unexpected(programHandle.error());
+  }
 }
 
+template<OneOf<PF_GLSL_TYPES> T>
+std::optional<ComputeShaderProgram::Error> ComputeShaderProgram::setUniformValue(const std::string &name, T newValue) {
+  if (const auto uniform = findUniformByName(name); uniform.has_value()) {
+    const auto uniformPtr = uniform.value();
+    if (!uniformPtr->location.has_value()) {
+      return fmt::format("Uniform named '{}' is not enabled (possibly optimized out)", name);
+    }
+    std::optional<std::string> result = std::nullopt;
+    getTypeForGlslName(uniformPtr->typeName, [&]<typename U> {
+      if constexpr (!std::same_as<U, T>) {
+        result = fmt::format("Invalid type '{:s}' for uniform '{}'", getGLSLTypeName<T>(), name);
+      } else {
+        uniformPtr->newValue = newValue;
+      }
+    });
+    return result;
+  }
+  return fmt::format("No uniform with name '{}' found", name);
+}
 }  // namespace pf
 #endif  //PF_RENDERING_PLAYGROUND_COMPUTESHADERPROGRAM_H

@@ -6,9 +6,19 @@
 
 namespace pf {
 
-ComputeShaderProgram::~ComputeShaderProgram() { glDeleteProgram(programHandle); }
+tl::expected<GLuint, ComputeShaderProgram::Error>
+ComputeShaderProgram::Create_impl(std::span<const unsigned int> spirvData) {
+  const auto shaderHandle = CreateShaderHandle(spirvData);
+  if (!shaderHandle.has_value()) { return tl::make_unexpected("Shader creation failed"); }
 
-std::optional<GLuint> ComputeShaderProgram::CreateShaderHandle(std::span<unsigned int> spirvData) {
+  const auto programHandle = CreateProgramHandle(shaderHandle.value());
+  // either we need to delete shader because program is not valid or mark it for deletion when program gets deleted
+  glDeleteShader(shaderHandle.value());
+  if (!programHandle.has_value()) { return tl::make_unexpected("Program creation failed"); }
+  return programHandle.value();
+}
+
+std::optional<GLuint> ComputeShaderProgram::CreateShaderHandle(std::span<const unsigned int> spirvData) {
   const auto shaderHandle = glCreateShader(GL_COMPUTE_SHADER);
 
   glShaderBinary(1, &shaderHandle, GL_SHADER_BINARY_FORMAT_SPIR_V, spirvData.data(),
@@ -32,6 +42,8 @@ std::optional<GLuint> ComputeShaderProgram::CreateShaderHandle(std::span<unsigne
   }
   return shaderHandle;
 }
+
+ComputeShaderProgram::~ComputeShaderProgram() { glDeleteProgram(programHandle); }
 
 std::optional<GLuint> ComputeShaderProgram::CreateProgramHandle(GLuint shaderHandle) {
   const auto programHandle = glCreateProgram();
@@ -57,11 +69,41 @@ std::optional<GLuint> ComputeShaderProgram::CreateProgramHandle(GLuint shaderHan
   return programHandle;
 }
 
+bool ComputeShaderProgram::isUniformActive(const std::string &name) {
+  if (const auto iter = std::ranges::find(uniforms, name, &Uniform::name); iter != uniforms.end()) {
+    return iter->location.has_value();
+  }
+  return false;
+}
+
 void ComputeShaderProgram::findUniformLocations() {
   // TODO: infer type on its own
   std::ranges::for_each(uniforms, [this](Uniform &uniform) {
     const auto uniformLocation = glGetUniformLocation(programHandle, uniform.name.c_str());
     if (uniformLocation != -1) { uniform.location = uniformLocation; }
+  });
+}
+
+std::optional<ComputeShaderProgram::Uniform *> ComputeShaderProgram::findUniformByName(const std::string &name) {
+  if (const auto iter = std::ranges::find(uniforms, name, &Uniform::name); iter != uniforms.end()) { return &*iter; }
+  return std::nullopt;
+}
+
+void ComputeShaderProgram::activate() {
+  glUseProgram(programHandle);
+  std::ranges::for_each(uniforms, [&](Uniform &uniform) {
+    // check for monostate index
+    if (uniform.newValue.index() != 0 && uniform.newValue != uniform.previousValue) {
+      std::visit(
+          [&]<typename T>(T value) {
+            if constexpr (!std::same_as<T, std::monostate>) {
+              setOGLUniform(programHandle, uniform.location.value(), value);
+            }
+          },
+          uniform.newValue);
+      uniform.previousValue = uniform.newValue;
+      uniform.newValue = std::monostate{};
+    }
   });
 }
 

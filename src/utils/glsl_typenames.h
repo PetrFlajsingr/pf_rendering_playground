@@ -16,7 +16,7 @@ namespace pf {
       glm::bvec3, glm::bvec4, glm::uvec2, glm::uvec3, glm::uvec4, glm::mat2, glm::mat3, glm::mat4
 
 template<OneOf<PF_GLSL_TYPES> T>
-consteval const char *getGLSLTypeName() {
+consteval std::string_view getGLSLTypeName() {
   if (std::same_as<T, bool>) { return "bool"; }
   if (std::same_as<T, float>) { return "float"; }
   if (std::same_as<T, unsigned int>) { return "uint"; }

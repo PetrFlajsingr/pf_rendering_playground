@@ -6,6 +6,7 @@
 #define PF_RENDERING_PLAYGROUND_SHADERTOYMODE_H
 
 #include "glm/ext/vector_uint2.hpp"
+#include "gpu/ComputeShaderProgram.h"
 #include "modes/Mode.h"
 #include "ui/UI.h"
 #include <geGL/Program.h>
@@ -56,7 +57,7 @@ class ShaderToyMode : public Mode {
 
   std::shared_ptr<Texture> outputTexture = nullptr;
 
-  GLuint programHandle = -1;
+  std::unique_ptr<ComputeShaderProgram> mainProgram = nullptr;
 
   std::string currentShaderSrc{};
   std::shared_ptr<glfw::Window> glfwWindow = nullptr;
