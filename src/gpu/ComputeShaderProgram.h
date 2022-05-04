@@ -17,6 +17,35 @@
 
 namespace pf {
 
+class BindingObject {
+ public:
+  explicit BindingObject(GLuint unit) : unit(unit) {}
+  [[nodiscard]] GLuint getUnit() const { return unit; }
+  virtual void bind() = 0;
+
+ protected:
+  GLuint unit;
+};
+
+class ImageBindingObject : public BindingObject {
+ public:
+  ImageBindingObject(GLuint unit, GLuint textureHandle, GLenum format, GLint level = 0,
+                     GLboolean layered = GL_FALSE, GLenum access = GL_READ_WRITE, GLint layer = 0)
+      : BindingObject(unit), textureHandle(textureHandle), level(level), format(format), access(access),
+        layered(layered), layer(layer) {}
+  void bind() override {
+    glBindImageTexture(getUnit(), textureHandle, level, layered, layer, access, format);
+  }
+
+ private:
+  GLuint textureHandle;
+  GLint level;
+  GLenum format;
+  GLenum access;
+  GLboolean layered;
+  GLint layer;
+};
+
 class ComputeShaderProgram {
  public:
   using Error = std::string;
@@ -56,7 +85,9 @@ class ComputeShaderProgram {
   template<OneOf<PF_GLSL_TYPES> T>
   std::optional<Error> setUniformValue(const std::string &name, T newValue);
 
-  void activate();
+  void setBinding(std::unique_ptr<BindingObject> binding);
+
+  void dispatch(std::uint32_t x, std::uint32_t y = 1, std::uint32_t z = 1);
 
  private:
   [[nodiscard]] static tl::expected<GLuint, Error> Create_impl(std::span<const unsigned int> spirvData);
@@ -70,6 +101,7 @@ class ComputeShaderProgram {
 
   GLuint programHandle;
   std::vector<Uniform> uniforms;
+  std::vector<std::unique_ptr<BindingObject>> bindings;
 };
 
 tl::expected<ComputeShaderProgram, ComputeShaderProgram::Error>

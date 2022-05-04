@@ -45,6 +45,15 @@ std::optional<GLuint> ComputeShaderProgram::CreateShaderHandle(std::span<const u
 
 ComputeShaderProgram::~ComputeShaderProgram() { glDeleteProgram(programHandle); }
 
+void ComputeShaderProgram::setBinding(std::unique_ptr<BindingObject> binding) {
+  if (const auto iter = std::ranges::find(bindings, binding->getUnit(), &BindingObject::getUnit);
+      iter != bindings.end()) {
+    *iter = std::move(binding);
+  } else {
+    bindings.emplace_back(std::move(binding));
+  }
+}
+
 std::optional<GLuint> ComputeShaderProgram::CreateProgramHandle(GLuint shaderHandle) {
   const auto programHandle = glCreateProgram();
   glAttachShader(programHandle, shaderHandle);
@@ -89,7 +98,7 @@ std::optional<ComputeShaderProgram::Uniform *> ComputeShaderProgram::findUniform
   return std::nullopt;
 }
 
-void ComputeShaderProgram::activate() {
+void ComputeShaderProgram::dispatch(std::uint32_t x, std::uint32_t y, std::uint32_t z) {
   glUseProgram(programHandle);
   std::ranges::for_each(uniforms, [&](Uniform &uniform) {
     // check for monostate index
@@ -105,6 +114,8 @@ void ComputeShaderProgram::activate() {
       uniform.newValue = std::monostate{};
     }
   });
+  std::ranges::for_each(bindings, &BindingObject::bind);
+  glDispatchCompute(x, y, z);
 }
 
 }  // namespace pf

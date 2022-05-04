@@ -117,13 +117,8 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
     std::visit([&]<typename T>(T uniformValue) { mainProgram->setUniformValue(name, uniformValue); }, value->data);
   }
 
-  mainProgram->activate();
-
-  // TODO: move auto binding to mainProgram as well
-  outputTexture->bindImage(0);
-
   const auto textureSize = getTextureSize();
-  glDispatchCompute(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y, 1);
+  mainProgram->dispatch(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y);
 
   fpsCounter.onFrame();
   updateUI();
@@ -142,12 +137,16 @@ void ShaderToyMode::initializeTexture(glm::uvec2 textureSize) {
 
   ui->outputWindow->image->setTextureId(
       reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(outputTexture->getId())));
+
+  if (mainProgram != nullptr) {
+    mainProgram->setBinding(
+        std::make_unique<ImageBindingObject>(0, outputTexture->getId(), outputTexture->getFormat()));
+  }
 }
 
 glm::uvec2 ShaderToyMode::getTextureSize() const { return {outputTexture->getWidth(0), outputTexture->getHeight(0)}; }
 
 // TODO: clean this up
-// TODO: create a class that takes care of the compiled shader program & uniform setting etc
 std::optional<std::string> ShaderToyMode::compileShader(const std::string &shaderCode) {
   ui->textInputWindow->editor->clearWarningMarkers();
   ui->textInputWindow->editor->clearErrorMarkers();
@@ -185,6 +184,8 @@ std::optional<std::string> ShaderToyMode::compileShader(const std::string &shade
         ComputeShaderProgram::CreateUnique(std::span{spirvResult.value().spirvData}, std::move(computeShaderUniforms));
     if (newProgram.has_value()) {
       mainProgram = std::move(newProgram.value());
+      mainProgram->setBinding(
+          std::make_unique<ImageBindingObject>(0, outputTexture->getId(), outputTexture->getFormat()));
     } else {
       spdlog::error("Shader creation failed:");
       spdlog::error("\t{}", newProgram.error());
