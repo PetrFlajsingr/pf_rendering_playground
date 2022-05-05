@@ -59,6 +59,11 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   autoCompileShader = ui->textInputWindow->autoCompileCheckbox->getValue();
   ui->textInputWindow->autoCompileCheckbox->bind(autoCompileShader);
 
+  ui->textInputWindow->varPanel->addVariablesChangedListener([this] {
+    isShaderChanged = true;
+    lastShaderChangeTime = std::chrono::steady_clock::now();
+  });
+
   ui->textInputWindow->editor->addTextListener([this](std::string_view) {
     isShaderChanged = true;
     lastShaderChangeTime = std::chrono::steady_clock::now();
