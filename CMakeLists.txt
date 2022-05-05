@@ -72,7 +72,13 @@ add_executable(pf_rendering_playground
         src/shader_toy/ui/dialogs/GlslLVariableInputDialog.h
         src/utils/GlslToSpirv.cpp
         src/utils/GlslToSpirv.h
-        src/utils/algorithms.h src/modes/DummyMode.h src/gpu/ComputeShaderProgram.cpp src/gpu/ComputeShaderProgram.h src/utils/opengl.h src/shader_toy/ui/ImagesPanel.cpp src/shader_toy/ui/ImagesPanel.h)
+        src/utils/algorithms.h
+        src/modes/DummyMode.h
+        src/gpu/ComputeShaderProgram.cpp
+        src/gpu/ComputeShaderProgram.h
+        src/utils/opengl.h
+        src/shader_toy/ui/ImagesPanel.cpp
+        src/shader_toy/ui/ImagesPanel.h)
 
 target_compile_definitions(pf_rendering_playground PUBLIC NOGDI)
 target_link_libraries(pf_rendering_playground glad
