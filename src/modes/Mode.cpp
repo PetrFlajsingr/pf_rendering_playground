@@ -3,14 +3,19 @@
 //
 
 #include "Mode.h"
+
 #include "spdlog/spdlog.h"
+#include <utility>
 
 namespace pf {
+
+const toml::table &Mode::getConfig() const { return config; }
 
 ModeState Mode::getState() const { return state; }
 
 void Mode::initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
-                      const std::shared_ptr<glfw::Window> &window) {
+                      const std::shared_ptr<glfw::Window> &window, toml::table modeConfig) {
+  config = std::move(modeConfig);
   spdlog::info("[{}] Initializing", getName());
   initialize_impl(imguiInterface, window);
   state = ModeState::Initialised;

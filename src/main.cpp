@@ -1,7 +1,7 @@
 #include "glad/glad.h"
 #include "imgui/ImGuiGlfwOpenGLInterface.h"
-#include "modes/ModeManager.h"
 #include "modes/DummyMode.h"
+#include "modes/ModeManager.h"
 #include "shader_toy/ShaderToyMode.h"
 #include "utils/files.h"
 #include <argparse/argparse.hpp>
@@ -35,7 +35,8 @@ toml::table loadConfig() {
 /**
  * Serialize UI, save it to the config and save the config next to the exe into config.toml
  */
-void saveConfig(toml::table config, pf::ui::ig::ImGuiInterface &imguiInterface, const std::shared_ptr<pf::glfw::Window> &window) {
+void saveConfig(toml::table config, pf::ui::ig::ImGuiInterface &imguiInterface,
+                const std::shared_ptr<pf::glfw::Window> &window, const pf::ModeManager &modeManager) {
   const auto configPath = pf::getExeFolder() / "config.toml";
   const auto configPathStr = configPath.string();
   spdlog::info("Saving config file to: '{}'", configPathStr);
@@ -44,6 +45,7 @@ void saveConfig(toml::table config, pf::ui::ig::ImGuiInterface &imguiInterface, 
   const auto &[width, height] = window->getSize();
   config["window"].as_table()->insert_or_assign("width", width);
   config["window"].as_table()->insert_or_assign("height", height);
+  config.insert_or_assign("modes", modeManager.getConfig());
   auto ofstream = std::ofstream(configPathStr);
   ofstream << config;
 }
@@ -75,21 +77,27 @@ int main(int argc, char *argv[]) {
   }
 
   const auto imguiConfig = *config["imgui"].as_table();
-  auto imguiInterface = std::make_shared<pf::ui::ig::ImGuiGlfwOpenGLInterface>(pf::ui::ig::ImGuiGlfwOpenGLConfig{
-      .imgui{.flags = pf::ui::ig::ImGuiConfigFlags::DockingEnable,
-             .config = imguiConfig,
-             .iconFontDirectory = *imguiConfig["path_icons"].value<std::string>(),
-             .enabledIconPacks = pf::ui::ig::IconPack::FontAwesome5Regular,
-             .iconSize = 13.f},
-      .windowHandle = window->getHandle()});
+  auto imguiInterface = std::make_shared<pf::ui::ig::ImGuiGlfwOpenGLInterface>(
+      pf::ui::ig::ImGuiGlfwOpenGLConfig{.imgui{.flags = pf::ui::ig::ImGuiConfigFlags::DockingEnable,
+                                               .config = imguiConfig,
+                                               .iconFontDirectory = *imguiConfig["path_icons"].value<std::string>(),
+                                               .enabledIconPacks = pf::ui::ig::IconPack::FontAwesome5Regular,
+                                               .iconSize = 13.f},
+                                        .windowHandle = window->getHandle()});
 
   const auto fontPath = resourcesFolder / "fonts" / "Roboto-Regular.ttf";
   if (std::filesystem::exists(fontPath)) {
-    auto robotoFont = imguiInterface->getFontManager().fontBuilder("Roboto-Regular", fontPath).setFontSize(14.f).build();
+    auto robotoFont =
+        imguiInterface->getFontManager().fontBuilder("Roboto-Regular", fontPath).setFontSize(14.f).build();
     imguiInterface->setGlobalFont(robotoFont);
   }
 
-  pf::ModeManager modeManager{imguiInterface, window};
+  auto modeManagerConfig = toml::table{};
+  if (const auto iter = config.find("modes"); iter != config.end()) {
+    if (auto configTable = iter->second.as_table(); configTable != nullptr) { modeManagerConfig = *configTable; }
+  }
+
+  pf::ModeManager modeManager{imguiInterface, window, modeManagerConfig};
 
   modeManager.addMode(std::make_shared<pf::shader_toy::ShaderToyMode>(resourcesFolder));
   modeManager.activateMode("ShaderToy");
@@ -97,9 +105,7 @@ int main(int argc, char *argv[]) {
 
   //glfw.setSwapInterval(0);
   pf::MainLoop::Get()->setOnMainLoop([&](auto time) {
-    if (window->shouldClose()) {
-      pf::MainLoop::Get()->stop();
-    }
+    if (window->shouldClose()) { pf::MainLoop::Get()->stop(); }
     imguiInterface->render();
     modeManager.render(time);
     window->swapBuffers();
@@ -110,6 +116,6 @@ int main(int argc, char *argv[]) {
   pf::MainLoop::Get()->run();
   spdlog::info("Main loop ended");
 
-  saveConfig(config, *imguiInterface, window);
+  saveConfig(config, *imguiInterface, window, modeManager);
   return 0;
 }
