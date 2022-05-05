@@ -8,8 +8,9 @@
 #include <utility>
 
 namespace pf {
-ModeManager::ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window)
-    : imGuiInterface(std::move(imGuiInterface)), window(std::move(window)),
+ModeManager::ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window,
+                         toml::table config)
+    : imGuiInterface(std::move(imGuiInterface)), window(std::move(window)), config(std::move(config)),
       subMenu(this->imGuiInterface->getMenuBar().createChild(
           ui::ig::SubMenu::Config{.name = "modes_menu", .label = "Modes"})),
       statusBarText(this->imGuiInterface->createStatusBar("mode_manager_status_bar")
@@ -19,6 +20,14 @@ ModeManager::~ModeManager() {
   imGuiInterface->getMenuBar().removeChild(subMenu.getName());
   deactivateModes();
   deinitializeModes();
+}
+
+toml::table ModeManager::getConfig() const {
+  auto result = config;
+  std::ranges::for_each(
+      modes, [&result](const auto &mode) { result.insert_or_assign(mode->getName(), mode->getConfig()); },
+      &ModeRecord::mode);
+  return result;
 }
 
 std::optional<ModeManager::Error> ModeManager::addMode(std::shared_ptr<Mode> mode) {
@@ -94,7 +103,13 @@ std::optional<ModeManager::ModeRecord *> ModeManager::findModeByName(const std::
 
 void ModeManager::activateMode_impl(ModeManager::ModeRecord *mode) {
   deactivateModes();
-  if (mode->mode->getState() != ModeState::Initialised) { mode->mode->initialize(imGuiInterface, window); }
+  if (mode->mode->getState() != ModeState::Initialised) {
+    auto modeConfig = toml::table{};
+    if (const auto iter = config.find(mode->name); iter != config.end()) {
+      if (auto configTable = iter->second.as_table(); configTable != nullptr) { modeConfig = *configTable; }
+    }
+    mode->mode->initialize(imGuiInterface, window, modeConfig);
+  }
   if (mode->mode->getState() != ModeState::Active) { mode->mode->activate(); }
 
   if (activeMode != nullptr) {

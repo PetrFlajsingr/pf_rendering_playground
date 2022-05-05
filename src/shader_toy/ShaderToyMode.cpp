@@ -33,8 +33,14 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   //setDefaultDebugMessage();
   //setDebugMessage(debugOpengl, nullptr);
 
+  auto isFirstRun = true;
+  if (const auto iter = config.find("initialized"); iter != config.end()) {
+    isFirstRun = !iter->second.value_or(false);
+  }
+  config.insert_or_assign("initialized", true);
+
   glfwWindow = window;
-  ui = std::make_unique<UI>(imguiInterface, DEFAULT_SHADER_SOURCE, configData.resourcesPath);
+  ui = std::make_unique<UI>(imguiInterface, *window, DEFAULT_SHADER_SOURCE, configData.resourcesPath, isFirstRun);
 
   const auto updateTextureSizeFromUI = [this](auto) {
     initializeTexture({ui->outputWindow->widthCombobox->getValue(), ui->outputWindow->heightCombobox->getValue()});

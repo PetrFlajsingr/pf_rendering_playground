@@ -18,13 +18,16 @@ class Mode {
  public:
   virtual ~Mode() = default;
 
+  [[nodiscard]] const toml::table &getConfig() const;
+
   [[nodiscard]] ModeState getState() const;
 
   [[nodiscard]] virtual std::string getName() const = 0;
 
  protected:
   void initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
-                  const std::shared_ptr<glfw::Window> &window);
+                  const std::shared_ptr<glfw::Window> &window, toml::table modeConfig);
+
   virtual void initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                                const std::shared_ptr<glfw::Window> &window) = 0;
 
@@ -37,6 +40,8 @@ class Mode {
   virtual void deinitialize_impl() = 0;
 
   virtual void render(std::chrono::nanoseconds timeDelta) = 0;
+
+  toml::table config;
 
  private:
   ModeState state = ModeState::Uninitialised;
