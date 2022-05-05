@@ -5,6 +5,7 @@
 #ifndef PF_RENDERING_PLAYGROUND_INPUTWINDOW_H
 #define PF_RENDERING_PLAYGROUND_INPUTWINDOW_H
 
+#include "ImagesPanel.h"
 #include "GlobalVariablesPanel.h"
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/Button.h>
@@ -44,6 +45,8 @@ class InputWindow {
           ui::ig::VerticalLayout *globalVarsLayout;
             ui::ig::Button *addVarButton;
             GlobalVariablesPanel *varPanel;
+        ui::ig::Tab *imagesTab;
+          ImagesPanel *imagesPanel;
   // clang-format on
 };
 
