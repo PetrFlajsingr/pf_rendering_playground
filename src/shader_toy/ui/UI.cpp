@@ -11,8 +11,8 @@
 namespace pf::shader_toy {
 
 namespace gui = ui::ig;
-UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, const std::string &initShaderCode,
-       const std::filesystem::path &resourcesPath)
+UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window, const std::string &initShaderCode,
+       const std::filesystem::path &resourcesPath, bool initializeDocking)
     : interface(std::move(imGuiInterface)) {
   gui::setDarkStyle(*interface);
 
@@ -39,6 +39,23 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, const std::string &i
   if (std::filesystem::exists(fontPath)) {
     auto codeFont = interface->getFontManager().fontBuilder("RobotoMono-Regular", fontPath).setFontSize(15.f).build();
     textInputWindow->editor->setFont(codeFont);
+  }
+
+  if (initializeDocking) {
+    const auto windowSize = window.getSize();
+    const auto dockAreaSize =
+        gui::Size{gui::Width{static_cast<float>(windowSize.width)}, gui::Height{static_cast<float>(windowSize.height)}};
+    auto &dockBuilder = interface->createDockBuilder(dockingArea->getDockSpace());
+    dockBuilder.setSize(dockAreaSize);
+    dockBuilder.setWindow(*outputWindow->window);
+
+    auto &editorDockBuilder = dockBuilder.split(gui::HorizontalDirection::Right);
+    editorDockBuilder.setSplitRatio(0.4f);
+    editorDockBuilder.setWindow(*textInputWindow->window);
+
+    auto &logDockBuilder = dockBuilder.split(gui::VerticalDirection::Down);
+    logDockBuilder.setSplitRatio(0.3f);
+    logDockBuilder.setWindow(*logWindow);
   }
 
   interface->setStateFromConfig();

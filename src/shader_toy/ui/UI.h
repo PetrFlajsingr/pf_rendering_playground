@@ -11,12 +11,13 @@
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/LogPanel.h>
 #include <spdlog/spdlog.h>
+#include <pf_glfw/Window.h>
 
 namespace pf::shader_toy {
 
 struct UI {
-  UI(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, const std::string &initShaderCode,
-     const std::filesystem::path &resourcesPath);
+  UI(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, glfw::Window &window, const std::string &initShaderCode,
+     const std::filesystem::path &resourcesPath, bool initializeDocking);
 
   void show();
 
