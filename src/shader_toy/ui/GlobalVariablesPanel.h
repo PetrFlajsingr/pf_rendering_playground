@@ -23,13 +23,14 @@ namespace pf::shader_toy {
 
 struct ValueRecord {
   template<typename T>
-  explicit ValueRecord(T initValue);
+  ValueRecord(T initValue, std::string name, bool isColor = false);
 
+  std::string name;
   std::variant<PF_GLSL_TYPES> data;
   const std::string typeName;
+  const bool isColor;
 };
 
-// TODO: make this persistent
 // TODO: support all glsl types
 class GlobalVariablesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui::ig::Savable {
  public:
@@ -46,7 +47,7 @@ class GlobalVariablesPanel : public ui::ig::Element, public ui::ig::Resizable, p
   [[nodiscard]] toml::table toToml() const override;
   void setFromToml(const toml::table &src) override;
 
-  [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<ValueRecord>> &getValueRecords() const;
+  [[nodiscard]] const std::vector<std::shared_ptr<ValueRecord>> &getValueRecords() const;
 
  protected:
   void renderImpl() override;
@@ -62,12 +63,14 @@ class GlobalVariablesPanel : public ui::ig::Element, public ui::ig::Resizable, p
   static std::string getVarNameFromElementName(std::string_view elementName);
 
   std::vector<std::unique_ptr<ui::ig::Element>> elements;
-  std::unordered_map<std::string, std::shared_ptr<ValueRecord>> valueRecords;
+  std::vector<std::shared_ptr<ValueRecord>> valueRecords;
 };
 
 template<typename T>
-ValueRecord::ValueRecord(T initValue)
-    : data(initValue), typeName(getGLSLTypeName<T>()) {}
+ValueRecord::ValueRecord(T initValue, std::string name, bool isColor)
+    : name(std::move(name)), data(initValue), typeName(getGLSLTypeName<T>()), isColor(isColor) {
+  assert(!(!std::same_as<glm::vec4, T> && isColor));
+}
 
 template<OneOf<PF_GLSL_TYPES> T>
   requires(OneOf<T, IMGUI_DRAG_TYPE_LIST> || OneOf<T, PF_IMGUI_GLM_MAT_TYPES>)
@@ -101,11 +104,9 @@ void GlobalVariablesPanel::addDragVariable(std::string_view name, T initialValue
 
 template<typename T>
 void GlobalVariablesPanel::addValueRecord(ui::ig::ValueObservable<T> &observable, std::string_view name) {
-  auto newRecord = valueRecords.emplace(std::string{name}, std::make_shared<ValueRecord>(observable.getValue()));
-  observable.addValueListener([valueRecord = newRecord.first->second.get()](const T &newValue) mutable {
-    valueRecord->data = newValue;
-  });
+  auto newRecord = valueRecords.emplace_back(std::make_shared<ValueRecord>(observable.getValue(), std::string{name}));
+  observable.addValueListener([valueRecord = newRecord](const T &newValue) mutable { valueRecord->data = newValue; });
 }
 
-}  // namespace pf
+}  // namespace pf::shader_toy
 #endif  //PF_RENDERING_PLAYGROUND_GLOBALVARIABLESPANEL_H

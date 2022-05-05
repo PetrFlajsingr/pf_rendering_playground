@@ -65,7 +65,7 @@ class ShaderToyMode : public Mode {
   std::shared_ptr<glfw::Window> glfwWindow = nullptr;
   glm::vec2 mousePos{};
 
-  std::unordered_map<std::string, std::shared_ptr<ValueRecord>> userDefinedUniforms;
+  std::vector<std::shared_ptr<ValueRecord>> userDefinedUniforms;
 
   std::function<std::size_t(std::size_t)> shaderLineMapping;
 
@@ -87,5 +87,5 @@ void main() {
 })glsl";
 };
 
-}  // namespace pf
+}  // namespace pf::shader_toy
 #endif  //PF_RENDERING_PLAYGROUND_SHADERTOYMODE_H

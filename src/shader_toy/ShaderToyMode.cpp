@@ -127,8 +127,9 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   mainProgram->setUniformValue("mouseState", static_cast<int>(mouseState));
   mainProgram->setUniformValue("mousePos", glm::vec3{mousePos, 0.f});
 
-  for (const auto &[name, value] : userDefinedUniforms) {
-    std::visit([&]<typename T>(T uniformValue) { mainProgram->setUniformValue(name, uniformValue); }, value->data);
+  for (const auto &valueRecord : userDefinedUniforms) {
+    std::visit([&]<typename T>(T uniformValue) { mainProgram->setUniformValue(valueRecord->name, uniformValue); },
+               valueRecord->data);
   }
 
   const auto textureSize = getTextureSize();
@@ -138,6 +139,7 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   updateUI();
   if (!timeCounterPaused) { totalTime += timeDelta; }
 }
+
 void ShaderToyMode::resetCounters() {
   frameCounter = 0;
   totalTime = std::chrono::nanoseconds{0};
@@ -185,10 +187,10 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
       .addUniform<glm::vec3>("mousePos")
       .addImage2D("rgba32f", 0, "outImage")
       .setLocalGroupSize(COMPUTE_LOCAL_GROUP_SIZE);
-  for (const auto &[name, value] : ui->textInputWindow->varPanel->getValueRecords()) {
-    builder.addUniform(value->typeName, name);
-    getTypeForGlslName(value->typeName, [&]<typename T> {
-        computeShaderUniforms.emplace_back(Uniform::Create<T>(name));
+  for (const auto &valueRecord : ui->textInputWindow->varPanel->getValueRecords()) {
+    builder.addUniform(valueRecord->typeName, valueRecord->name);
+    getTypeForGlslName(valueRecord->typeName, [&]<typename T> {
+        computeShaderUniforms.emplace_back(Uniform::Create<T>(valueRecord->name));
     });
   }
   // clang-format on
@@ -201,7 +203,8 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
         const auto compilationStartTime = std::chrono::steady_clock::now();
         auto spirvResult = glslComputeShaderSourceToSpirv(source);
         const auto compilationDuration = std::chrono::steady_clock::now() - compilationStartTime;
-        spdlog::debug("[ShaderToy] Compilation took {}", std::chrono::duration_cast<std::chrono::milliseconds>(compilationDuration));
+        spdlog::debug("[ShaderToy] Compilation took {}",
+                      std::chrono::duration_cast<std::chrono::milliseconds>(compilationDuration));
         pf::MainLoop::Get()->enqueue([spirvResult = std::move(spirvResult), source = std::move(source), this,
                                       computeShaderUniforms = std::move(computeShaderUniforms)]() mutable {
           auto onDone = RAII{[this] {
