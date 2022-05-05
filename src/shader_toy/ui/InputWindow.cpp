@@ -29,10 +29,34 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
       gui::HorizontalLayout::Config{.name = "text_controls_layout", .size = gui::Size{gui::Width::Auto(), 80}});
   compileButton = &controlsLayout->createChild(gui::Button::Config{"compile_btn", "Compile"});
   //sep1 = &controlsLayout->createChild<gui::Separator>("sep1");
-  timePausedCheckbox = &controlsLayout->createChild(gui::Checkbox::Config{"pause_cbkx", "Pause time"});
+  timePausedCheckbox = &controlsLayout->createChild(
+      gui::Checkbox::Config{.name = "pause_cbkx", .label = "Pause time", .persistent = true});
   restartButton = &controlsLayout->createChild(gui::Button::Config{"restart_btn", "Restart"});
+  autoCompileCheckbox = &controlsLayout->createChild(
+      gui::Checkbox::Config{.name = "autocompile_cbkx", .label = "Auto compile", .persistent = true});
+  autoCompileFrequencyDrag = &controlsLayout->createChild(
+      gui::WidthDecorator<gui::DragInput<float>>::Config{.width = 50,
+                                                         .config = {.name = "autocompile_f_drag",
+                                                                    .label = "Frequency",
+                                                                    .speed = 0.01f,
+                                                                    .min = 0.1f,
+                                                                    .max = 10.f,
+                                                                    .value = 1.f,
+                                                                    .format = "%.1f sec",
+                                                                    .persistent = true}});
+  autoCompileCheckbox->addValueListener(
+      [this](bool value) { autoCompileFrequencyDrag->setEnabled(value ? Enabled::Yes : Enabled::No); });
 
-  infoText = &mainShaderTab->createChild<gui::Text>("info_txt", "Info");
+  codeToClipboardButton =
+      &mainShaderTab->createChild<gui::Button>("copy_shtoy_to_clip", "Generated shader to clipboard");
+
+  infoLayout = &mainShaderTab->createChild(
+      gui::HorizontalLayout::Config{.name = "info_layout", .size = gui::Size{gui::Width::Auto(), 30}});
+  infoText = &infoLayout->createChild<gui::Text>("info_txt", "Info");
+  compilationSpinner =
+      &infoLayout->createChild(gui::Spinner::Config{.name = "compilation_bar", .radius = 6, .thickness = 4});
+  compilationSpinner->setVisibility(gui::Visibility::Invisible);
+
   auto &tooltip = infoText->createOrGetTooltip();
 
   const auto INFO_MD_TEXT = u8R"md(### Variables
