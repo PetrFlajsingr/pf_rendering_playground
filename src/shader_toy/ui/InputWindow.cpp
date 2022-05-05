@@ -89,7 +89,12 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
         .inputValidator([&](std::string_view typeName, std::string_view varName) -> std::optional<std::string> {
           if (typeName.empty()) { return "Select a type"; }
           if (!isValidGlslIdentifier(varName)) { return "Invalid variable name"; }
-          if (varPanel->getValueRecords().contains(std::string{varName})) { return "Name is already in use"; }
+          {
+            const auto &valueRecords = varPanel->getValueRecords();
+            if (std::ranges::find(valueRecords, std::string{varName}, &ValueRecord::name) != valueRecords.end()) {
+              return "Name is already in use";
+            }
+          }
           bool unsupportedType = false;
           getTypeForGlslName(typeName, [&]<typename T>() { unsupportedType = isUnsupportedType.operator()<T>(); });
           if (unsupportedType) { return "Selected type is not currently supported"; }

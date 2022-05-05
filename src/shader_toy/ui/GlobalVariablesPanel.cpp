@@ -13,9 +13,8 @@ GlobalVariablesPanel::GlobalVariablesPanel(const std::string &name, gui::Size s,
 toml::table GlobalVariablesPanel::toToml() const {
   auto values = toml::array{};
 
-  std::ranges::for_each(valueRecords, [&](const auto &record) {
-    const auto &[name, valueRecord] = record;
-    auto recordToml = toml::table{{"name", name}, {"typeName", valueRecord->typeName}};
+  std::ranges::for_each(valueRecords, [&](const auto &valueRecord) {
+    auto recordToml = toml::table{{"name", valueRecord->name}, {"typeName", valueRecord->typeName}};
 
     std::visit(
         [&]<typename T>(T value) {
@@ -31,6 +30,7 @@ toml::table GlobalVariablesPanel::toToml() const {
           }
         },
         valueRecord->data);
+    if (valueRecord->isColor) { recordToml.insert("isColor", true); }
 
     values.push_back(recordToml);
   });
@@ -49,6 +49,10 @@ void GlobalVariablesPanel::setFromToml(const toml::table &src) {
           if (typeNameIter == val->end()) { continue; }
           const auto valueIter = val->find("value");
           if (valueIter == val->end()) { continue; }
+          auto isColor = false;
+          if (const auto isColorIter = val->find("isColor"); isColorIter != val->end()) {
+            isColor = isColorIter->second.value_or(false);
+          }
 
           if (auto name = nameIter->second.as_string(); name != nullptr) {
             if (auto typeName = typeNameIter->second.as_string(); typeName != nullptr) {
@@ -73,7 +77,17 @@ void GlobalVariablesPanel::setFromToml(const toml::table &src) {
                                       glm::uvec2, glm::uvec3, glm::uvec4, glm::bvec2, glm::bvec3, glm::bvec4>) {
                     if (auto value = valueIter->second.as_array(); value != nullptr) {
                       if (auto vecValue = ui::ig::safeDeserializeGlmVec<T>(*value); vecValue.has_value()) {
-                        addDragVariable(name->get(), vecValue.value());
+                        if constexpr (std::same_as<T, glm::vec4>) {
+                          if (isColor) {
+                            addColorVariable(name->get(),
+                                             gui::Color::RGB(vecValue.value().r, vecValue.value().g, vecValue.value().b,
+                                                             vecValue.value().a));
+                          } else {
+                            addDragVariable(name->get(), vecValue.value());
+                          }
+                        } else {
+                          addDragVariable(name->get(), vecValue.value());
+                        }
                       }
                     }
                   }
@@ -99,7 +113,6 @@ void GlobalVariablesPanel::setFromToml(const toml::table &src) {
                     }
                   }
                 }
-                // FIXME: missing color
               });
             }
           }
@@ -148,25 +161,25 @@ void GlobalVariablesPanel::addColorVariable(std::string_view name, gui::Color in
                                                                      .label = name,
                                                                      .value = initialValue});
 
-  auto newRecord =
-      valueRecords.emplace(std::string{name},
-                           std::make_shared<ValueRecord>(glm::vec4{initialValue.red(), initialValue.green(),
-                                                                   initialValue.blue(), initialValue.alpha()}));
-  newColorElement->addValueListener([valueRecord = newRecord.first->second.get()](ui::ig::Color newValue) mutable {
+  auto newRecord = valueRecords.emplace_back(std::make_shared<ValueRecord>(
+      glm::vec4{initialValue.red(), initialValue.green(), initialValue.blue(), initialValue.alpha()}, std::string{name},
+      true));
+  newColorElement->addValueListener([valueRecord = newRecord](ui::ig::Color newValue) mutable {
     valueRecord->data = glm::vec4{newValue.red(), newValue.green(), newValue.blue(), newValue.alpha()};
   });
 
   elements.emplace_back(std::move(newColorElement));
 }
 
-const std::unordered_map<std::string, std::shared_ptr<ValueRecord>> &GlobalVariablesPanel::getValueRecords() const {
-  return valueRecords;
-}
+const std::vector<std::shared_ptr<ValueRecord>> &GlobalVariablesPanel::getValueRecords() const { return valueRecords; }
 
 bool GlobalVariablesPanel::variableExists(std::string_view name) {
-  return valueRecords.find(std::string{name}) != valueRecords.end();
+  return std::ranges::find(valueRecords, std::string{name}, &ValueRecord::name) != valueRecords.end();
 }
 
-void GlobalVariablesPanel::removeValueRecord(std::string_view name) { valueRecords.erase(std::string{name}); }
+void GlobalVariablesPanel::removeValueRecord(std::string_view name) {
+  const auto [remBg, remEnd] = std::ranges::remove(valueRecords, std::string{name}, &ValueRecord::name);
+  valueRecords.erase(remBg, remEnd);
+}
 
 }  // namespace pf::shader_toy
