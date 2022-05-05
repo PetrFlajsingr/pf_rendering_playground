@@ -9,6 +9,7 @@
 #include "gpu/ComputeShaderProgram.h"
 #include "modes/Mode.h"
 #include "ui/UI.h"
+#include <future>
 #include <geGL/Program.h>
 #include <geGL/Shader.h>
 #include <geGL/Texture.h>
@@ -41,7 +42,8 @@ class ShaderToyMode : public Mode {
 
   [[nodiscard]] glm::uvec2 getTextureSize() const;
 
-  std::optional<std::string> compileShader(const std::string &shaderCode);
+  void compileShader(const std::string &shaderCode);
+  void compileShader_impl(const std::string &shaderCode);
 
   void updateUI();
 
@@ -68,6 +70,13 @@ class ShaderToyMode : public Mode {
   std::function<std::size_t(std::size_t)> shaderLineMapping;
 
   FPSCounter fpsCounter;
+
+  bool autoCompileShader = false;
+  bool isShaderChanged = true;
+  std::chrono::time_point<std::chrono::steady_clock> lastShaderChangeTime = std::chrono::steady_clock::now();
+
+  std::future<void> shaderCompilationFuture;
+  bool previousShaderCompilationDone = true;
 
   constexpr static auto DEFAULT_SHADER_SOURCE = R"glsl(
 void main() {
