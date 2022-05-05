@@ -59,6 +59,11 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   autoCompileShader = ui->textInputWindow->autoCompileCheckbox->getValue();
   ui->textInputWindow->autoCompileCheckbox->bind(autoCompileShader);
 
+  ui->textInputWindow->varPanel->addVariablesChangedListener([this] {
+    isShaderChanged = true;
+    lastShaderChangeTime = std::chrono::steady_clock::now();
+  });
+
   ui->textInputWindow->editor->addTextListener([this](std::string_view) {
     isShaderChanged = true;
     lastShaderChangeTime = std::chrono::steady_clock::now();
@@ -211,6 +216,9 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
             previousShaderCompilationDone = true;
             ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Invisible);
           }};
+
+          auto compilationSucceeded = false;
+
           ui->textInputWindow->editor->clearWarningMarkers();
           ui->textInputWindow->editor->clearErrorMarkers();
           if (spirvResult.has_value()) {
@@ -226,6 +234,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
               frameCounter = 0;
               currentShaderSrc = std::move(source);
               spdlog::info("[ShaderToy] Compiling shader success");
+              compilationSucceeded = true;
             } else {
               spdlog::error("[ShaderToy] Shader creation failed:");
               spdlog::error("[ShaderToy] \t{}", newProgram.error());
@@ -245,6 +254,13 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
                 case Error: ui->textInputWindow->editor->addErrorMarker(marker); break;
               }
             }
+          }
+          if (compilationSucceeded) {
+            ui->textInputWindow->mainShaderTab->unsetColor<ui::ig::style::ColorOf::Tab>();
+            ui->textInputWindow->mainShaderTab->unsetColor<ui::ig::style::ColorOf::TabActive>();
+          } else {
+            ui->textInputWindow->mainShaderTab->setColor<ui::ig::style::ColorOf::Tab>(ui::ig::Color::Red);
+            ui->textInputWindow->mainShaderTab->setColor<ui::ig::style::ColorOf::TabActive>(ui::ig::Color::Red);
           }
         });
       });

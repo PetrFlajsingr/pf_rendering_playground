@@ -152,6 +152,7 @@ void GlobalVariablesPanel::addBoolVariable(std::string_view name, bool initialVa
   auto newCheckboxElement = std::make_unique<gui::Checkbox>(getElementName(name), std::string{name}, initialValue);
   addValueRecord(*newCheckboxElement, name);
   elements.emplace_back(std::move(newCheckboxElement));
+  variablesChangedObservable.notify();
 }
 
 void GlobalVariablesPanel::addColorVariable(std::string_view name, gui::Color initialValue) {
@@ -169,6 +170,7 @@ void GlobalVariablesPanel::addColorVariable(std::string_view name, gui::Color in
   });
 
   elements.emplace_back(std::move(newColorElement));
+  variablesChangedObservable.notify();
 }
 
 const std::vector<std::shared_ptr<ValueRecord>> &GlobalVariablesPanel::getValueRecords() const { return valueRecords; }
@@ -180,6 +182,7 @@ bool GlobalVariablesPanel::variableExists(std::string_view name) {
 void GlobalVariablesPanel::removeValueRecord(std::string_view name) {
   const auto [remBg, remEnd] = std::ranges::remove(valueRecords, std::string{name}, &ValueRecord::name);
   valueRecords.erase(remBg, remEnd);
+  variablesChangedObservable.notify();
 }
 
 }  // namespace pf::shader_toy
