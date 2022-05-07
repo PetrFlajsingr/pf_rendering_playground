@@ -90,7 +90,7 @@ add_executable(pf_rendering_playground
         src/gpu/Program.cpp
         src/gpu/Program.h
         src/gpu/opengl/Program.cpp
-        src/gpu/opengl/Program.h src/gpu/Types.h)
+        src/gpu/opengl/Program.h src/gpu/Types.h src/gpu/utils.h)
 
 target_compile_definitions(pf_rendering_playground PUBLIC NOGDI)
 target_link_libraries(pf_rendering_playground glad

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "gpu/Texture.h"
 #include <filesystem>
 #include <pf_imgui/elements/Button.h>
 #include <pf_imgui/elements/Image.h>
@@ -19,7 +20,7 @@ namespace pf {
 // TODO: image size based on aspect ratio
 class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
  public:
-  ImageTile(const std::string &name, ui::ig::Size size, ImTextureID textureId, std::string varName);
+  ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<Texture> texture, const std::string &varName);
 
   // clang-format off
    ui::ig::VerticalLayout layout;
@@ -28,6 +29,8 @@ class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
     ui::ig::HorizontalLayout *controlsLayout;
       ui::ig::Button *removeButton;
   // clang-format on
+
+  std::shared_ptr<Texture> texture;
 
  protected:
   void renderImpl() override;
@@ -40,18 +43,17 @@ class ImagesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui:
   [[nodiscard]] toml::table toToml() const override;
   void setFromToml(const toml::table &src) override;
 
-  void addImageTile(ImTextureID textureId, std::string varName) {
+  void addImageTile(std::shared_ptr<Texture> texture, std::string varName) {
     static int cnt = 0;
-    imageTiles.emplace_back(&imagesLayout->createChild<ImageTile>(getName() + "_img_" + std::to_string(cnt++), ui::ig::Size{220, 150}, textureId, varName));
+    imageTiles.emplace_back(&imagesLayout->createChild<ImageTile>(getName() + "_img_" + std::to_string(cnt++),
+                                                                  ui::ig::Size{220, 150}, texture, varName));
   }
 
   void clearImageTiles() {
-    std::ranges::for_each(imageTiles, [this](const auto &imageTile) {
-      imagesLayout->removeChild(imageTile->getName());
-    });
+    std::ranges::for_each(imageTiles,
+                          [this](const auto &imageTile) { imagesLayout->removeChild(imageTile->getName()); });
     imageTiles.clear();
   }
-
 
  protected:
   void renderImpl() override;

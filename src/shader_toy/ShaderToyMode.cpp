@@ -7,6 +7,7 @@
 #include "gpu/opengl/Program.h"
 #include "gpu/opengl/Shader.h"
 #include "gpu/opengl/Texture.h"
+#include "gpu/utils.h"
 #include <future>
 #include <pf_imgui/elements/Image.h>
 #include <pf_mainloop/MainLoop.h>
@@ -125,7 +126,6 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   const auto timeFloat = static_cast<float>(totalTime.count()) / 1'000'000'000.0f;
   const auto timeDeltaFloat = static_cast<float>(timeDelta.count()) / 1'000'000'000.0f;
 
-
   mainProgram->setUniform("time", timeFloat);
   mainProgram->setUniform("timeDelta", timeDeltaFloat);
   mainProgram->setUniform("frameNum", frameCounter);
@@ -166,17 +166,9 @@ void ShaderToyMode::initializeTexture(TextureSize textureSize) {
   outputTexture->setParam(TextureMinificationFilter::Linear);
   outputTexture->setParam(TextureMagnificationFilter::Linear);
 
-  if (const auto ptrOpt = outputTexture->as<OpenGlTexture>(); ptrOpt.has_value()) {
-    const auto ptr = ptrOpt.value();
-    ui->outputWindow->image->setTextureId(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(ptr->getHandle())));
+  ui->outputWindow->image->setTextureId(getImTextureID(*outputTexture));
 
-    for (auto i : std::views::iota(0, 100))
-      ui->textInputWindow->imagesPanel->addImageTile(
-          reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(ptr->getHandle())), "First_texture");
-
-  } else {
-    assert(false && "Can't reach here for now");
-  }
+  for (auto i : std::views::iota(0, 100)) ui->textInputWindow->imagesPanel->addImageTile(outputTexture, "Texture");
 }
 
 glm::uvec2 ShaderToyMode::getTextureSize() const {

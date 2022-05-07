@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <pf_common/enums.h>
 #include <string_view>
+#include <utility>
 
 namespace pf {
 
@@ -20,7 +21,7 @@ enum class GpuApi {
 
 template<Enum E>
 struct GpuError {
-  GpuError(const E code, const std::string &message) : code(code), message(message) {}
+  GpuError(const E code, std::string message) : code(code), message(std::move(message)) {}
   const E code;
   const std::string message;
 };
