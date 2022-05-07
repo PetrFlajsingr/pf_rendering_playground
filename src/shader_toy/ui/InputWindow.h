@@ -2,8 +2,7 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_INPUTWINDOW_H
-#define PF_RENDERING_PLAYGROUND_INPUTWINDOW_H
+#pragma once
 
 #include "ImagesPanel.h"
 #include "GlobalVariablesPanel.h"
@@ -52,4 +51,3 @@ class InputWindow {
 
 }  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_INPUTWINDOW_H

@@ -2,8 +2,7 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_MODEMANAGER_H
-#define PF_RENDERING_PLAYGROUND_MODEMANAGER_H
+#pragma once
 
 #include "Mode.h"
 
@@ -53,4 +52,3 @@ class ModeManager {
 
 }  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_MODEMANAGER_H

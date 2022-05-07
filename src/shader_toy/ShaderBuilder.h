@@ -2,8 +2,7 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_SHADERBUILDER_H
-#define PF_RENDERING_PLAYGROUND_SHADERBUILDER_H
+#pragma once
 
 #include <functional>
 #include <glm/glm.hpp>
@@ -117,5 +116,3 @@ std::string ShaderBuilder::getEnumTypeName() const {
   return result;
 }
 }  // namespace pf::shader_toy
-
-#endif  //PF_RENDERING_PLAYGROUND_SHADERBUILDER_H

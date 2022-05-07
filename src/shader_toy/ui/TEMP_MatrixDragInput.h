@@ -2,8 +2,7 @@
 // Created by xflajs00 on 23.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_TEMP_MATRIXDRAGINPUT_H
-#define PF_RENDERING_PLAYGROUND_TEMP_MATRIXDRAGINPUT_H
+#pragma once
 
 #include <glm/glm.hpp>
 #include <pf_imgui/elements/DragInput.h>
@@ -84,4 +83,3 @@ class MatrixDragInput
 };
 }  // namespace pf::ui::ig
 
-#endif  //PF_RENDERING_PLAYGROUND_TEMP_MATRIXDRAGINPUT_H

@@ -2,8 +2,7 @@
 // Created by xflajs00 on 03.05.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_OPENGL_H
-#define PF_RENDERING_PLAYGROUND_OPENGL_H
+#pragma once
 
 #include "glm/gtc/type_ptr.hpp"
 #include "glsl_typenames.h"
@@ -70,4 +69,3 @@ void setOGLUniform(GLuint programHandle, GLint uniformLocation, T value) {
 
 }  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_OPENGL_H

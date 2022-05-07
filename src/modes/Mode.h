@@ -2,8 +2,7 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_MODE_H
-#define PF_RENDERING_PLAYGROUND_MODE_H
+#pragma once
 
 #include <pf_glfw/Window.h>
 #include <pf_imgui/ImGuiInterface.h>
@@ -49,4 +48,3 @@ class Mode {
 
 }  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_MODE_H

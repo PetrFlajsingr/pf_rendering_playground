@@ -2,8 +2,7 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_UISINK_H
-#define PF_RENDERING_PLAYGROUND_UISINK_H
+#pragma once
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/base_sink.h>
@@ -43,4 +42,3 @@ using PfImguiLogSink_mt = PfImguiLogSink<std::mutex>;
 using PfImguiLogSink_st = PfImguiLogSink<spdlog::details::null_mutex>;
 
 
-#endif//PF_RENDERING_PLAYGROUND_UISINK_H

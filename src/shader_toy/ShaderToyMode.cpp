@@ -4,10 +4,10 @@
 
 #include "ShaderToyMode.h"
 #include "ShaderBuilder.h"
+#include "gpu/opengl/Program.h"
+#include "gpu/opengl/Shader.h"
+#include "gpu/opengl/Texture.h"
 #include <future>
-#include <geGL/DebugMessage.h>
-#include <glslang/Include/ResourceLimits.h>
-#include <glslang/Include/glslang_c_interface.h>
 #include <pf_imgui/elements/Image.h>
 #include <pf_mainloop/MainLoop.h>
 #include <range/v3/range/conversion.hpp>
@@ -15,7 +15,7 @@
 #include <range/v3/view/trim.hpp>
 #include <utility>
 #include <utils/GlslToSpirv.h>
-#include <utils/opengl.h>
+#include <utils/opengl_utils.h>
 
 void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
                  const void *) {
@@ -43,7 +43,11 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   ui = std::make_unique<UI>(imguiInterface, *window, DEFAULT_SHADER_SOURCE, configData.resourcesPath, isFirstRun);
 
   const auto updateTextureSizeFromUI = [this](auto) {
-    initializeTexture({ui->outputWindow->widthCombobox->getValue(), ui->outputWindow->heightCombobox->getValue()});
+    TextureSize textureSize;
+    textureSize.width = TextureWidth{static_cast<std::uint32_t>(ui->outputWindow->widthCombobox->getValue())};
+    textureSize.height = TextureHeight{static_cast<std::uint32_t>(ui->outputWindow->heightCombobox->getValue())};
+    textureSize.depth = TextureDepth{0u};
+    initializeTexture(textureSize);
   };
 
   ui->outputWindow->widthCombobox->addValueListener(updateTextureSizeFromUI);
@@ -121,16 +125,21 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   const auto timeFloat = static_cast<float>(totalTime.count()) / 1'000'000'000.0f;
   const auto timeDeltaFloat = static_cast<float>(timeDelta.count()) / 1'000'000'000.0f;
 
-  mainProgram->setUniformValue("time", timeFloat);
-  mainProgram->setUniformValue("timeDelta", timeDeltaFloat);
-  mainProgram->setUniformValue("frameNum", frameCounter);
-  mainProgram->setUniformValue("mouseState", static_cast<int>(mouseState));
-  mainProgram->setUniformValue("mousePos", glm::vec3{mousePos, 0.f});
+
+  mainProgram->setUniform("time", timeFloat);
+  mainProgram->setUniform("timeDelta", timeDeltaFloat);
+  mainProgram->setUniform("frameNum", frameCounter);
+  mainProgram->setUniform("mouseState", static_cast<int>(mouseState));
+  mainProgram->setUniform("mousePos", glm::vec3{mousePos, 0.f});
 
   for (const auto &valueRecord : userDefinedUniforms) {
-    std::visit([&]<typename T>(T uniformValue) { mainProgram->setUniformValue(valueRecord->name, uniformValue); },
+    std::visit([&]<typename T>(T uniformValue) { mainProgram->setUniform(valueRecord->name, uniformValue); },
                valueRecord->data);
   }
+
+  mainProgram->use();
+
+  outputTexture->bindImage(Binding{0}, ImageTextureUnitAccess::ReadWrite);
 
   const auto textureSize = getTextureSize();
   mainProgram->dispatch(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y);
@@ -145,22 +154,34 @@ void ShaderToyMode::resetCounters() {
   totalTime = std::chrono::nanoseconds{0};
 }
 
-void ShaderToyMode::initializeTexture(glm::uvec2 textureSize) {
-  spdlog::info("[ShaderToy] Updating texture size to {}x{}", textureSize.x, textureSize.y);
-  outputTexture = std::make_shared<Texture>(GL_TEXTURE_2D, GL_RGBA32F, 0, textureSize.x, textureSize.y);
-  outputTexture->texParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  outputTexture->texParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+void ShaderToyMode::initializeTexture(TextureSize textureSize) {
+  ui->textInputWindow->imagesPanel->clearImageTiles();
+  spdlog::info("[ShaderToy] Updating texture size to {}x{}", textureSize.width.get(), textureSize.height.get());
+  outputTexture =
+      std::make_shared<OpenGlTexture>(TextureTarget::_2D, TextureFormat::RGBA32F, TextureLevel{0}, textureSize);
+  if (const auto err = outputTexture->create(); err.has_value()) {
+    // can't happen for now
+  }
+  spdlog::debug("[ShaderToy] Texture created: {}", *outputTexture);
+  outputTexture->setParam(TextureMinificationFilter::Linear);
+  outputTexture->setParam(TextureMagnificationFilter::Linear);
 
-  ui->outputWindow->image->setTextureId(
-      reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(outputTexture->getId())));
+  if (const auto ptrOpt = outputTexture->as<OpenGlTexture>(); ptrOpt.has_value()) {
+    const auto ptr = ptrOpt.value();
+    ui->outputWindow->image->setTextureId(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(ptr->getHandle())));
 
-  if (mainProgram != nullptr) {
-    mainProgram->setBinding(
-        std::make_unique<ImageBindingObject>(0, outputTexture->getId(), outputTexture->getFormat()));
+    for (auto i : std::views::iota(0, 100))
+      ui->textInputWindow->imagesPanel->addImageTile(
+          reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(ptr->getHandle())), "First_texture");
+
+  } else {
+    assert(false && "Can't reach here for now");
   }
 }
 
-glm::uvec2 ShaderToyMode::getTextureSize() const { return {outputTexture->getWidth(0), outputTexture->getHeight(0)}; }
+glm::uvec2 ShaderToyMode::getTextureSize() const {
+  return {outputTexture->getSize().width.get(), outputTexture->getSize().height.get()};
+}
 
 void ShaderToyMode::compileShader(const std::string &shaderCode) {
   ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Visible);
@@ -170,13 +191,6 @@ void ShaderToyMode::compileShader(const std::string &shaderCode) {
 
 // TODO: clean this up
 void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
-  using Uniform = ComputeShaderProgram::Uniform;
-  auto computeShaderUniforms = std::vector<Uniform>{};
-  computeShaderUniforms.emplace_back(Uniform::Create<float>("time"));
-  computeShaderUniforms.emplace_back(Uniform::Create<float>("timeDelta"));
-  computeShaderUniforms.emplace_back(Uniform::Create<int>("frameNum"));
-  computeShaderUniforms.emplace_back(Uniform::Create<int>("mouseState"));
-  computeShaderUniforms.emplace_back(Uniform::Create<glm::vec3>("mousePos"));
   // clang-format off
   auto builder = ShaderBuilder{};
   builder.addUniform<float>("time")
@@ -189,70 +203,74 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
       .setLocalGroupSize(COMPUTE_LOCAL_GROUP_SIZE);
   for (const auto &valueRecord : ui->textInputWindow->varPanel->getValueRecords()) {
     builder.addUniform(valueRecord->typeName, valueRecord->name);
-    getTypeForGlslName(valueRecord->typeName, [&]<typename T> {
-        computeShaderUniforms.emplace_back(Uniform::Create<T>(valueRecord->name));
-    });
   }
   // clang-format on
   const auto &[source, lineMapping] = builder.build(shaderCode);
   shaderLineMapping = lineMapping;
 
   previousShaderCompilationDone = false;
-  shaderCompilationFuture =
-      std::async(std::launch::async, [=, this, computeShaderUniforms = std::move(computeShaderUniforms)]() mutable {
-        const auto compilationStartTime = std::chrono::steady_clock::now();
-        auto spirvResult = glslComputeShaderSourceToSpirv(source);
-        const auto compilationDuration = std::chrono::steady_clock::now() - compilationStartTime;
-        spdlog::debug("[ShaderToy] Compilation took {}",
-                      std::chrono::duration_cast<std::chrono::milliseconds>(compilationDuration));
-        pf::MainLoop::Get()->enqueue([spirvResult = std::move(spirvResult), source = std::move(source), this,
-                                      computeShaderUniforms = std::move(computeShaderUniforms)]() mutable {
-          auto onDone = RAII{[this] {
-            previousShaderCompilationDone = true;
-            ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Invisible);
-          }};
-          ui->textInputWindow->editor->clearWarningMarkers();
-          ui->textInputWindow->editor->clearErrorMarkers();
-          if (spirvResult.has_value()) {
-            auto newProgram = ComputeShaderProgram::CreateUnique(std::span{spirvResult.value().spirvData},
-                                                                 std::move(computeShaderUniforms));
-            if (newProgram.has_value()) {
-              mainProgram = std::move(newProgram.value());
-              mainProgram->setBinding(
-                  std::make_unique<ImageBindingObject>(0, outputTexture->getId(), outputTexture->getFormat()));
-              userDefinedUniforms = ui->textInputWindow->varPanel->getValueRecords();
-
-              totalTime = std::chrono::nanoseconds{0};
-              frameCounter = 0;
-              currentShaderSrc = std::move(source);
-              spdlog::info("[ShaderToy] Compiling shader success");
-            } else {
-              spdlog::error("[ShaderToy] Shader creation failed:");
-              spdlog::error("[ShaderToy] \t{}", newProgram.error());
-            }
+  shaderCompilationFuture = std::async(std::launch::async, [=, this]() mutable {
+    const auto compilationStartTime = std::chrono::steady_clock::now();
+    auto spirvResult = glslComputeShaderSourceToSpirv(source);
+    const auto compilationDuration = std::chrono::steady_clock::now() - compilationStartTime;
+    spdlog::debug("[ShaderToy] Compilation took {}",
+                  std::chrono::duration_cast<std::chrono::milliseconds>(compilationDuration));
+    pf::MainLoop::Get()->enqueue([spirvResult = std::move(spirvResult), source = std::move(source), this]() mutable {
+      auto onDone = RAII{[this] {
+        previousShaderCompilationDone = true;
+        ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Invisible);
+      }};
+      ui->textInputWindow->editor->clearWarningMarkers();
+      ui->textInputWindow->editor->clearErrorMarkers();
+      if (spirvResult.has_value()) {
+        auto shader = std::make_shared<OpenGlShader>();
+        const auto shaderCreateResult = shader->create(spirvResult.value(), "main");
+        if (shaderCreateResult.has_value()) {
+          spdlog::error("[ShaderToy] Shader creation failed:");
+          spdlog::error("[ShaderToy] \t{}", shaderCreateResult.value().message);
+        } else {
+          auto newProgram = std::make_unique<OpenGlProgram>(std::move(shader));
+          const auto programCreateResult = newProgram->create();
+          if (programCreateResult.has_value()) {
+            spdlog::error("[ShaderToy] Program creation failed:");
+            spdlog::error("[ShaderToy] \t{}", programCreateResult.value().message);
           } else {
-            spdlog::info("[ShaderToy] Compiling shader failed");
-            auto errors = spirvResult.error().getInfoRecords();
-            for (SpirvErrorRecord rec : errors) {
-              using enum SpirvErrorRecord::Type;
-              if (!rec.line.has_value()) { continue; }
-              const auto errMessage = fmt::format("{}: {}", rec.error, rec.errorDesc);
-              const auto marker =
-                  ui::ig::TextEditorMarker{static_cast<uint32_t>(shaderLineMapping(rec.line.value())), errMessage};
-              spdlog::error("[ShaderToy] {}", errMessage);
-              switch (rec.type) {
-                case Warning: ui->textInputWindow->editor->addWarningMarker(marker); break;
-                case Error: ui->textInputWindow->editor->addErrorMarker(marker); break;
-              }
-            }
+            mainProgram = std::move(newProgram);
+
+            userDefinedUniforms = ui->textInputWindow->varPanel->getValueRecords();
+
+            totalTime = std::chrono::nanoseconds{0};
+            frameCounter = 0;
+            currentShaderSrc = std::move(source);
+            spdlog::info("[ShaderToy] Compiling program success");
           }
-        });
-      });
+        }
+      } else {
+        spdlog::info("[ShaderToy] Compiling shader failed");
+        auto errors = spirvResult.error().getInfoRecords();
+        for (SpirvErrorRecord rec : errors) {
+          using enum SpirvErrorRecord::Type;
+          if (!rec.line.has_value()) { continue; }
+          const auto errMessage = fmt::format("{}: {}", rec.error, rec.errorDesc);
+          const auto marker =
+              ui::ig::TextEditorMarker{static_cast<uint32_t>(shaderLineMapping(rec.line.value())), errMessage};
+          spdlog::error("[ShaderToy] {}", errMessage);
+          switch (rec.type) {
+            case Warning: ui->textInputWindow->editor->addWarningMarker(marker); break;
+            case Error: ui->textInputWindow->editor->addErrorMarker(marker); break;
+          }
+        }
+      }
+    });
+  });
 }
 
 void ShaderToyMode::updateUI() {
   ui->outputWindow->fpsAveragePlot->addValue(fpsCounter.averageFPS());
-  ui->outputWindow->fpsText->setText("FPS: {}", fpsCounter.averageFPS());
+  if (std::chrono::steady_clock::now() - lastFPSVisualUpdate > FPSVisualUpdateFrequency) {
+    lastFPSVisualUpdate = std::chrono::steady_clock::now();
+    ui->outputWindow->fpsText->setText("FPS: {}", fpsCounter.averageFPS());
+  }
 }
 
 }  // namespace pf::shader_toy

@@ -2,8 +2,7 @@
 // Created by Petr on 30/04/2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_GLSLLVARIABLEINPUTDIALOG_H
-#define PF_RENDERING_PLAYGROUND_GLSLLVARIABLEINPUTDIALOG_H
+#pragma once
 
 #include <pf_common/concepts/ranges.h>
 #include <pf_imgui/ImGuiInterface.h>
@@ -50,4 +49,4 @@ class GlslVariableInputDialogBuilder {
 };
 
 }  // namespace pf::shader_toy
-#endif  //PF_RENDERING_PLAYGROUND_GLSLLVARIABLEINPUTDIALOG_H
+

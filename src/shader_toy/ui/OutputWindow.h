@@ -2,8 +2,7 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_OUTPUTWINDOW_H
-#define PF_RENDERING_PLAYGROUND_OUTPUTWINDOW_H
+#pragma once
 
 #include <pf_common/array.h>
 #include <pf_imgui/ImGuiInterface.h>
@@ -34,4 +33,3 @@ class OutputWindow {
 };
 
 }  // namespace pf
-#endif  //PF_RENDERING_PLAYGROUND_OUTPUTWINDOW_H

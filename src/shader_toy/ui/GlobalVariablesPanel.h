@@ -2,8 +2,7 @@
 // Created by xflajs00 on 22.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_GLOBALVARIABLESPANEL_H
-#define PF_RENDERING_PLAYGROUND_GLOBALVARIABLESPANEL_H
+#pragma once
 
 #include "TEMP_MatrixDragInput.h"
 #include <algorithm>
@@ -109,4 +108,3 @@ void GlobalVariablesPanel::addValueRecord(ui::ig::ValueObservable<T> &observable
 }
 
 }  // namespace pf::shader_toy
-#endif  //PF_RENDERING_PLAYGROUND_GLOBALVARIABLESPANEL_H

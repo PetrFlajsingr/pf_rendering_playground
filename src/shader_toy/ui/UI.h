@@ -2,8 +2,7 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_UI_H
-#define PF_RENDERING_PLAYGROUND_UI_H
+#pragma once
 
 #include "GlobalVariablesPanel.h"
 #include "InputWindow.h"
@@ -34,4 +33,3 @@ struct UI {
 };
 
 }  // namespace pf::shader_toy
-#endif  //PF_RENDERING_PLAYGROUND_UI_H

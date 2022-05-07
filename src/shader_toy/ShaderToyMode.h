@@ -2,17 +2,14 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_SHADERTOYMODE_H
-#define PF_RENDERING_PLAYGROUND_SHADERTOYMODE_H
+#pragma once
 
 #include "glm/ext/vector_uint2.hpp"
-#include "gpu/ComputeShaderProgram.h"
 #include "modes/Mode.h"
 #include "ui/UI.h"
 #include <future>
-#include <geGL/Program.h>
-#include <geGL/Shader.h>
-#include <geGL/Texture.h>
+#include "gpu/Texture.h"
+#include "gpu/Program.h"
 #include <glm/glm.hpp>
 #include <utils/FPSCounter.h>
 
@@ -38,7 +35,7 @@ class ShaderToyMode : public Mode {
  private:
   void resetCounters();
 
-  void initializeTexture(glm::uvec2 textureSize);
+  void initializeTexture(TextureSize textureSize);
 
   [[nodiscard]] glm::uvec2 getTextureSize() const;
 
@@ -59,7 +56,7 @@ class ShaderToyMode : public Mode {
 
   std::shared_ptr<Texture> outputTexture = nullptr;
 
-  std::unique_ptr<ComputeShaderProgram> mainProgram = nullptr;
+  std::unique_ptr<Program> mainProgram = nullptr;
 
   std::string currentShaderSrc{};
   std::shared_ptr<glfw::Window> glfwWindow = nullptr;
@@ -78,6 +75,9 @@ class ShaderToyMode : public Mode {
   std::future<void> shaderCompilationFuture;
   bool previousShaderCompilationDone = true;
 
+  std::chrono::steady_clock::time_point lastFPSVisualUpdate{};
+  std::chrono::milliseconds FPSVisualUpdateFrequency{100};
+
   constexpr static auto DEFAULT_SHADER_SOURCE = R"glsl(
 void main() {
   const ivec2 texSize = imageSize(outImage);
@@ -88,4 +88,3 @@ void main() {
 };
 
 }  // namespace pf::shader_toy
-#endif  //PF_RENDERING_PLAYGROUND_SHADERTOYMODE_H
