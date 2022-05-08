@@ -192,6 +192,7 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   fpsCounter.onFrame();
   updateUI();
   if (!timeCounterPaused) { totalTime += timeDelta; }
+  ++frameCounter;
 }
 
 void ShaderToyMode::resetCounters() {
