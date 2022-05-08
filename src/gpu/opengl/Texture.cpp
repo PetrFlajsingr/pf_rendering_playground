@@ -187,8 +187,11 @@ GpuOperationResult<TextureError> OpenGlTexture::set2DdataImpl(std::span<const st
                                                               TextureOffset xOffset, TextureOffset yOffset,
                                                               TextureWidth width, TextureHeight height) {
   // FIXME: different types support
+  // TODO: move this call somewhere where it actually should be
+  glTextureStorage2D(*handle, 1, GL_RGBA8, width.get(), height.get());
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glTextureSubImage2D(*handle, level.get(), xOffset.get(), yOffset.get(), width.get(), height.get(), GL_RGBA,
-                      GL_UNSIGNED_INT_8_8_8_8, data.data());
+                      GL_UNSIGNED_BYTE, data.data());
   return std::nullopt;
 }
 

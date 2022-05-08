@@ -20,7 +20,7 @@ namespace pf::shader_toy {
 
 class InputWindow {
  public:
-  explicit InputWindow(ui::ig::ImGuiInterface &imGuiInterface);
+  InputWindow(ui::ig::ImGuiInterface &imGuiInterface, std::unique_ptr<ImageLoader> &&imageLoader);
 
   // clang-format off
   ui::ig::Window *window;

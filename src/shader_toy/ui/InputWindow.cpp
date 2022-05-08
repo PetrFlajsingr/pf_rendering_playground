@@ -16,7 +16,7 @@ namespace pf::shader_toy {
 
 namespace gui = ui::ig;
 
-InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
+InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface, std::unique_ptr<ImageLoader> &&imageLoader) {
   window = &imGuiInterface.createWindow("text_input_window", "Editor");
   window->setIsDockable(true);
   layout = &window->createChild(gui::VerticalLayout::Config{.name = "text_input_layout", .size = gui::Size::Auto()});
@@ -78,7 +78,8 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
                                                                   gui::Persistent::Yes);
 
   imagesTab = &tabBar->addTab("images_tab", "Images", Flags{gui::TabMod::DisableMidMouseClose});
-  imagesPanel = &imagesTab->createChild<ImagesPanel>("img_panel", imGuiInterface, ui::ig::Size::Auto(), ui::ig::Persistent::Yes);
+  imagesPanel = &imagesTab->createChild<ImagesPanel>("img_panel", imGuiInterface, std::move(imageLoader),
+                                                     ui::ig::Size::Auto(), ui::ig::Persistent::Yes);
 
   constexpr static auto isUnsupportedType = []<typename T>() {
     return OneOf<T, unsigned int, glm::uvec2, glm::uvec3, glm::uvec4, glm::bvec2, glm::bvec3, glm::bvec4>;

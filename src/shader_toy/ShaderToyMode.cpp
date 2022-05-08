@@ -9,7 +9,6 @@
 #include "gpu/opengl/Texture.h"
 #include "gpu/utils.h"
 #include <future>
-#include <geGL/DebugMessage.h>
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Include/glslang_c_interface.h>
 #include <pf_imgui/elements/Image.h>
@@ -21,10 +20,33 @@
 #include <utils/GlslToSpirv.h>
 #include <utils/opengl_utils.h>
 
+#include <gpu/utils.h>
+
 void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
                  const void *) {
   spdlog::error("{} {}, {}, {}, {}", source, type, id, severity, std::string_view{message, message + length});
 }
+
+// TODO: refactor this
+namespace pf {
+struct OpenGlImageLoader : ImageLoader {
+  tl::expected<std::shared_ptr<Texture>, std::string> createTexture(const std::filesystem::path &imagePath) override {
+    if (const auto imgSize = getTextureFileSize(imagePath); imgSize.has_value()) {
+      auto texture =
+          std::make_shared<OpenGlTexture>(TextureTarget::_2D, TextureFormat::RGBA8, TextureLevel{0}, imgSize.value());
+      if (const auto errOpt = texture->create(); errOpt.has_value()) {
+        return tl::make_unexpected(errOpt.value().message);
+      }
+      if (const auto err = setTextureFromFile(*texture, imagePath); err.has_value()) {
+        return tl::make_unexpected(err.value());
+      }
+      return texture;
+    } else {
+      return tl::make_unexpected("File could not be open");
+    }
+  }
+};
+}  // namespace pf
 
 namespace pf::shader_toy {
 
@@ -44,7 +66,8 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   config.insert_or_assign("initialized", true);
 
   glfwWindow = window;
-  ui = std::make_unique<UI>(imguiInterface, *window, DEFAULT_SHADER_SOURCE, configData.resourcesPath, isFirstRun);
+  ui = std::make_unique<UI>(imguiInterface, *window, std::make_unique<OpenGlImageLoader>(), DEFAULT_SHADER_SOURCE,
+                            configData.resourcesPath, isFirstRun);
 
   const auto updateTextureSizeFromUI = [this](auto) {
     const TextureSize textureSize{
@@ -67,6 +90,10 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   ui->textInputWindow->autoCompileCheckbox->bind(autoCompileShader);
 
   ui->textInputWindow->varPanel->addVariablesChangedListener([this] {
+    isShaderChanged = true;
+    lastShaderChangeTime = std::chrono::steady_clock::now();
+  });
+  ui->textInputWindow->imagesPanel->addImagesChangedListener([this] {
     isShaderChanged = true;
     lastShaderChangeTime = std::chrono::steady_clock::now();
   });
@@ -179,8 +206,6 @@ void ShaderToyMode::initializeTexture(TextureSize textureSize) {
   outputTexture->setParam(TextureMagnificationFilter::Linear);
 
   ui->outputWindow->image->setTextureId(getImTextureID(*outputTexture));
-
-  for (auto i : std::views::iota(0, 100)) ui->textInputWindow->imagesPanel->addImageTile(outputTexture, "Texture");
 }
 
 glm::uvec2 ShaderToyMode::getTextureSize() const {
@@ -242,6 +267,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
             mainProgram = std::move(newProgram);
 
             userDefinedUniforms = ui->textInputWindow->varPanel->getValueRecords();
+            userDefinedTextures = ui->textInputWindow->imagesPanel->getTextures();
 
             totalTime = std::chrono::nanoseconds{0};
             frameCounter = 0;

@@ -40,6 +40,7 @@ inline std::optional<std::string> setTextureFromFile(Texture &texture, const std
   auto stbFree = RAII{[&] { stbi_image_free(data); }};
   texture.set2Ddata(std::span{reinterpret_cast<const std::byte *>(data), static_cast<std::size_t>(x * y * n)},
                     TextureLevel{0});
+  return std::nullopt;
 }
 
 }  // namespace pf

@@ -6,6 +6,7 @@
 
 #include "gpu/Texture.h"
 #include <filesystem>
+#include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/Button.h>
 #include <pf_imgui/elements/Image.h>
 #include <pf_imgui/elements/Text.h>
@@ -14,7 +15,6 @@
 #include <pf_imgui/interface/Savable.h>
 #include <pf_imgui/layouts/HorizontalLayout.h>
 #include <pf_imgui/layouts/VerticalLayout.h>
-#include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/layouts/WrapLayout.h>
 #include <pf_mainloop/MainLoop.h>
 
@@ -22,7 +22,8 @@ namespace pf {
 // TODO: image size based on aspect ratio
 class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
  public:
-  ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<Texture> texture, const std::string &varName);
+  ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<Texture> texture, const std::string &varName,
+            std::filesystem::path imagePath);
 
   // clang-format off
    ui::ig::VerticalLayout layout;
@@ -34,27 +35,38 @@ class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
 
   std::shared_ptr<Texture> texture;
 
+  std::filesystem::path imagePath;
+
  protected:
   void renderImpl() override;
 };
 
+// TODO: refactor this
+struct ImageLoader {
+  virtual tl::expected<std::shared_ptr<Texture>, std::string> createTexture(const std::filesystem::path &imagePath) = 0;
+};
+
 class ImagesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui::ig::Savable {
  public:
-  ImagesPanel(const std::string &name, ui::ig::ImGuiInterface &imguiInterface, const ui::ig::Size &s,
-              ui::ig::Persistent persistent);
+  ImagesPanel(const std::string &name, ui::ig::ImGuiInterface &imguiInterface,
+              std::unique_ptr<ImageLoader> &&imageLoader, const ui::ig::Size &s, ui::ig::Persistent persistent);
 
   [[nodiscard]] toml::table toToml() const override;
   void setFromToml(const toml::table &src) override;
 
-  void addImageTile(std::shared_ptr<Texture> texture, const std::string &varName) {
+  void addImageTile(std::shared_ptr<Texture> texture, const std::string &varName, std::filesystem::path imagePath) {
     auto &newTile = imageTiles.emplace_back(
         &imagesLayout->createChild<ImageTile>(getName() + "_img_" + std::to_string(IdCounter++), ui::ig::Size{220, 150},
-                                              std::move(texture), varName + std::to_string(IdCounter)));
+                                              std::move(texture), varName + std::to_string(IdCounter), imagePath));
     newTile->removeButton->addClickListener([this, newTile] {
       const auto [rmBeg, rmEnd] = std::ranges::remove(imageTiles, newTile);
       imageTiles.erase(rmBeg, rmEnd);
-      MainLoop::Get()->forceEnqueue([&] { imagesLayout->removeChild(newTile->getName()); });
+      MainLoop::Get()->forceEnqueue([&] {
+        imagesLayout->removeChild(newTile->getName());
+        imagesChangedObservable.notify();
+      });
     });
+    imagesChangedObservable.notify();
   }
 
   void clearImageTiles() {
@@ -63,11 +75,16 @@ class ImagesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui:
     imageTiles.clear();
   }
 
+  // TODO: refactoring
   [[nodiscard]] std::vector<std::pair<std::string, std::shared_ptr<Texture>>> getTextures() const {
     std::vector<std::pair<std::string, std::shared_ptr<Texture>>> result{};
     std::ranges::for_each(
         imageTiles, [&](const ImageTile *tile) { result.emplace_back(tile->nameText->getText(), tile->texture); });
     return result;
+  }
+
+  Subscription addImagesChangedListener(std::invocable auto &&listener) {
+    return imagesChangedObservable.addListener(std::forward<decltype(listener)>(listener));
   }
 
  protected:
@@ -82,6 +99,9 @@ class ImagesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui:
        std::vector<ImageTile *> imageTiles;
   // clang-format on
 
+  ui::ig::Observable_impl<> imagesChangedObservable;
+
+  std::unique_ptr<ImageLoader> imageLoader;
 
   static inline std::size_t IdCounter{};
 };

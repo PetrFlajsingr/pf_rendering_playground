@@ -8,8 +8,9 @@
 namespace pf {
 
 ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<Texture> texture,
-                     const std::string &varName)
-    : ui::ig::Element(name), Resizable(size), layout("layout", size), texture(std::move(texture)) {
+                     const std::string &varName, std::filesystem::path imagePath)
+    : ui::ig::Element(name), Resizable(size), layout("layout", size), texture(std::move(texture)),
+      imagePath(std::move(imagePath)) {
   layout.setDrawBorder(true);
   // TODO: use StretchLayout for the image once aspect ratio gets added to it
   const auto maxImageHeight = static_cast<float>(size.height) - 60.f;
@@ -32,9 +33,10 @@ ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr
 
 void ImageTile::renderImpl() { layout.render(); }
 
-ImagesPanel::ImagesPanel(const std::string &name, ui::ig::ImGuiInterface &imguiInterface, const ui::ig::Size &s,
+ImagesPanel::ImagesPanel(const std::string &name, ui::ig::ImGuiInterface &imguiInterface,
+                         std::unique_ptr<ImageLoader> &&imageLoader, const ui::ig::Size &s,
                          ui::ig::Persistent persistent)
-    : Element(name), Resizable(s), Savable(persistent), layout("layout", s) {
+    : Element(name), Resizable(s), Savable(persistent), layout("layout", s), imageLoader(std::move(imageLoader)) {
   controlsLayout =
       &layout.createChild<ui::ig::HorizontalLayout>("controls_layout", ui::ig::Size{ui::ig::Width::Auto(), 30});
   addImageButton = &controlsLayout->createChild<ui::ig::Button>("add_img_btn", "Add image");
@@ -47,7 +49,23 @@ ImagesPanel::ImagesPanel(const std::string &name, ui::ig::ImGuiInterface &imguiI
         .size(ui::ig::Size{500, 300})
         .label("Select an image")
         .extension({{"jpg", "png", "bmp"}, "Image file", ui::ig::Color::Red})
-        .onSelect([](const std::vector<std::filesystem::path> &selected) { const auto &imgFile = selected[0]; })
+        .onSelect([&](const std::vector<std::filesystem::path> &selected) {
+          const auto &imgFile = selected[0];
+          const auto loadingResult = this->imageLoader->createTexture(imgFile);
+          if (loadingResult.has_value()) {
+            imguiInterface.getNotificationManager()
+                .createNotification("notif_loading_success", "Texture loading succeeded")
+                .createChild<ui::ig::Text>("notif_txt", fmt::format("Texture loading succeeded: '{}'.", imgFile));
+
+            addImageTile(loadingResult.value(), imgFile.filename().string(), imgFile);
+          } else {
+            imguiInterface.getNotificationManager()
+                .createNotification("notif_loading_err", "Texture loading failed")
+                .createChild<ui::ig::Text>(
+                    "notif_txt", fmt::format("Texture loading failed: '{}'.\n{}", loadingResult.error(), imgFile))
+                .setColor<ui::ig::style::ColorOf::Text>(ui::ig::Color::Red);
+          }
+        })
         .modal()
         .build();
   });
