@@ -45,9 +45,34 @@ ImagesPanel::ImagesPanel(const std::string &name, ui::ig::ImGuiInterface &imguiI
   imagesLayout->setScrollable(true);
 }
 
-toml::table ImagesPanel::toToml() const { return {}; }
+toml::table ImagesPanel::toToml() const {
+  toml::array imageInfos;
+  std::ranges::for_each(imageTiles, [&](ImageTile *tile) {
+    imageInfos.push_back(toml::table{{"name", tile->nameText->getText()}, {"path", tile->imagePath.string()}});
+  });
+  return toml::table{{"images", imageInfos}};
+}
 
-void ImagesPanel::setFromToml(const toml::table &src) {}
+void ImagesPanel::setFromToml(const toml::table &src) {
+  if (const auto imagesArrToml = src.find("images"); imagesArrToml != src.end()) {
+    if (const auto imagesArr = imagesArrToml->second.as_array(); imagesArr != nullptr) {
+      for (const auto &imgToml : *imagesArr) {
+        if (const auto imgTbl = imgToml.as_table(); imgTbl != nullptr) {
+          const auto nameIter = imgTbl->find("name");
+          if (nameIter == imgTbl->end()) { continue; }
+          const auto pathIter = imgTbl->find("path");
+          if (pathIter == imgTbl->end()) { continue; }
+          if (const auto name = nameIter->second.as_string(); name != nullptr) {
+            if (const auto path = pathIter->second.as_string(); path != nullptr) {
+              const auto loadingResult = imageLoader->createTexture(path->get());
+              if (loadingResult.has_value()) { addImageTile(loadingResult.value(), name->get(), path->get()); }
+            }
+          }
+        }
+      }
+    }
+  }
+}
 
 void ImagesPanel::renderImpl() { layout.render(); }
 
