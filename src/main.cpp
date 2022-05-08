@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
   modeManager.activateMode("ShaderToy");
   modeManager.addMode(std::make_shared<pf::DummyMode>());
 
-  //glfw.setSwapInterval(0);
+  glfw.setSwapInterval(0);
   pf::MainLoop::Get()->setOnMainLoop([&](auto time) {
     if (window->shouldClose()) { pf::MainLoop::Get()->stop(); }
     imguiInterface->render();

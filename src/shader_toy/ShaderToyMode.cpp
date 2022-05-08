@@ -201,7 +201,6 @@ void ShaderToyMode::resetCounters() {
 }
 
 void ShaderToyMode::initializeTexture(TextureSize textureSize) {
-  ui->textInputWindow->imagesPanel->clearImageTiles();
   spdlog::info("[ShaderToy] Updating texture size to {}x{}", textureSize.width.get(), textureSize.height.get());
   outputTexture =
       std::make_shared<OpenGlTexture>(TextureTarget::_2D, TextureFormat::RGBA32F, TextureLevel{0}, textureSize);
