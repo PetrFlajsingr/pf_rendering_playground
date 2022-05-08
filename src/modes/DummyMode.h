@@ -2,8 +2,7 @@
 // Created by xflajs00 on 02.05.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_DUMMYMODE_H
-#define PF_RENDERING_PLAYGROUND_DUMMYMODE_H
+#pragma once
 
 #include "Mode.h"
 
@@ -22,4 +21,3 @@ class DummyMode : public Mode {
 };
 }  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_DUMMYMODE_H

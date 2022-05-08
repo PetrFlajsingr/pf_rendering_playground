@@ -2,9 +2,9 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_INPUTWINDOW_H
-#define PF_RENDERING_PLAYGROUND_INPUTWINDOW_H
+#pragma once
 
+#include "ImagesPanel.h"
 #include "GlobalVariablesPanel.h"
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/Button.h>
@@ -20,7 +20,7 @@ namespace pf::shader_toy {
 
 class InputWindow {
  public:
-  explicit InputWindow(ui::ig::ImGuiInterface &imGuiInterface);
+  InputWindow(ui::ig::ImGuiInterface &imGuiInterface, std::unique_ptr<ImageLoader> &&imageLoader);
 
   // clang-format off
   ui::ig::Window *window;
@@ -44,10 +44,11 @@ class InputWindow {
           ui::ig::VerticalLayout *globalVarsLayout;
             ui::ig::Button *addVarButton;
             GlobalVariablesPanel *varPanel;
+        ui::ig::Tab *imagesTab;
+          ImagesPanel *imagesPanel;
   // clang-format on
 
 };
 
 }  // namespace pf::shader_toy
 
-#endif  //PF_RENDERING_PLAYGROUND_INPUTWINDOW_H

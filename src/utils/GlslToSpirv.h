@@ -2,8 +2,7 @@
 // Created by xflajs00 on 01.05.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_GLSLTOSPIRV_H
-#define PF_RENDERING_PLAYGROUND_GLSLTOSPIRV_H
+#pragma once
 
 #include <charconv>
 #include <optional>
@@ -73,4 +72,3 @@ auto SpirvCompilationError::getInfoRecords() const {
 }
 
 }  // namespace pf
-#endif  //PF_RENDERING_PLAYGROUND_GLSLTOSPIRV_H

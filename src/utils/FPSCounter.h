@@ -5,8 +5,7 @@
  * @date 9.11.20
  */
 
-#ifndef REALISTIC_VOXEL_RENDERING_SRC_UTILS_FPSCOUNTER_H
-#define REALISTIC_VOXEL_RENDERING_SRC_UTILS_FPSCOUNTER_H
+#pragma once
 
 #include <chrono>
 #include <functional>
@@ -61,4 +60,3 @@ class FPSCounter {
 };
 
 }  // namespace pf
-#endif  //REALISTIC_VOXEL_RENDERING_SRC_UTILS_FPSCOUNTER_H

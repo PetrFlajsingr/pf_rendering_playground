@@ -2,8 +2,7 @@
 // Created by xflajs00 on 18.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_SHADERBUILDER_H
-#define PF_RENDERING_PLAYGROUND_SHADERBUILDER_H
+#pragma once
 
 #include <functional>
 #include <glm/glm.hpp>
@@ -22,7 +21,6 @@ struct UniformInfo {
 
 struct Image2DInfo {
   std::string format;
-  std::uint32_t binding;
   std::string name;
 };
 
@@ -45,7 +43,7 @@ class ShaderBuilder {
     requires(std::same_as<std::underlying_type_t<E>, int>)  // for now int only
   ShaderBuilder &addEnum();
 
-  ShaderBuilder &addImage2D(std::string format, std::uint32_t binding, std::string name);
+  ShaderBuilder &addImage2D(std::string format, std::string name);
 
   ShaderBuilder &addDefine(std::string name, std::string value = "");
 
@@ -70,6 +68,7 @@ class ShaderBuilder {
   glm::uvec2 localGroupSize;
 
   std::size_t layoutLocationCounter{};
+  std::size_t bindingCounter{};
 };
 
 template<typename T>
@@ -117,5 +116,3 @@ std::string ShaderBuilder::getEnumTypeName() const {
   return result;
 }
 }  // namespace pf::shader_toy
-
-#endif  //PF_RENDERING_PLAYGROUND_SHADERBUILDER_H

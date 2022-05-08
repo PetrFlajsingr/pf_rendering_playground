@@ -2,14 +2,15 @@
 // Created by xflajs00 on 22.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_GLSL_TYPENAMES_H
-#define PF_RENDERING_PLAYGROUND_GLSL_TYPENAMES_H
+#pragma once
 
 #include <glm/glm.hpp>
 #include <pf_common/array.h>
 #include <pf_common/concepts/OneOf.h>
 
 namespace pf {
+
+// FIXME: missing double types, different matrix dimensions, samplers, images, atomic counter
 
 #define PF_GLSL_TYPES                                                                                                  \
   bool, float, unsigned int, int, glm::vec2, glm::vec3, glm::vec4, glm::ivec2, glm::ivec3, glm::ivec4, glm::bvec2,     \
@@ -67,6 +68,5 @@ constexpr auto getTypeForGlslName(std::string_view typeName, auto &&visitor) {
   if (typeName == "mat4") { visitor.template operator()<glm::mat4>(); }
 }
 
-}  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_GLSL_TYPENAMES_H
+}  // namespace pf

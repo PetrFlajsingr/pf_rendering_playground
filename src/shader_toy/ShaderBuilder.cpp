@@ -33,7 +33,7 @@ std::string ShaderBuilder::image2DsAsString(const std::vector<Image2DInfo> &unif
   std::string result;
   std::ranges::for_each(uniforms, [&](const Image2DInfo &imageInfo) {
     result.append(fmt::format("layout({}, binding = {}) uniform image2D {};\n", imageInfo.format,
-                              imageInfo.binding, imageInfo.name));
+                              bindingCounter++, imageInfo.name));
   });
   return result;
 }
@@ -63,8 +63,8 @@ ShaderBuilder &ShaderBuilder::addUniform(std::string type, std::string name) {
   return *this;
 }
 
-ShaderBuilder &ShaderBuilder::addImage2D(std::string format, std::uint32_t binding, std::string name) {
-  image2Ds.emplace_back(std::move(format), binding, std::move(name));
+ShaderBuilder &ShaderBuilder::addImage2D(std::string format, std::string name) {
+  image2Ds.emplace_back(std::move(format), std::move(name));
   return *this;
 }
 

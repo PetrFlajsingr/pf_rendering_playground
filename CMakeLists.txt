@@ -33,10 +33,12 @@ find_package(pf_mainloop CONFIG REQUIRED)
 find_package(pf_imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
+find_package(unofficial-spirv-reflect CONFIG REQUIRED)
+
+
 find_package(glslang CONFIG REQUIRED)
 add_library(glad src/glad.c)
 
-file(GLOB GEGL_SOURCES src/geGL/*.cpp src/geGL/private/*.cpp)
 
 add_executable(pf_rendering_playground
         src/main.cpp
@@ -45,9 +47,6 @@ add_executable(pf_rendering_playground
         src/imgui/ImGuiGlfwOpenGLInterface.cpp
         src/imgui/impl/imgui_impl_glfw.cpp
         src/imgui/impl/imgui_impl_opengl3.cpp
-        src/geGL/Shader.cpp
-        src/geGL/Shader.h
-        ${GEGL_SOURCES}
         src/shader_toy/ui/OutputWindow.cpp
         src/shader_toy/ui/OutputWindow.h
         src/shader_toy/ui/InputWindow.cpp
@@ -72,7 +71,26 @@ add_executable(pf_rendering_playground
         src/shader_toy/ui/dialogs/GlslLVariableInputDialog.h
         src/utils/GlslToSpirv.cpp
         src/utils/GlslToSpirv.h
-        src/utils/algorithms.h src/modes/DummyMode.h src/gpu/ComputeShaderProgram.cpp src/gpu/ComputeShaderProgram.h src/utils/opengl.h)
+        src/utils/algorithms.h
+        src/modes/DummyMode.h
+        src/utils/opengl_utils.h
+        src/shader_toy/ui/ImagesPanel.cpp
+        src/shader_toy/ui/ImagesPanel.h
+        src/gpu/Texture.cpp
+        src/gpu/Texture.h
+        src/gpu/GpuObject.h
+        src/gpu/TextureTypes.h
+        src/gpu/opengl/OpenGl.h
+        src/gpu/opengl/Texture.cpp
+        src/gpu/opengl/Texture.h
+        src/gpu/Shader.cpp
+        src/gpu/Shader.h
+        src/gpu/opengl/Shader.cpp
+        src/gpu/opengl/Shader.h
+        src/gpu/Program.cpp
+        src/gpu/Program.h
+        src/gpu/opengl/Program.cpp
+        src/gpu/opengl/Program.h src/gpu/Types.h src/gpu/utils.h src/utils/stb_image_impl.cpp)
 
 target_compile_definitions(pf_rendering_playground PUBLIC NOGDI)
 target_link_libraries(pf_rendering_playground glad
@@ -80,6 +98,7 @@ target_link_libraries(pf_rendering_playground glad
         pf_common::pf_common pf_imgui::pf_imgui pf_mainloop::pf_mainloop pf_glfw::pf_glfw
         spdlog::spdlog_header_only
         HLSL SPIRV glslang OGLCompiler
+        unofficial::spirv-reflect::spirv-reflect
         )
 
 #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

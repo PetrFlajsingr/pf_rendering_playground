@@ -2,8 +2,7 @@
 // Created by Petr on 01/05/2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_ALGORITHMS_H
-#define PF_RENDERING_PLAYGROUND_ALGORITHMS_H
+#pragma once
 
 #include <range/v3/range/conversion.hpp>
 #include <range/v3/view/split.hpp>
@@ -23,4 +22,3 @@ namespace pf {
 
 }  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_ALGORITHMS_H

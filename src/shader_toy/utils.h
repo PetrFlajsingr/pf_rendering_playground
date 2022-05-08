@@ -2,8 +2,7 @@
 // Created by xflajs00 on 23.04.2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_UTILS_H
-#define PF_RENDERING_PLAYGROUND_UTILS_H
+#pragma once
 
 #include <algorithm>
 #include <cctype>
@@ -21,4 +20,3 @@ inline bool isValidGlslIdentifier(std::string_view identifier) {
 
 }  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_UTILS_H
