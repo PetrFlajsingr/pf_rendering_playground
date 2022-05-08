@@ -48,6 +48,10 @@ class GlobalVariablesPanel : public ui::ig::Element, public ui::ig::Resizable, p
 
   [[nodiscard]] const std::vector<std::shared_ptr<ValueRecord>> &getValueRecords() const;
 
+  Subscription addVariablesChangedListener(std::invocable auto &&listener) {
+    return variablesChangedObservable.addListener(std::forward<decltype(listener)>(listener));
+  }
+
  protected:
   void renderImpl() override;
 
@@ -63,6 +67,8 @@ class GlobalVariablesPanel : public ui::ig::Element, public ui::ig::Resizable, p
 
   std::vector<std::unique_ptr<ui::ig::Element>> elements;
   std::vector<std::shared_ptr<ValueRecord>> valueRecords;
+
+  ui::ig::Observable_impl<> variablesChangedObservable;
 };
 
 template<typename T>
@@ -98,6 +104,7 @@ void GlobalVariablesPanel::addDragVariable(std::string_view name, T initialValue
                                                                                      .value = initialValue});
     addValueRecord(*newDragElement, name);
     elements.emplace_back(std::move(newDragElement));
+    variablesChangedObservable.notify();
   }
 }
 

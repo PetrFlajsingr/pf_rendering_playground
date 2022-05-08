@@ -10,10 +10,10 @@
 #include <pf_imgui/elements/Button.h>
 #include <pf_imgui/elements/Checkbox.h>
 #include <pf_imgui/elements/Separator.h>
+#include <pf_imgui/elements/Spinner.h>
 #include <pf_imgui/elements/TabBar.h>
 #include <pf_imgui/elements/Text.h>
 #include <pf_imgui/elements/TextEditor.h>
-#include <pf_imgui/elements/Spinner.h>
 #include <pf_imgui/layouts/VerticalLayout.h>
 
 namespace pf::shader_toy {
@@ -47,7 +47,8 @@ class InputWindow {
         ui::ig::Tab *imagesTab;
           ImagesPanel *imagesPanel;
   // clang-format on
+
 };
 
-}  // namespace pf
+}  // namespace pf::shader_toy
 

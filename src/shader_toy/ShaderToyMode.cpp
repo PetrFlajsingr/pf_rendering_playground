@@ -9,6 +9,9 @@
 #include "gpu/opengl/Texture.h"
 #include "gpu/utils.h"
 #include <future>
+#include <geGL/DebugMessage.h>
+#include <glslang/Include/ResourceLimits.h>
+#include <glslang/Include/glslang_c_interface.h>
 #include <pf_imgui/elements/Image.h>
 #include <pf_mainloop/MainLoop.h>
 #include <range/v3/range/conversion.hpp>
@@ -62,6 +65,11 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
 
   autoCompileShader = ui->textInputWindow->autoCompileCheckbox->getValue();
   ui->textInputWindow->autoCompileCheckbox->bind(autoCompileShader);
+
+  ui->textInputWindow->varPanel->addVariablesChangedListener([this] {
+    isShaderChanged = true;
+    lastShaderChangeTime = std::chrono::steady_clock::now();
+  });
 
   ui->textInputWindow->editor->addTextListener([this](std::string_view) {
     isShaderChanged = true;
