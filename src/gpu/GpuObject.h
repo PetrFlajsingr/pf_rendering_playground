@@ -12,6 +12,7 @@
 #include <pf_common/enums.h>
 #include <string_view>
 #include <utility>
+#include <tl/expected.hpp>
 
 namespace pf {
 
@@ -28,6 +29,8 @@ struct GpuError {
 
 template<Enum E>
 using GpuOperationResult = std::optional<GpuError<E>>;
+template<typename Expected, Enum E>
+using ExpectedGpuOperationResult = tl::expected<Expected, GpuError<E>>;
 
 #define PF_GPU_OBJECT_TYPE(x)                                                                                          \
   static_assert(std::same_as<decltype(x), GpuObject::Type>);                                                           \
@@ -85,10 +88,6 @@ class GpuObject {
     return isSameObjectType && (getObjectApi() == T::GetClassApi());
   }
 
-  /*template <std::derived_from<GpuObject> T>
-  struct OverridenObjectType {
-    constexpr static bool test = requires(std::invocable)
-  };*/
 
   template<std::derived_from<GpuObject> T>
   [[nodiscard]] static bool IsTypeInterfaceClass() {

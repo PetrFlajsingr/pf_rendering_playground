@@ -78,7 +78,7 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
                                                                   gui::Persistent::Yes);
 
   imagesTab = &tabBar->addTab("images_tab", "Images", Flags{gui::TabMod::DisableMidMouseClose});
-  imagesPanel = &imagesTab->createChild<ImagesPanel>("img_panel", ui::ig::Size::Auto(), ui::ig::Persistent::Yes);
+  imagesPanel = &imagesTab->createChild<ImagesPanel>("img_panel", imGuiInterface, ui::ig::Size::Auto(), ui::ig::Persistent::Yes);
 
   constexpr static auto isUnsupportedType = []<typename T>() {
     return OneOf<T, unsigned int, glm::uvec2, glm::uvec3, glm::uvec4, glm::bvec2, glm::bvec3, glm::bvec4>;

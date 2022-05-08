@@ -16,22 +16,23 @@ using TextureHeight = fluent::NamedType<std::uint32_t, struct TextureHeightTag, 
 using TextureDepth = fluent::NamedType<std::uint32_t, struct TextureDepthTag, fluent::Comparable, fluent::Addable,
                                        fluent::Subtractable, fluent::Multiplicable>;
 
+using TextureOffset = fluent::NamedType<std::uint32_t, struct TextureOffsetTag>;
 
 enum class ImageTextureUnitAccess { ReadOnly, ReadWrite, WriteOnly };
 
 struct TextureSize {
-  TextureWidth width;
-  TextureHeight height;
-  TextureDepth depth;
+  TextureSize() = default;
+  inline TextureSize(const TextureWidth &width, const TextureHeight &height, const TextureDepth &depth)
+      : width(width), height(height), depth(depth) {}
+  TextureWidth width{};
+  TextureHeight height{};
+  TextureDepth depth{};
 };
 
 // TODO: texture arrays
 // maybe use static factory methods for this
 enum class TextureTarget { _1D, _2D, _3D, Rectangle, CubeMap, Buffer, _2DMultisample };
 
-enum class TextureError {
-
-};
 // TODO: more tex parameters
 enum class TextureMinificationFilter { Nearest, Linear, NearestMipmapNearest, NearestMipmapLinear, LinearMipmapLinear };
 enum class TextureMagnificationFilter { Nearest, Linear };

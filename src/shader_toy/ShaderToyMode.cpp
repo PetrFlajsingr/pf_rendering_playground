@@ -44,10 +44,9 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   ui = std::make_unique<UI>(imguiInterface, *window, DEFAULT_SHADER_SOURCE, configData.resourcesPath, isFirstRun);
 
   const auto updateTextureSizeFromUI = [this](auto) {
-    TextureSize textureSize;
-    textureSize.width = TextureWidth{static_cast<std::uint32_t>(ui->outputWindow->widthCombobox->getValue())};
-    textureSize.height = TextureHeight{static_cast<std::uint32_t>(ui->outputWindow->heightCombobox->getValue())};
-    textureSize.depth = TextureDepth{0u};
+    const TextureSize textureSize{
+        TextureWidth{static_cast<std::uint32_t>(ui->outputWindow->widthCombobox->getValue())},
+        TextureHeight{static_cast<std::uint32_t>(ui->outputWindow->heightCombobox->getValue())}, TextureDepth{0u}};
     initializeTexture(textureSize);
   };
 
@@ -132,6 +131,11 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   mainProgram->setUniform("mouseState", static_cast<int>(mouseState));
   mainProgram->setUniform("mousePos", glm::vec3{mousePos, 0.f});
 
+  mainProgram->getUniformValue(
+      "outImage",
+      Visitor{[&](int binding) { outputTexture->bindImage(Binding{binding}, ImageTextureUnitAccess::ReadWrite); },
+              [](auto) {}});
+
   for (const auto &valueRecord : userDefinedUniforms) {
     std::visit([&]<typename T>(T uniformValue) { mainProgram->setUniform(valueRecord->name, uniformValue); },
                valueRecord->data);
@@ -139,7 +143,7 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
 
   mainProgram->use();
 
-  outputTexture->bindImage(Binding{0}, ImageTextureUnitAccess::ReadWrite);
+  // outputTexture->bindImage(Binding{0}, ImageTextureUnitAccess::ReadWrite);
 
   const auto textureSize = getTextureSize();
   mainProgram->dispatch(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y);

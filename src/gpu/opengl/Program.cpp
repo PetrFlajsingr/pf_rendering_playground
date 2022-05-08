@@ -8,6 +8,8 @@
 
 namespace pf {
 
+OpenGlProgram::OpenGlProgram(std::shared_ptr<Shader> shader) : Program(std::move(shader)) {}
+
 GpuOperationResult<ProgramError> OpenGlProgram::createImpl() {
   const auto programHandle = glCreateProgram();
 
@@ -144,8 +146,7 @@ std::vector<BufferInfo> OpenGlProgram::extractBuffers() {
     if (getResourceParam(GL_SHADER_STORAGE_BLOCK, GL_REFERENCED_BY_COMPUTE_SHADER, i) != 0) {
       activeShaders |= ShaderType::Compute;
     }
-    result.emplace_back(std::move(name), Binding{static_cast<std::uint32_t>(binding)}, dataSize, varCount,
-                        activeShaders);
+    result.emplace_back(std::move(name), Binding{binding}, dataSize, varCount, activeShaders);
   }
   return result;
 }
@@ -184,5 +185,9 @@ void OpenGlProgram::setUniformImpl(UniformLocation location, std::variant<PF_SHA
 }
 
 void OpenGlProgram::dispatchImpl(std::uint32_t x, std::uint32_t y, std::uint32_t z) { glDispatchCompute(x, y, z); }
+
+std::variant<PF_SHADER_VALUE_TYPES> OpenGlProgram::getUniformValueImpl(const UniformInfo &info) {
+  return getOGLuniform(*handle, info.location.get(), info.type);
+}
 
 }  // namespace pf

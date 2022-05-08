@@ -31,6 +31,9 @@ class OpenGlTexture final : public Texture, public OpenGlHandleOwner {
   void bindImage(Binding unit, ImageTextureUnitAccess access = ImageTextureUnitAccess::ReadWrite) override;
 
  protected:
+  GpuOperationResult<TextureError> set2DdataImpl(std::span<const std::byte> data, TextureLevel level,
+                                                 TextureOffset xOffset, TextureOffset yOffset, TextureWidth width,
+                                                 TextureHeight height) override;
   void deleteOpenGlObject(GLuint objectHandle) const override;
 };
 

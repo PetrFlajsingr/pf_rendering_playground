@@ -19,7 +19,7 @@ namespace pf {
 
 using UniformLocation = fluent::NamedType<std::uint32_t, struct UniformLocationTag>;
 using AttributeLocation = fluent::NamedType<std::uint32_t, struct AttributeLocationTag>;
-using Binding = fluent::NamedType<std::uint32_t, struct BindingTag>;
+using Binding = fluent::NamedType<std::int32_t, struct BindingTag>;
 
 struct UniformInfo {
   inline UniformInfo(UniformLocation location, ShaderValueType type, std::string name, uint32_t size)
@@ -61,6 +61,16 @@ class Program : public GpuObject {
   [[nodiscard]] GpuOperationResult<ProgramError> create();
 
   [[nodiscard]] const std::vector<UniformInfo> &getUniforms() const;
+  [[nodiscard]] ExpectedGpuOperationResult<ShaderValueType, ProgramError> getUniformType(const std::string &name) const;
+  [[nodiscard]] GpuOperationResult<ProgramError> getUniformValue(const std::string &name, auto &&visitor) {
+    if (const auto infoOpt = findUniformInfo(name); infoOpt.has_value()) {
+      const auto uniformValue = getUniformValueImpl(*infoOpt.value());
+      std::visit(visitor, uniformValue);
+      return std::nullopt;
+    }
+    return GpuError{ProgramError::UniformNotFound, fmt::format("Uniform '{}' is not active.", name)};
+  }
+
   [[nodiscard]] const std::vector<AttributeInfo> &getAttributes() const;
   [[nodiscard]] const std::vector<BufferInfo> &getBuffers() const;
 
@@ -69,6 +79,8 @@ class Program : public GpuObject {
   void use();
 
   GpuOperationResult<ProgramError> dispatch(std::uint32_t x, std::uint32_t y = 1, std::uint32_t z = 1);
+
+  std::string getDebugString() const override;
 
  protected:
   struct ProgramInfos {
@@ -81,14 +93,11 @@ class Program : public GpuObject {
   [[nodiscard]] virtual ProgramInfos extractProgramInfos() = 0;
   virtual void useImpl() = 0;
   virtual void setUniformImpl(UniformLocation location, std::variant<PF_SHADER_VALUE_TYPES> value) = 0;
+  [[nodiscard]] virtual std::variant<PF_SHADER_VALUE_TYPES> getUniformValueImpl(const UniformInfo &info) = 0;
   virtual void dispatchImpl(std::uint32_t x, std::uint32_t y, std::uint32_t z) = 0;
 
   [[nodiscard]] std::optional<const UniformInfo *> findUniformInfo(const std::string &name) const;
 
- public:
-  std::string getDebugString() const override;
-
- protected:
   std::vector<std::shared_ptr<Shader>> shaders;
 
   ProgramInfos infos;

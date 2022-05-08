@@ -14,7 +14,9 @@
 #include <pf_imgui/interface/Savable.h>
 #include <pf_imgui/layouts/HorizontalLayout.h>
 #include <pf_imgui/layouts/VerticalLayout.h>
+#include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/layouts/WrapLayout.h>
+#include <pf_mainloop/MainLoop.h>
 
 namespace pf {
 // TODO: image size based on aspect ratio
@@ -38,15 +40,21 @@ class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
 
 class ImagesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui::ig::Savable {
  public:
-  ImagesPanel(const std::string &name, const ui::ig::Size &s, ui::ig::Persistent persistent);
+  ImagesPanel(const std::string &name, ui::ig::ImGuiInterface &imguiInterface, const ui::ig::Size &s,
+              ui::ig::Persistent persistent);
 
   [[nodiscard]] toml::table toToml() const override;
   void setFromToml(const toml::table &src) override;
 
-  void addImageTile(std::shared_ptr<Texture> texture, std::string varName) {
-    static int cnt = 0;
-    imageTiles.emplace_back(&imagesLayout->createChild<ImageTile>(getName() + "_img_" + std::to_string(cnt++),
-                                                                  ui::ig::Size{220, 150}, texture, varName));
+  void addImageTile(std::shared_ptr<Texture> texture, const std::string &varName) {
+    auto &newTile = imageTiles.emplace_back(
+        &imagesLayout->createChild<ImageTile>(getName() + "_img_" + std::to_string(IdCounter++), ui::ig::Size{220, 150},
+                                              std::move(texture), varName + std::to_string(IdCounter)));
+    newTile->removeButton->addClickListener([this, newTile] {
+      const auto [rmBeg, rmEnd] = std::ranges::remove(imageTiles, newTile);
+      imageTiles.erase(rmBeg, rmEnd);
+      MainLoop::Get()->forceEnqueue([&] { imagesLayout->removeChild(newTile->getName()); });
+    });
   }
 
   void clearImageTiles() {
@@ -55,14 +63,17 @@ class ImagesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui:
     imageTiles.clear();
   }
 
+  [[nodiscard]] std::vector<std::pair<std::string, std::shared_ptr<Texture>>> getTextures() const {
+    std::vector<std::pair<std::string, std::shared_ptr<Texture>>> result{};
+    std::ranges::for_each(
+        imageTiles, [&](const ImageTile *tile) { result.emplace_back(tile->nameText->getText(), tile->texture); });
+    return result;
+  }
+
  protected:
   void renderImpl() override;
 
  private:
-  struct ImageRecord {
-    ImageTile *tile;
-    std::filesystem::path path;
-  };
   // clang-format off
    ui::ig::VerticalLayout layout;
      ui::ig::HorizontalLayout *controlsLayout;
@@ -70,6 +81,9 @@ class ImagesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui:
      ui::ig::WrapLayout *imagesLayout;
        std::vector<ImageTile *> imageTiles;
   // clang-format on
+
+
+  static inline std::size_t IdCounter{};
 };
 
 }  // namespace pf

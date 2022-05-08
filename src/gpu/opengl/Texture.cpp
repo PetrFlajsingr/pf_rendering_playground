@@ -183,6 +183,15 @@ void OpenGlTexture::bindImage(Binding unit, ImageTextureUnitAccess access) {
                      FormatToOpenGLConstant(format));
 }
 
+GpuOperationResult<TextureError> OpenGlTexture::set2DdataImpl(std::span<const std::byte> data, TextureLevel level,
+                                                              TextureOffset xOffset, TextureOffset yOffset,
+                                                              TextureWidth width, TextureHeight height) {
+  // FIXME: different types support
+  glTextureSubImage2D(*handle, level.get(), xOffset.get(), yOffset.get(), width.get(), height.get(), GL_RGBA,
+                      GL_UNSIGNED_INT_8_8_8_8, data.data());
+  return std::nullopt;
+}
+
 void OpenGlTexture::deleteOpenGlObject(GLuint objectHandle) const { glDeleteTextures(1, &objectHandle); }
 
 }  // namespace pf

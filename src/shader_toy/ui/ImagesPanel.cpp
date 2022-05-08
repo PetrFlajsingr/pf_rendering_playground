@@ -32,7 +32,8 @@ ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr
 
 void ImageTile::renderImpl() { layout.render(); }
 
-ImagesPanel::ImagesPanel(const std::string &name, const ui::ig::Size &s, ui::ig::Persistent persistent)
+ImagesPanel::ImagesPanel(const std::string &name, ui::ig::ImGuiInterface &imguiInterface, const ui::ig::Size &s,
+                         ui::ig::Persistent persistent)
     : Element(name), Resizable(s), Savable(persistent), layout("layout", s) {
   controlsLayout =
       &layout.createChild<ui::ig::HorizontalLayout>("controls_layout", ui::ig::Size{ui::ig::Width::Auto(), 30});
@@ -40,6 +41,16 @@ ImagesPanel::ImagesPanel(const std::string &name, const ui::ig::Size &s, ui::ig:
   imagesLayout = &layout.createChild<ui::ig::WrapLayout>("images_layout", ui::ig::LayoutDirection::LeftToRight,
                                                          ui::ig::Size::Auto());
   imagesLayout->setScrollable(true);
+
+  addImageButton->addClickListener([&] {
+    imguiInterface.buildFileDialog(ui::ig::FileDialogType::File)
+        .size(ui::ig::Size{500, 300})
+        .label("Select an image")
+        .extension({{"jpg", "png", "bmp"}, "Image file", ui::ig::Color::Red})
+        .onSelect([](const std::vector<std::filesystem::path> &selected) { const auto &imgFile = selected[0]; })
+        .modal()
+        .build();
+  });
 }
 
 toml::table ImagesPanel::toToml() const { return {}; }
