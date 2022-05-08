@@ -54,4 +54,32 @@ void GlslVariableInputDialogBuilder::show() {
   });
   cancelBtn.addClickListener([&dlg] { dlg.close(); });
 }
+
+void GlslVariableNameInputDialogBuilder::show() {
+  auto &dlg = interface_.createDialog("add_var_name_dlg", "Input variable name");
+  dlg.setSize(gui::Size{300, 110});
+  auto &inLayout = dlg.createChild(
+      gui::HorizontalLayout::Config{.name = "add_var_in_lay", .size = gui::Size{gui::Width::Auto(), 30}});
+  auto &varNameInput = inLayout.createChild(
+      gui::WidthDecorator<gui::InputText>::Config{.width = 120,
+                                                  .config = {.name = "var_name_txt", .label = "Name", .value = ""}});
+  auto &errorText = dlg.createChild<gui::Text>("var_add_err_txt", "");
+  errorText.setColor<gui::style::ColorOf::Text>(gui::Color::Red);
+  auto &btnLayout = dlg.createChild(
+      gui::HorizontalLayout::Config{.name = "add_var_btn_lay", .size = gui::Size{gui::Width::Auto(), 20}});
+  auto &okBtn = btnLayout.createChild<gui::Button>("ok_btn", "Ok");
+  auto &cancelBtn = btnLayout.createChild<gui::Button>("cancel_btn", "Cancel");
+  okBtn.addClickListener([&errorText, &dlg, &varNameInput, *this]() mutable {
+    const auto varName = varNameInput.getValue();
+
+    if (const auto err = inputValidator_(varName); err.has_value()) {
+      errorText.setText(err.value());
+      return;
+    }
+
+    onInput_(varName);
+    dlg.close();
+  });
+  cancelBtn.addClickListener([&dlg] { dlg.close(); });
+}
 }  // namespace pf::shader_toy

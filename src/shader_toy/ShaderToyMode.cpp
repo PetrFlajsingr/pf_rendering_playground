@@ -166,19 +166,25 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   mainProgram->setUniform("mouseState", static_cast<int>(mouseState));
   mainProgram->setUniform("mousePos", glm::vec3{mousePos, 0.f});
 
+  std::ranges::for_each(userDefinedUniforms, [&](const auto &valueRecord) {
+    std::visit([&]<typename T>(T uniformValue) { mainProgram->setUniform(valueRecord->name, uniformValue); },
+               valueRecord->data);
+  });
+
   mainProgram->getUniformValue(
       "outImage",
       Visitor{[&](int binding) { outputTexture->bindImage(Binding{binding}, ImageTextureUnitAccess::ReadWrite); },
               [](auto) {}});
 
-  for (const auto &valueRecord : userDefinedUniforms) {
-    std::visit([&]<typename T>(T uniformValue) { mainProgram->setUniform(valueRecord->name, uniformValue); },
-               valueRecord->data);
-  }
+  std::ranges::for_each(userDefinedTextures, [&](const auto &textureRecord) {
+    const auto &[name, texture] = textureRecord;
+    mainProgram->getUniformValue(
+        name,
+        Visitor{[&](int binding) { texture->bindImage(Binding{binding}, ImageTextureUnitAccess::ReadWrite); },
+                [](auto) {}});
+  });
 
   mainProgram->use();
-
-  // outputTexture->bindImage(Binding{0}, ImageTextureUnitAccess::ReadWrite);
 
   const auto textureSize = getTextureSize();
   mainProgram->dispatch(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y);
@@ -228,10 +234,13 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
       .addEnum<MouseState>()
       .addUniform<MouseState>("mouseState")
       .addUniform<glm::vec3>("mousePos")
-      .addImage2D("rgba32f", 0, "outImage")
+      .addImage2D("rgba32f", "outImage")
       .setLocalGroupSize(COMPUTE_LOCAL_GROUP_SIZE);
   for (const auto &valueRecord : ui->textInputWindow->varPanel->getValueRecords()) {
     builder.addUniform(valueRecord->typeName, valueRecord->name);
+  }
+  for (const auto &[name, texture] : ui->textInputWindow->imagesPanel->getTextures()) {
+    builder.addImage2D("rgba8", name);
   }
   // clang-format on
   const auto &[source, lineMapping] = builder.build(shaderCode);

@@ -85,25 +85,38 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface, std::unique_ptr<Im
     return OneOf<T, unsigned int, glm::uvec2, glm::uvec3, glm::uvec4, glm::bvec2, glm::bvec3, glm::bvec4>;
   };
 
-  addVarButton->addClickListener([&] {
+  const auto varNameValidator = [&](std::string_view varName) -> std::optional<std::string> {
+    if (!isValidGlslIdentifier(varName)) { return "Invalid variable name"; }
+    {
+      const auto &valueRecords = varPanel->getValueRecords();
+      if (std::ranges::find(valueRecords, std::string{varName}, &ValueRecord::name) != valueRecords.end()) {
+        return "Name is already in use";
+      }
+      const auto &textures = imagesPanel->getTextures();
+      if (std::ranges::find(textures, std::string{varName}, &std::pair<std::string, std::shared_ptr<Texture>>::first)
+          != textures.end()) {
+        return "Name is already in use";
+      }
+    }
+    return std::nullopt;
+  };
+
+  const auto varSelectValidator = [&, varNameValidator](std::string_view typeName,
+                                                        std::string_view varName) -> std::optional<std::string> {
+    if (typeName.empty()) { return "Select a type"; }
+    if (const auto nameErr = varNameValidator(varName); nameErr.has_value()) { return nameErr.value(); }
+    bool unsupportedType = false;
+    getTypeForGlslName(typeName, [&]<typename T>() { unsupportedType = isUnsupportedType.operator()<T>(); });
+    if (unsupportedType) { return "Selected type is not currently supported"; }
+    return std::nullopt;
+  };
+
+  addVarButton->addClickListener([&, varSelectValidator] {
     constexpr auto COLOR_RECORD = "Color (vec4)";
     GlslVariableInputDialogBuilder{imGuiInterface}
         .addTypeNames(getGlslTypeNames())
         .addTypeName(COLOR_RECORD)
-        .inputValidator([&](std::string_view typeName, std::string_view varName) -> std::optional<std::string> {
-          if (typeName.empty()) { return "Select a type"; }
-          if (!isValidGlslIdentifier(varName)) { return "Invalid variable name"; }
-          {
-            const auto &valueRecords = varPanel->getValueRecords();
-            if (std::ranges::find(valueRecords, std::string{varName}, &ValueRecord::name) != valueRecords.end()) {
-              return "Name is already in use";
-            }
-          }
-          bool unsupportedType = false;
-          getTypeForGlslName(typeName, [&]<typename T>() { unsupportedType = isUnsupportedType.operator()<T>(); });
-          if (unsupportedType) { return "Selected type is not currently supported"; }
-          return std::nullopt;
-        })
+        .inputValidator(varSelectValidator)
         .onInput([&](std::string_view typeName, std::string_view varName) {
           if (typeName == COLOR_RECORD) {
             varPanel->addColorVariable(varName, gui::Color::White);
@@ -122,6 +135,34 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface, std::unique_ptr<Im
         })
         .show();
   });
+
+  imagesPanel->addImageButton->addClickListener([&, varNameValidator] {
+    imGuiInterface.buildFileDialog(ui::ig::FileDialogType::File)
+        .size(ui::ig::Size{500, 300})
+        .label("Select an image")
+        .extension({{"jpg", "png", "bmp"}, "Image file", ui::ig::Color::Red})
+        .onSelect([&](const std::vector<std::filesystem::path> &selected) {
+          const auto &imgFile = selected[0];
+          const auto loadingResult = imagesPanel->imageLoader->createTexture(imgFile);
+          if (loadingResult.has_value()) {
+            GlslVariableNameInputDialogBuilder{imGuiInterface}
+                .inputValidator(varNameValidator)
+                .onInput([=](std::string_view varName) {
+                  imagesPanel->addImageTile(loadingResult.value(), std::string{varName}, imgFile);
+                })
+                .show();
+          } else {
+            imGuiInterface.getNotificationManager()
+                .createNotification("notif_loading_err", "Texture loading failed")
+                .createChild<ui::ig::Text>(
+                    "notif_txt", fmt::format("Texture loading failed: '{}'.\n{}", loadingResult.error(), imgFile))
+                .setColor<ui::ig::style::ColorOf::Text>(ui::ig::Color::Red);
+          }
+        })
+        .modal()
+        .build();
+  });
+
   editor = &mainShaderTab->createChild(gui::TextEditor::Config{.name = "text_editor", .persistent = true});
 }
 

@@ -43,32 +43,6 @@ ImagesPanel::ImagesPanel(const std::string &name, ui::ig::ImGuiInterface &imguiI
   imagesLayout = &layout.createChild<ui::ig::WrapLayout>("images_layout", ui::ig::LayoutDirection::LeftToRight,
                                                          ui::ig::Size::Auto());
   imagesLayout->setScrollable(true);
-
-  addImageButton->addClickListener([&] {
-    imguiInterface.buildFileDialog(ui::ig::FileDialogType::File)
-        .size(ui::ig::Size{500, 300})
-        .label("Select an image")
-        .extension({{"jpg", "png", "bmp"}, "Image file", ui::ig::Color::Red})
-        .onSelect([&](const std::vector<std::filesystem::path> &selected) {
-          const auto &imgFile = selected[0];
-          const auto loadingResult = this->imageLoader->createTexture(imgFile);
-          if (loadingResult.has_value()) {
-            imguiInterface.getNotificationManager()
-                .createNotification("notif_loading_success", "Texture loading succeeded")
-                .createChild<ui::ig::Text>("notif_txt", fmt::format("Texture loading succeeded: '{}'.", imgFile));
-
-            addImageTile(loadingResult.value(), imgFile.filename().string(), imgFile);
-          } else {
-            imguiInterface.getNotificationManager()
-                .createNotification("notif_loading_err", "Texture loading failed")
-                .createChild<ui::ig::Text>(
-                    "notif_txt", fmt::format("Texture loading failed: '{}'.\n{}", loadingResult.error(), imgFile))
-                .setColor<ui::ig::style::ColorOf::Text>(ui::ig::Color::Red);
-          }
-        })
-        .modal()
-        .build();
-  });
 }
 
 toml::table ImagesPanel::toToml() const { return {}; }

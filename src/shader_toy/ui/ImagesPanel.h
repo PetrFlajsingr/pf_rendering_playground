@@ -57,7 +57,7 @@ class ImagesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui:
   void addImageTile(std::shared_ptr<Texture> texture, const std::string &varName, std::filesystem::path imagePath) {
     auto &newTile = imageTiles.emplace_back(
         &imagesLayout->createChild<ImageTile>(getName() + "_img_" + std::to_string(IdCounter++), ui::ig::Size{220, 150},
-                                              std::move(texture), varName + std::to_string(IdCounter), imagePath));
+                                              std::move(texture), varName, imagePath));
     newTile->removeButton->addClickListener([this, newTile] {
       const auto [rmBeg, rmEnd] = std::ranges::remove(imageTiles, newTile);
       imageTiles.erase(rmBeg, rmEnd);
@@ -87,10 +87,6 @@ class ImagesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui:
     return imagesChangedObservable.addListener(std::forward<decltype(listener)>(listener));
   }
 
- protected:
-  void renderImpl() override;
-
- private:
   // clang-format off
    ui::ig::VerticalLayout layout;
      ui::ig::HorizontalLayout *controlsLayout;
@@ -99,9 +95,13 @@ class ImagesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui:
        std::vector<ImageTile *> imageTiles;
   // clang-format on
 
-  ui::ig::Observable_impl<> imagesChangedObservable;
-
   std::unique_ptr<ImageLoader> imageLoader;
+
+ protected:
+  void renderImpl() override;
+
+ private:
+  ui::ig::Observable_impl<> imagesChangedObservable;
 
   static inline std::size_t IdCounter{};
 };

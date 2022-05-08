@@ -37,9 +37,9 @@ inline std::optional<std::string> setTextureFromFile(Texture &texture, const std
   int n;
   const auto data = stbi_load(path.string().c_str(), &x, &y, &n, 4);
   if (data == nullptr) { return "Image loading failed"; }
+  const auto dataSpan = std::span{reinterpret_cast<const std::byte *>(data), static_cast<std::size_t>(x * y * 4)};
   auto stbFree = RAII{[&] { stbi_image_free(data); }};
-  texture.set2Ddata(std::span{reinterpret_cast<const std::byte *>(data), static_cast<std::size_t>(x * y * n)},
-                    TextureLevel{0});
+  texture.set2Ddata(dataSpan, TextureLevel{0});
   return std::nullopt;
 }
 
