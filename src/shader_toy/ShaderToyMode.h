@@ -12,6 +12,7 @@
 #include "gpu/Program.h"
 #include <glm/glm.hpp>
 #include <utils/FPSCounter.h>
+#include <pf_common/parallel/ThreadPool.h>
 
 namespace pf::shader_toy {
 
@@ -73,7 +74,9 @@ class ShaderToyMode : public Mode {
   bool isShaderChanged = true;
   std::chrono::time_point<std::chrono::steady_clock> lastShaderChangeTime = std::chrono::steady_clock::now();
 
-  std::future<void> shaderCompilationFuture;
+  std::unique_ptr<ThreadPool> workerThreads = nullptr;
+
+  //std::future<void> shaderCompilationFuture;
   bool previousShaderCompilationDone = true;
 
   std::chrono::steady_clock::time_point lastFPSVisualUpdate{};

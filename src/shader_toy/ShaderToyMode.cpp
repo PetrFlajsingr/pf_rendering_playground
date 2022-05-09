@@ -19,6 +19,7 @@
 #include <utility>
 #include <utils/GlslToSpirv.h>
 #include <utils/opengl_utils.h>
+#include <utils/profiling.h>
 
 #include <gpu/utils.h>
 
@@ -119,21 +120,28 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
 }
 
 void ShaderToyMode::activate_impl() {
+  constexpr static auto WORKER_THREAD_COUNT = 4;
+  spdlog::info("[ShaderToy] Initializing {} worker threads", WORKER_THREAD_COUNT);
+  workerThreads = std::make_unique<ThreadPool>(WORKER_THREAD_COUNT);
   resetCounters();
   ui->show();
   ui->interface->setStateFromConfig();
 }
 
 void ShaderToyMode::deactivate_impl() {
+  TimeMeasure workerThreadWaitMeasure;
+  spdlog::info("[ShaderToy] Waiting for worker threads");
+  workerThreads = nullptr;
+  spdlog::debug("[ShaderToy] Took {}", workerThreadWaitMeasure.getTimeElapsed());
   ui->interface->updateConfig();
   ui->hide();
 }
 
 void ShaderToyMode::deinitialize_impl() {
-  if (shaderCompilationFuture.valid()) {
+  /* if (shaderCompilationFuture.valid()) {
     spdlog::info("[ShaderToy] Waiting for async shader compilation");
     shaderCompilationFuture.wait();
-  }
+  }*/
 }
 
 void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
@@ -247,7 +255,8 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
   shaderLineMapping = lineMapping;
 
   previousShaderCompilationDone = false;
-  shaderCompilationFuture = std::async(std::launch::async, [=, this]() mutable {
+  //shaderCompilationFuture = std::async(std::launch::async,
+  workerThreads->enqueue([=, this]() mutable {
     const auto compilationStartTime = std::chrono::steady_clock::now();
     auto spirvResult = glslComputeShaderSourceToSpirv(source);
     const auto compilationDuration = std::chrono::steady_clock::now() - compilationStartTime;
