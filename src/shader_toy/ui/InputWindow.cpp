@@ -10,6 +10,7 @@
 #include <pf_imgui/elements/InputText.h>
 #include <pf_imgui/elements/MarkdownText.h>
 #include <pf_imgui/interface/decorators/WidthDecorator.h>
+#include <pf_mainloop/MainLoop.h>
 #include <spdlog/spdlog.h>
 
 namespace pf::shader_toy {
@@ -137,27 +138,40 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface, std::unique_ptr<Im
   });
 
   imagesPanel->addImageButton->addClickListener([&, varNameValidator] {
-    imGuiInterface.buildFileDialog(ui::ig::FileDialogType::File)
+    imGuiInterface.getDialogManager()
+        .buildFileDialog(ui::ig::FileDialogType::File)
         .size(ui::ig::Size{500, 300})
         .label("Select an image")
         .extension({{"jpg", "png", "bmp"}, "Image file", ui::ig::Color::Red})
         .onSelect([&](const std::vector<std::filesystem::path> &selected) {
           const auto &imgFile = selected[0];
-          const auto loadingResult = imagesPanel->imageLoader->createTexture(imgFile);
-          if (loadingResult.has_value()) {
-            GlslVariableNameInputDialogBuilder{imGuiInterface}
-                .inputValidator(varNameValidator)
-                .onInput([=](std::string_view varName) {
-                  imagesPanel->addImageTile(loadingResult.value(), std::string{varName}, imgFile);
-                })
-                .show();
-          } else {
-            imGuiInterface.getNotificationManager()
-                .createNotification("notif_loading_err", "Texture loading failed")
-                .createChild<ui::ig::Text>(
-                    "notif_txt", fmt::format("Texture loading failed: '{}'.\n{}", loadingResult.error(), imgFile))
-                .setColor<ui::ig::style::ColorOf::Text>(ui::ig::Color::Red);
-          }
+
+          auto &waitDlg = imGuiInterface.getDialogManager().createDialog("img_wait_dlg", "Loading image");
+          waitDlg.setSize(ui::ig::Size{300, 100});
+          waitDlg.createChild<ui::ig::Spinner>("img_wait_spinner", 20.f, 4.f);
+
+          const auto onLoadDone = [=, &waitDlg,
+                                   &imGuiInterface](tl::expected<std::shared_ptr<Texture>, std::string> loadingResult) {
+            MainLoop::Get()->enqueue([=, &waitDlg, &imGuiInterface] {
+              waitDlg.close();
+              // need to update pf_imgui for this to work since there was a bug
+              if (loadingResult.has_value()) {
+                GlslVariableNameInputDialogBuilder{imGuiInterface}
+                    .inputValidator(varNameValidator)
+                    .onInput([=](std::string_view varName) {
+                      imagesPanel->addImageTile(loadingResult.value(), std::string{varName}, imgFile);
+                    })
+                    .show();
+              } else {
+                imGuiInterface.getNotificationManager()
+                    .createNotification("notif_loading_err", "Texture loading failed")
+                    .createChild<ui::ig::Text>(
+                        "notif_txt", fmt::format("Texture loading failed: '{}'.\n{}", loadingResult.error(), imgFile))
+                    .setColor<ui::ig::style::ColorOf::Text>(ui::ig::Color::Red);
+              }
+            });
+          };
+          imagesPanel->imageLoader->createTextureAsync(imgFile, onLoadDone);
         })
         .modal()
         .build();

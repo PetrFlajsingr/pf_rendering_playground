@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "TEMP_MatrixDragInput.h"
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/Checkbox.h>
 #include <pf_imgui/elements/ColorChooser.h>
 #include <pf_imgui/elements/DragInput.h>
+#include <pf_imgui/elements/MatrixDragInput.h>
 #include <pf_imgui/interface/Element.h>
 #include <pf_imgui/interface/Savable.h>
 #include <pf_imgui/layouts/VerticalLayout.h>
@@ -36,7 +36,7 @@ class GlobalVariablesPanel : public ui::ig::Element, public ui::ig::Resizable, p
   GlobalVariablesPanel(const std::string &name, ui::ig::Size s, ui::ig::Persistent persistent);
 
   template<OneOf<PF_GLSL_TYPES> T>
-    requires(OneOf<T, IMGUI_DRAG_TYPE_LIST> || OneOf<T, PF_IMGUI_GLM_MAT_TYPES>)
+    requires(OneOf<T, PF_IMGUI_DRAG_TYPE_LIST> || OneOf<T, PF_IMGUI_GLM_MAT_TYPES>)
   void addDragVariable(std::string_view name, T initialValue);
 
   void addBoolVariable(std::string_view name, bool initialValue);
@@ -78,7 +78,7 @@ ValueRecord::ValueRecord(T initValue, std::string name, bool isColor)
 }
 
 template<OneOf<PF_GLSL_TYPES> T>
-  requires(OneOf<T, IMGUI_DRAG_TYPE_LIST> || OneOf<T, PF_IMGUI_GLM_MAT_TYPES>)
+  requires(OneOf<T, PF_IMGUI_DRAG_TYPE_LIST> || OneOf<T, PF_IMGUI_GLM_MAT_TYPES>)
 void GlobalVariablesPanel::addDragVariable(std::string_view name, T initialValue) {
   if (variableExists(name)) { return; }
   if constexpr (OneOf<T, PF_IMGUI_GLM_MAT_TYPES>) {

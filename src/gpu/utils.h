@@ -31,16 +31,15 @@ inline std::optional<TextureSize> getTextureFileSize(const std::filesystem::path
   return std::nullopt;
 }
 
-inline std::optional<std::string> setTextureFromFile(Texture &texture, const std::filesystem::path &path) {
+inline tl::expected<std::vector<std::byte>, std::string> getTextureData(const std::filesystem::path &path) {
   int x;
   int y;
   int n;
   const auto data = stbi_load(path.string().c_str(), &x, &y, &n, 4);
-  if (data == nullptr) { return "Image loading failed"; }
+  if (data == nullptr) { return tl::make_unexpected("Image loading failed"); }
   const auto dataSpan = std::span{reinterpret_cast<const std::byte *>(data), static_cast<std::size_t>(x * y * 4)};
   auto stbFree = RAII{[&] { stbi_image_free(data); }};
-  texture.set2Ddata(dataSpan, TextureLevel{0});
-  return std::nullopt;
+  return std::vector<std::byte>{dataSpan.begin(), dataSpan.end()};
 }
 
 }  // namespace pf

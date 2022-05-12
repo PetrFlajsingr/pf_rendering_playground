@@ -66,7 +66,6 @@ add_executable(pf_rendering_playground
         src/shader_toy/ui/GlobalVariablesPanel.h
         src/utils/glsl_typenames.h
         src/modes/Mode.cpp src/shader_toy/utils.h
-        src/shader_toy/ui/TEMP_MatrixDragInput.h
         src/shader_toy/ui/dialogs/GlslLVariableInputDialog.cpp
         src/shader_toy/ui/dialogs/GlslLVariableInputDialog.h
         src/utils/GlslToSpirv.cpp

@@ -32,7 +32,7 @@ OutputWindow::OutputWindow(ui::ig::ImGuiInterface &imGuiInterface) {
                                                            .stretch = gui::Stretch::All});
 
   image = &layout->createChild(
-      gui::Image::Config{.name = "output_img", .textureId = 0, .size = gui::Size::Auto(), .isButton = false});
+      gui::Image::Config{.name = "output_img", .textureId = 0, .size = gui::Size::Auto()});
 
   fpsInfoLayout = &window->createChild(
       gui::HorizontalLayout::Config{.name = "img_fps_layout", .size = gui::Size{gui::Width::Auto(), 25}});

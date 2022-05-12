@@ -12,7 +12,7 @@ namespace pf::shader_toy {
 
 namespace gui = ui::ig;
 UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window,
-       std::unique_ptr<ImageLoader> &&imageLoader, const std::string &initShaderCode,
+       std::unique_ptr<ImageLoader> imageLoader, const std::string &initShaderCode,
        const std::filesystem::path &resourcesPath, bool initializeDocking)
     : interface(std::move(imGuiInterface)) {
   gui::setDarkStyle(*interface);

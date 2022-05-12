@@ -11,13 +11,13 @@ namespace pf {
 ModeManager::ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window,
                          toml::table config)
     : imGuiInterface(std::move(imGuiInterface)), window(std::move(window)), config(std::move(config)),
-      subMenu(this->imGuiInterface->getMenuBar().createChild(
+      subMenu(this->imGuiInterface->createOrGetMenuBar().createChild(
           ui::ig::SubMenu::Config{.name = "modes_menu", .label = "Modes"})),
-      statusBarText(this->imGuiInterface->createStatusBar("mode_manager_status_bar")
+      statusBarText(this->imGuiInterface->createOrGetStatusBar()
                         .createChild<ui::ig::Text>("mode_mgr_sb_text", "Current mode: <none>")) {}
 
 ModeManager::~ModeManager() {
-  imGuiInterface->getMenuBar().removeChild(subMenu.getName());
+  imGuiInterface->createOrGetMenuBar().removeChild(subMenu.getName());
   deactivateModes();
   deinitializeModes();
 }

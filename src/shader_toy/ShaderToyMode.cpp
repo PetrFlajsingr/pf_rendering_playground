@@ -30,7 +30,9 @@ void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei
 
 // TODO: refactor this
 namespace pf {
-struct OpenGlImageLoader : ImageLoader {
+class OpenGlImageLoader : public ImageLoader {
+ public:
+  explicit OpenGlImageLoader(std::shared_ptr<ThreadPool> threadPool) : threadPool(std::move(threadPool)) {}
   tl::expected<std::shared_ptr<Texture>, std::string> createTexture(const std::filesystem::path &imagePath) override {
     if (const auto imgSize = getTextureFileSize(imagePath); imgSize.has_value()) {
       auto texture =
@@ -38,17 +40,53 @@ struct OpenGlImageLoader : ImageLoader {
       if (const auto errOpt = texture->create(); errOpt.has_value()) {
         return tl::make_unexpected(errOpt.value().message);
       }
-      if (const auto err = setTextureFromFile(*texture, imagePath); err.has_value()) {
-        return tl::make_unexpected(err.value());
+      const auto textureData = getTextureData(imagePath);
+      if (textureData.has_value()) {
+        texture->set2Ddata(std::span{textureData->data(), textureData->size()}, TextureLevel{0});
+      } else {
+        return tl::make_unexpected(textureData.error());
       }
       return texture;
     } else {
       return tl::make_unexpected("File could not be open");
     }
   }
+  void
+  createTextureAsync(const std::filesystem::path &imagePath,
+                     std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) override {
+    // TODO: do the texture creation on rendering thread
+    threadPool->enqueue([=] {
+      if (const auto imgSize = getTextureFileSize(imagePath); imgSize.has_value()) {
+        MainLoop::Get()->enqueue([=] {
+          auto texture = std::make_shared<OpenGlTexture>(TextureTarget::_2D, TextureFormat::RGBA8, TextureLevel{0},
+                                                         imgSize.value());
+          if (const auto errOpt = texture->create(); errOpt.has_value()) {
+            onLoadDone(tl::make_unexpected(errOpt.value().message));
+          }
+          threadPool->enqueue([=] {
+            const auto textureData = getTextureData(imagePath);
+            MainLoop::Get()->enqueue([=] {
+              if (textureData.has_value()) {
+                texture->set2Ddata(std::span{textureData->data(), textureData->size()}, TextureLevel{0});
+                onLoadDone(texture);
+              } else {
+                onLoadDone(tl::make_unexpected(textureData.error()));
+              }
+            });
+          });
+        });
+      } else {
+        onLoadDone(tl::make_unexpected("File could not be open"));
+      }
+    });
+  }
+
+ private:
+  std::shared_ptr<ThreadPool> threadPool;
 };
 }  // namespace pf
 
+constexpr static auto WORKER_THREAD_COUNT = 4;
 namespace pf::shader_toy {
 
 ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{std::move(resourcesPath)} {}
@@ -65,10 +103,13 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
     isFirstRun = !iter->second.value_or(false);
   }
   config.insert_or_assign("initialized", true);
-
   glfwWindow = window;
-  ui = std::make_unique<UI>(imguiInterface, *window, std::make_unique<OpenGlImageLoader>(), DEFAULT_SHADER_SOURCE,
-                            configData.resourcesPath, isFirstRun);
+
+  spdlog::info("[ShaderToy] Initializing {} worker threads", WORKER_THREAD_COUNT);
+  workerThreads = std::make_shared<ThreadPool>(WORKER_THREAD_COUNT);
+
+  ui = std::make_unique<UI>(imguiInterface, *window, std::make_unique<OpenGlImageLoader>(workerThreads),
+                            DEFAULT_SHADER_SOURCE, configData.resourcesPath, isFirstRun);
 
   const auto updateTextureSizeFromUI = [this](auto) {
     const TextureSize textureSize{
@@ -120,28 +161,22 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
 }
 
 void ShaderToyMode::activate_impl() {
-  constexpr static auto WORKER_THREAD_COUNT = 4;
-  spdlog::info("[ShaderToy] Initializing {} worker threads", WORKER_THREAD_COUNT);
-  workerThreads = std::make_unique<ThreadPool>(WORKER_THREAD_COUNT);
   resetCounters();
   ui->show();
   ui->interface->setStateFromConfig();
 }
 
 void ShaderToyMode::deactivate_impl() {
-  TimeMeasure workerThreadWaitMeasure;
-  spdlog::info("[ShaderToy] Waiting for worker threads");
-  workerThreads = nullptr;
-  spdlog::debug("[ShaderToy] Took {}", workerThreadWaitMeasure.getTimeElapsed());
   ui->interface->updateConfig();
   ui->hide();
 }
 
 void ShaderToyMode::deinitialize_impl() {
-  /* if (shaderCompilationFuture.valid()) {
-    spdlog::info("[ShaderToy] Waiting for async shader compilation");
-    shaderCompilationFuture.wait();
-  }*/
+  ui = nullptr;
+  TimeMeasure workerThreadWaitMeasure;
+  spdlog::info("[ShaderToy] Waiting for worker threads");
+  workerThreads = nullptr;
+  spdlog::debug("[ShaderToy] Took {}", workerThreadWaitMeasure.getTimeElapsed());
 }
 
 void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {

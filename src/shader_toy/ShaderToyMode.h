@@ -74,9 +74,8 @@ class ShaderToyMode : public Mode {
   bool isShaderChanged = true;
   std::chrono::time_point<std::chrono::steady_clock> lastShaderChangeTime = std::chrono::steady_clock::now();
 
-  std::unique_ptr<ThreadPool> workerThreads = nullptr;
+  std::shared_ptr<ThreadPool> workerThreads = nullptr;
 
-  //std::future<void> shaderCompilationFuture;
   bool previousShaderCompilationDone = true;
 
   std::chrono::steady_clock::time_point lastFPSVisualUpdate{};
