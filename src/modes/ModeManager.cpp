@@ -9,12 +9,13 @@
 
 namespace pf {
 ModeManager::ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window,
-                         toml::table config)
+                         toml::table config, std::size_t workerThreadCount)
     : imGuiInterface(std::move(imGuiInterface)), window(std::move(window)), config(std::move(config)),
+      workerThreads(std::make_shared<ThreadPool>(workerThreadCount)),
       subMenu(this->imGuiInterface->createOrGetMenuBar().createChild(
           ui::ig::SubMenu::Config{.name = "modes_menu", .label = "Modes"})),
-      statusBarText(this->imGuiInterface->createOrGetStatusBar()
-                        .createChild<ui::ig::Text>("mode_mgr_sb_text", "Current mode: <none>")) {}
+      statusBarText(this->imGuiInterface->createOrGetStatusBar().createChild<ui::ig::Text>("mode_mgr_sb_text",
+                                                                                           "Current mode: <none>")) {}
 
 ModeManager::~ModeManager() {
   imGuiInterface->createOrGetMenuBar().removeChild(subMenu.getName());
@@ -108,7 +109,7 @@ void ModeManager::activateMode_impl(ModeManager::ModeRecord *mode) {
     if (const auto iter = config.find(mode->name); iter != config.end()) {
       if (auto configTable = iter->second.as_table(); configTable != nullptr) { modeConfig = *configTable; }
     }
-    mode->mode->initialize(imGuiInterface, window, modeConfig);
+    mode->mode->initialize(imGuiInterface, window, modeConfig, workerThreads);
   }
   if (mode->mode->getState() != ModeState::Active) { mode->mode->activate(); }
 

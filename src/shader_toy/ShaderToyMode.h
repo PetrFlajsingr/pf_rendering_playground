@@ -12,7 +12,6 @@
 #include "gpu/Program.h"
 #include <glm/glm.hpp>
 #include <utils/FPSCounter.h>
-#include <pf_common/parallel/ThreadPool.h>
 
 namespace pf::shader_toy {
 
@@ -27,7 +26,7 @@ class ShaderToyMode : public Mode {
 
  protected:
   void initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
-                       const std::shared_ptr<glfw::Window> &window) override;
+                       const std::shared_ptr<glfw::Window> &window, std::shared_ptr<ThreadPool> threadPool) override;
   void activate_impl() override;
   void deactivate_impl() override;
   void deinitialize_impl() override;
@@ -75,6 +74,7 @@ class ShaderToyMode : public Mode {
   std::chrono::time_point<std::chrono::steady_clock> lastShaderChangeTime = std::chrono::steady_clock::now();
 
   std::shared_ptr<ThreadPool> workerThreads = nullptr;
+  std::vector<std::future<void>> unfinishedWorkerTasks{};
 
   bool previousShaderCompilationDone = true;
 

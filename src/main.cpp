@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
     if (auto configTable = iter->second.as_table(); configTable != nullptr) { modeManagerConfig = *configTable; }
   }
 
-  pf::ModeManager modeManager{imguiInterface, window, modeManagerConfig};
+  pf::ModeManager modeManager{imguiInterface, window, modeManagerConfig, 4};
 
   modeManager.addMode(std::make_shared<pf::shader_toy::ShaderToyMode>(resourcesFolder));
   modeManager.activateMode("ShaderToy");

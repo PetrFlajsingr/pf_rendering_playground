@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Mode.h"
+#include <pf_common/parallel/ThreadPool.h>
 
 namespace pf {
 
@@ -13,7 +14,7 @@ class ModeManager {
   using Error = std::string;
 
   ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window,
-              toml::table config);
+              toml::table config, std::size_t workerThreadCount);
   ~ModeManager();
 
   [[nodiscard]] toml::table getConfig() const;
@@ -42,6 +43,9 @@ class ModeManager {
   std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface;
   std::shared_ptr<glfw::Window> window;
   toml::table config;
+
+
+  std::shared_ptr<ThreadPool> workerThreads;
 
   ModeRecord *activeMode = nullptr;
   std::list<ModeRecord> modes;

@@ -86,7 +86,6 @@ class OpenGlImageLoader : public ImageLoader {
 };
 }  // namespace pf
 
-constexpr static auto WORKER_THREAD_COUNT = 4;
 namespace pf::shader_toy {
 
 ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{std::move(resourcesPath)} {}
@@ -94,7 +93,8 @@ ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{s
 std::string ShaderToyMode::getName() const { return "ShaderToy"; }
 
 void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
-                                    const std::shared_ptr<glfw::Window> &window) {
+                                    const std::shared_ptr<glfw::Window> &window,
+                                    std::shared_ptr<ThreadPool> threadPool) {
   //setDefaultDebugMessage();
   //setDebugMessage(debugOpengl, nullptr);
 
@@ -104,9 +104,7 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   }
   config.insert_or_assign("initialized", true);
   glfwWindow = window;
-
-  spdlog::info("[ShaderToy] Initializing {} worker threads", WORKER_THREAD_COUNT);
-  workerThreads = std::make_shared<ThreadPool>(WORKER_THREAD_COUNT);
+  workerThreads = threadPool;
 
   ui = std::make_unique<UI>(imguiInterface, *window, std::make_unique<OpenGlImageLoader>(workerThreads),
                             DEFAULT_SHADER_SOURCE, configData.resourcesPath, isFirstRun);
@@ -175,6 +173,7 @@ void ShaderToyMode::deinitialize_impl() {
   ui = nullptr;
   TimeMeasure workerThreadWaitMeasure;
   spdlog::info("[ShaderToy] Waiting for worker threads");
+  std::ranges::for_each(unfinishedWorkerTasks, &std::future<void>::wait);
   workerThreads = nullptr;
   spdlog::debug("[ShaderToy] Took {}", workerThreadWaitMeasure.getTimeElapsed());
 }
@@ -290,8 +289,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
   shaderLineMapping = lineMapping;
 
   previousShaderCompilationDone = false;
-  //shaderCompilationFuture = std::async(std::launch::async,
-  workerThreads->enqueue([=, this]() mutable {
+  unfinishedWorkerTasks.emplace_back(workerThreads->enqueue([=, this]() mutable {
     const auto compilationStartTime = std::chrono::steady_clock::now();
     auto spirvResult = glslComputeShaderSourceToSpirv(source);
     const auto compilationDuration = std::chrono::steady_clock::now() - compilationStartTime;
@@ -345,7 +343,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
         }
       }
     });
-  });
+  }));
 }
 
 void ShaderToyMode::updateUI() {
