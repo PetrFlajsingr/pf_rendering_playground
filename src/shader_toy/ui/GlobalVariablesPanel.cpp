@@ -62,7 +62,7 @@ void GlobalVariablesPanel::setFromToml(const toml::table &src) {
                     addBoolVariable(name->get(), value->get());
                   }
                 }
-                if constexpr (OneOf<T, IMGUI_DRAG_TYPE_LIST> || OneOf<T, PF_IMGUI_GLM_MAT_TYPES>) {
+                if constexpr (OneOf<T, PF_IMGUI_DRAG_TYPE_LIST> || OneOf<T, PF_IMGUI_GLM_MAT_TYPES>) {
                   if constexpr (std::same_as<T, float>) {
                     if (auto value = valueIter->second.as_floating_point(); value != nullptr) {
                       addDragVariable(name->get(), static_cast<float>(value->get()));

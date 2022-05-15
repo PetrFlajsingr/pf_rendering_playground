@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <pf_common/parallel/ThreadPool.h>
 #include <pf_glfw/Window.h>
 #include <pf_imgui/ImGuiInterface.h>
 
@@ -25,10 +26,12 @@ class Mode {
 
  protected:
   void initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
-                  const std::shared_ptr<glfw::Window> &window, toml::table modeConfig);
+                  const std::shared_ptr<glfw::Window> &window, toml::table modeConfig,
+                  std::shared_ptr<ThreadPool> workerThreads);
 
   virtual void initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
-                               const std::shared_ptr<glfw::Window> &window) = 0;
+                               const std::shared_ptr<glfw::Window> &window,
+                               std::shared_ptr<ThreadPool> workerThreads) = 0;
 
   void activate();
   virtual void activate_impl() = 0;
@@ -47,4 +50,3 @@ class Mode {
 };
 
 }  // namespace pf
-

@@ -80,7 +80,7 @@ class Program : public GpuObject {
 
   GpuOperationResult<ProgramError> dispatch(std::uint32_t x, std::uint32_t y = 1, std::uint32_t z = 1);
 
-  std::string getDebugString() const override;
+  [[nodiscard]] std::string getDebugString() const override;
 
  protected:
   struct ProgramInfos {

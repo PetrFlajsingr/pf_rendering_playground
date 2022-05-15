@@ -66,7 +66,6 @@ add_executable(pf_rendering_playground
         src/shader_toy/ui/GlobalVariablesPanel.h
         src/utils/glsl_typenames.h
         src/modes/Mode.cpp src/shader_toy/utils.h
-        src/shader_toy/ui/TEMP_MatrixDragInput.h
         src/shader_toy/ui/dialogs/GlslLVariableInputDialog.cpp
         src/shader_toy/ui/dialogs/GlslLVariableInputDialog.h
         src/utils/GlslToSpirv.cpp
@@ -90,7 +89,7 @@ add_executable(pf_rendering_playground
         src/gpu/Program.cpp
         src/gpu/Program.h
         src/gpu/opengl/Program.cpp
-        src/gpu/opengl/Program.h src/gpu/Types.h src/gpu/utils.h src/utils/stb_image_impl.cpp)
+        src/gpu/opengl/Program.h src/gpu/Types.h src/gpu/utils.h src/utils/stb_image_impl.cpp src/utils/profiling.h)
 
 target_compile_definitions(pf_rendering_playground PUBLIC NOGDI)
 target_link_libraries(pf_rendering_playground glad

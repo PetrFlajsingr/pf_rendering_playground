@@ -26,7 +26,7 @@ class ShaderToyMode : public Mode {
 
  protected:
   void initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
-                       const std::shared_ptr<glfw::Window> &window) override;
+                       const std::shared_ptr<glfw::Window> &window, std::shared_ptr<ThreadPool> threadPool) override;
   void activate_impl() override;
   void deactivate_impl() override;
   void deinitialize_impl() override;
@@ -73,7 +73,9 @@ class ShaderToyMode : public Mode {
   bool isShaderChanged = true;
   std::chrono::time_point<std::chrono::steady_clock> lastShaderChangeTime = std::chrono::steady_clock::now();
 
-  std::future<void> shaderCompilationFuture;
+  std::shared_ptr<ThreadPool> workerThreads = nullptr;
+  std::vector<std::future<void>> unfinishedWorkerTasks{};
+
   bool previousShaderCompilationDone = true;
 
   std::chrono::steady_clock::time_point lastFPSVisualUpdate{};

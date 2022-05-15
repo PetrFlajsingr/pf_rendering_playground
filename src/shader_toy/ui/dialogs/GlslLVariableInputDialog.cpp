@@ -8,7 +8,7 @@
 
 namespace gui = pf::ui::ig;
 namespace pf::shader_toy {
-
+// TODO: use DialogManager instead of interface
 GlslVariableInputDialogBuilder &
 GlslVariableInputDialogBuilder::addTypeName(GlslVariableInputDialogBuilder::TypeName typeName) {
   typeNames_.emplace_back(std::string{typeName});
@@ -16,7 +16,7 @@ GlslVariableInputDialogBuilder::addTypeName(GlslVariableInputDialogBuilder::Type
 }
 
 void GlslVariableInputDialogBuilder::show() {
-  auto &dlg = interface_.createDialog("add_var_dlg", "Select variable type and name");
+  auto &dlg = interface_.getDialogManager().createDialog("add_var_dlg", "Select variable type and name");
   dlg.setSize(gui::Size{300, 110});
   auto &inLayout = dlg.createChild(
       gui::HorizontalLayout::Config{.name = "add_var_in_lay", .size = gui::Size{gui::Width::Auto(), 30}});
@@ -56,7 +56,7 @@ void GlslVariableInputDialogBuilder::show() {
 }
 
 void GlslVariableNameInputDialogBuilder::show() {
-  auto &dlg = interface_.createDialog("add_var_name_dlg", "Input variable name");
+  auto &dlg = interface_.getDialogManager().createDialog("add_var_name_dlg", "Input variable name");
   dlg.setSize(gui::Size{300, 110});
   auto &inLayout = dlg.createChild(
       gui::HorizontalLayout::Config{.name = "add_var_in_lay", .size = gui::Size{gui::Width::Auto(), 30}});

@@ -77,13 +77,9 @@ int main(int argc, char *argv[]) {
   }
 
   const auto imguiConfig = *config["imgui"].as_table();
-  auto imguiInterface = std::make_shared<pf::ui::ig::ImGuiGlfwOpenGLInterface>(
-      pf::ui::ig::ImGuiGlfwOpenGLConfig{.imgui{.flags = pf::ui::ig::ImGuiConfigFlags::DockingEnable,
-                                               .config = imguiConfig,
-                                               .iconFontDirectory = *imguiConfig["path_icons"].value<std::string>(),
-                                               .enabledIconPacks = pf::ui::ig::IconPack::FontAwesome5Regular,
-                                               .iconSize = 13.f},
-                                        .windowHandle = window->getHandle()});
+  auto imguiInterface = std::make_shared<pf::ui::ig::ImGuiGlfwOpenGLInterface>(pf::ui::ig::ImGuiGlfwOpenGLConfig{
+      .imgui{.flags = pf::ui::ig::ImGuiConfigFlags::DockingEnable, .config = imguiConfig},
+      .windowHandle = window->getHandle()});
 
   const auto fontPath = resourcesFolder / "fonts" / "Roboto-Regular.ttf";
   if (std::filesystem::exists(fontPath)) {
@@ -97,7 +93,7 @@ int main(int argc, char *argv[]) {
     if (auto configTable = iter->second.as_table(); configTable != nullptr) { modeManagerConfig = *configTable; }
   }
 
-  pf::ModeManager modeManager{imguiInterface, window, modeManagerConfig};
+  pf::ModeManager modeManager{imguiInterface, window, modeManagerConfig, 4};
 
   modeManager.addMode(std::make_shared<pf::shader_toy::ShaderToyMode>(resourcesFolder));
   modeManager.activateMode("ShaderToy");

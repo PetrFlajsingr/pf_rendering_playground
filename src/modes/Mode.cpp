@@ -14,10 +14,11 @@ const toml::table &Mode::getConfig() const { return config; }
 ModeState Mode::getState() const { return state; }
 
 void Mode::initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
-                      const std::shared_ptr<glfw::Window> &window, toml::table modeConfig) {
+                      const std::shared_ptr<glfw::Window> &window, toml::table modeConfig,
+                      std::shared_ptr<ThreadPool> workerThreads) {
   config = std::move(modeConfig);
   spdlog::info("[{}] Initializing", getName());
-  initialize_impl(imguiInterface, window);
+  initialize_impl(imguiInterface, window, std::move(workerThreads));
   state = ModeState::Initialised;
   spdlog::info("[{}] Initialized", getName());
 }

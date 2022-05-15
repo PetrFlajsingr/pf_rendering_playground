@@ -43,7 +43,10 @@ class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
 
 // TODO: refactor this
 struct ImageLoader {
+  virtual ~ImageLoader() = default;
   virtual tl::expected<std::shared_ptr<Texture>, std::string> createTexture(const std::filesystem::path &imagePath) = 0;
+  virtual void createTextureAsync(const std::filesystem::path &imagePath,
+                             std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) = 0;
 };
 
 class ImagesPanel : public ui::ig::Element, public ui::ig::Resizable, public ui::ig::Savable {

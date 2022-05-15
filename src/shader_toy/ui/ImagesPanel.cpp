@@ -52,8 +52,9 @@ toml::table ImagesPanel::toToml() const {
   });
   return toml::table{{"images", imageInfos}};
 }
-
+// TODO: don't do this via this mechanism
 void ImagesPanel::setFromToml(const toml::table &src) {
+  clearImageTiles();
   if (const auto imagesArrToml = src.find("images"); imagesArrToml != src.end()) {
     if (const auto imagesArr = imagesArrToml->second.as_array(); imagesArr != nullptr) {
       for (const auto &imgToml : *imagesArr) {
