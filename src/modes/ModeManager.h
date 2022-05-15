@@ -52,6 +52,7 @@ class ModeManager {
 
   ui::ig::SubMenu &subMenu;
   ui::ig::Text &statusBarText;
+  std::shared_ptr<spdlog::logger> logger;
 };
 
 }  // namespace pf

@@ -27,6 +27,7 @@ class ShaderToyMode : public Mode {
  protected:
   void initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                        const std::shared_ptr<glfw::Window> &window, std::shared_ptr<ThreadPool> threadPool) override;
+  std::vector<std::shared_ptr<spdlog::sinks::sink>> createLoggerSinks() override;
   void activate_impl() override;
   void deactivate_impl() override;
   void deinitialize_impl() override;

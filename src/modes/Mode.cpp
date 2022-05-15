@@ -17,31 +17,36 @@ void Mode::initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterf
                       const std::shared_ptr<glfw::Window> &window, toml::table modeConfig,
                       std::shared_ptr<ThreadPool> workerThreads) {
   config = std::move(modeConfig);
-  spdlog::info("[{}] Initializing", getName());
+  auto sinks = createLoggerSinks();
+  logger = std::make_shared<spdlog::logger>(getName(), sinks.begin(), sinks.end());
+  logger->info("Initializing", getName());
   initialize_impl(imguiInterface, window, std::move(workerThreads));
   state = ModeState::Initialised;
-  spdlog::info("[{}] Initialized", getName());
+  logger->info("Initialized", getName());
 }
 
 void Mode::activate() {
-  spdlog::info("[{}] Activating", getName());
+  logger->info("Activating", getName());
   activate_impl();
   state = ModeState::Active;
-  spdlog::info("[{}] Activated", getName());
+  logger->info("Activated", getName());
 }
 
 void Mode::deactivate() {
-  spdlog::info("[{}] Deactivating", getName());
+  logger->info("Deactivating", getName());
   deactivate_impl();
   state = ModeState::Initialised;
-  spdlog::info("[{}] Deactivated", getName());
+  logger->info("Deactivated", getName());
 }
 
 void Mode::deinitialize() {
-  spdlog::info("[{}] Deinitializing", getName());
+  logger->info("Deinitializing", getName());
   deinitialize_impl();
   state = ModeState::Uninitialised;
-  spdlog::info("[{}] Deinitialized", getName());
+  logger->info("Deinitialized", getName());
+  logger = nullptr;
 }
+
+spdlog::logger &Mode::getLogger() { return *logger; }
 
 }  // namespace pf

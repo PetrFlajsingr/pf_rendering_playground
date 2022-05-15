@@ -3,7 +3,6 @@
 //
 
 #include "UI.h"
-#include "log/UISink.h"
 #include <pf_imgui/styles/dark.h>
 
 #include <utility>
@@ -34,7 +33,6 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
   logPanel->setCategoryColor(spdlog::level::info, gui::Color::RGB(44, 161, 21));
   logPanel->setCategoryColor(spdlog::level::debug, gui::Color::RGB(235, 161, 52));
 
-  spdlog::default_logger()->sinks().emplace_back(std::make_shared<PfImguiLogSink_st>(*logPanel));
 
   const auto fontPath = resourcesPath / "fonts" / "RobotoMono-Regular.ttf";
   if (std::filesystem::exists(fontPath)) {
