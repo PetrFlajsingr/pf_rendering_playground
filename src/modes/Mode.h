@@ -7,6 +7,7 @@
 #include <pf_common/parallel/ThreadPool.h>
 #include <pf_glfw/Window.h>
 #include <pf_imgui/ImGuiInterface.h>
+#include <spdlog/spdlog.h>
 
 namespace pf {
 
@@ -33,6 +34,8 @@ class Mode {
                                const std::shared_ptr<glfw::Window> &window,
                                std::shared_ptr<ThreadPool> workerThreads) = 0;
 
+  virtual std::vector<std::shared_ptr<spdlog::sinks::sink>> createLoggerSinks() = 0;
+
   void activate();
   virtual void activate_impl() = 0;
 
@@ -43,10 +46,13 @@ class Mode {
 
   virtual void render(std::chrono::nanoseconds timeDelta) = 0;
 
+  [[nodiscard]] spdlog::logger &getLogger();
+
   toml::table config;
 
  private:
   ModeState state = ModeState::Uninitialised;
+  std::shared_ptr<spdlog::logger> logger;
 };
 
 }  // namespace pf

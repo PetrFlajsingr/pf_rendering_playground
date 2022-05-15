@@ -22,6 +22,8 @@
 #include <utils/profiling.h>
 
 #include <gpu/utils.h>
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include "log/UISink.h"
 
 void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
                  const void *) {
@@ -109,6 +111,8 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   ui = std::make_unique<UI>(imguiInterface, *window, std::make_unique<OpenGlImageLoader>(workerThreads),
                             DEFAULT_SHADER_SOURCE, configData.resourcesPath, isFirstRun);
 
+  getLogger().sinks().emplace_back(std::make_shared<PfImguiLogSink_st>(*ui->logPanel));
+
   const auto updateTextureSizeFromUI = [this](auto) {
     const TextureSize textureSize{
         TextureWidth{static_cast<std::uint32_t>(ui->outputWindow->widthCombobox->getValue())},
@@ -121,7 +125,7 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
 
   ui->textInputWindow->compileButton->addClickListener([&] { compileShader(ui->textInputWindow->editor->getText()); });
   ui->textInputWindow->restartButton->addClickListener([&] {
-    spdlog::info("[ShaderToy] Restarting time");
+    getLogger().info("Restarting time");
     totalTime = std::chrono::nanoseconds{0};
   });
   ui->textInputWindow->timePausedCheckbox->bind(timeCounterPaused);
@@ -158,6 +162,11 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   ui->hide();
 }
 
+
+std::vector<std::shared_ptr<spdlog::sinks::sink>> ShaderToyMode::createLoggerSinks() {
+  return std::vector<std::shared_ptr<spdlog::sinks::sink>>{std::make_shared<spdlog::sinks::stdout_color_sink_st>()};
+}
+
 void ShaderToyMode::activate_impl() {
   resetCounters();
   ui->show();
@@ -172,10 +181,10 @@ void ShaderToyMode::deactivate_impl() {
 void ShaderToyMode::deinitialize_impl() {
   ui = nullptr;
   TimeMeasure workerThreadWaitMeasure;
-  spdlog::info("[ShaderToy] Waiting for worker threads");
+  getLogger().info("Waiting for worker threads");
   std::ranges::for_each(unfinishedWorkerTasks, &std::future<void>::wait);
   workerThreads = nullptr;
-  spdlog::debug("[ShaderToy] Took {}", workerThreadWaitMeasure.getTimeElapsed());
+  getLogger().debug("Took {}", workerThreadWaitMeasure.getTimeElapsed());
 }
 
 void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
@@ -183,7 +192,7 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
       && (std::chrono::steady_clock::now() - lastShaderChangeTime) > std::chrono::milliseconds{
              static_cast<int>(ui->textInputWindow->autoCompileFrequencyDrag->getValue() * 1000.f)}) {
     if (previousShaderCompilationDone) {
-      spdlog::trace("[ShaderToy] Auto recompiling shader");
+      getLogger().trace("Auto recompiling shader");
       compileShader(ui->textInputWindow->editor->getText());
       isShaderChanged = false;
     }
@@ -243,13 +252,13 @@ void ShaderToyMode::resetCounters() {
 }
 
 void ShaderToyMode::initializeTexture(TextureSize textureSize) {
-  spdlog::info("[ShaderToy] Updating texture size to {}x{}", textureSize.width.get(), textureSize.height.get());
+  getLogger().info("Updating texture size to {}x{}", textureSize.width.get(), textureSize.height.get());
   outputTexture =
       std::make_shared<OpenGlTexture>(TextureTarget::_2D, TextureFormat::RGBA32F, TextureLevel{0}, textureSize);
   if (const auto err = outputTexture->create(); err.has_value()) {
     // can't happen for now
   }
-  spdlog::debug("[ShaderToy] Texture created: {}", *outputTexture);
+  getLogger().debug("Texture created: {}", *outputTexture);
   outputTexture->setParam(TextureMinificationFilter::Linear);
   outputTexture->setParam(TextureMagnificationFilter::Linear);
 
@@ -262,7 +271,7 @@ glm::uvec2 ShaderToyMode::getTextureSize() const {
 
 void ShaderToyMode::compileShader(const std::string &shaderCode) {
   ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Visible);
-  spdlog::info("[ShaderToy] Compiling shader");
+  getLogger().info("Compiling shader");
   compileShader_impl(ui->textInputWindow->editor->getText());
 }
 
@@ -293,8 +302,8 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
     const auto compilationStartTime = std::chrono::steady_clock::now();
     auto spirvResult = glslComputeShaderSourceToSpirv(source);
     const auto compilationDuration = std::chrono::steady_clock::now() - compilationStartTime;
-    spdlog::debug("[ShaderToy] Compilation took {}",
-                  std::chrono::duration_cast<std::chrono::milliseconds>(compilationDuration));
+    getLogger().debug("Compilation took {}",
+                      std::chrono::duration_cast<std::chrono::milliseconds>(compilationDuration));
     pf::MainLoop::Get()->enqueue([spirvResult = std::move(spirvResult), source = std::move(source), this]() mutable {
       auto onDone = RAII{[this] {
         previousShaderCompilationDone = true;
@@ -306,14 +315,14 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
         auto shader = std::make_shared<OpenGlShader>();
         const auto shaderCreateResult = shader->create(spirvResult.value(), "main");
         if (shaderCreateResult.has_value()) {
-          spdlog::error("[ShaderToy] Shader creation failed:");
-          spdlog::error("[ShaderToy] \t{}", shaderCreateResult.value().message);
+          getLogger().error("Shader creation failed:");
+          getLogger().error("{}", shaderCreateResult.value().message);
         } else {
           auto newProgram = std::make_unique<OpenGlProgram>(std::move(shader));
           const auto programCreateResult = newProgram->create();
           if (programCreateResult.has_value()) {
-            spdlog::error("[ShaderToy] Program creation failed:");
-            spdlog::error("[ShaderToy] \t{}", programCreateResult.value().message);
+            getLogger().error("Program creation failed:");
+            getLogger().error("{}", programCreateResult.value().message);
           } else {
             mainProgram = std::move(newProgram);
 
@@ -323,11 +332,11 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
             totalTime = std::chrono::nanoseconds{0};
             frameCounter = 0;
             currentShaderSrc = std::move(source);
-            spdlog::info("[ShaderToy] Compiling program success");
+            getLogger().info("Compiling program success");
           }
         }
       } else {
-        spdlog::info("[ShaderToy] Compiling shader failed");
+        getLogger().info("Compiling shader failed");
         auto errors = spirvResult.error().getInfoRecords();
         for (SpirvErrorRecord rec : errors) {
           using enum SpirvErrorRecord::Type;
@@ -335,7 +344,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
           const auto errMessage = fmt::format("{}: {}", rec.error, rec.errorDesc);
           const auto marker =
               ui::ig::TextEditorMarker{static_cast<uint32_t>(shaderLineMapping(rec.line.value())), errMessage};
-          spdlog::error("[ShaderToy] {}", errMessage);
+          getLogger().error("{}", errMessage);
           switch (rec.type) {
             case Warning: ui->textInputWindow->editor->addWarningMarker(marker); break;
             case Error: ui->textInputWindow->editor->addErrorMarker(marker); break;

@@ -5,6 +5,7 @@
 #include "ModeManager.h"
 #include "spdlog/spdlog.h"
 
+#include "spdlog/sinks/stdout_color_sinks.h"
 #include <utility>
 
 namespace pf {
@@ -15,7 +16,9 @@ ModeManager::ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface,
       subMenu(this->imGuiInterface->createOrGetMenuBar().createChild(
           ui::ig::SubMenu::Config{.name = "modes_menu", .label = "Modes"})),
       statusBarText(this->imGuiInterface->createOrGetStatusBar().createChild<ui::ig::Text>("mode_mgr_sb_text",
-                                                                                           "Current mode: <none>")) {}
+                                                                                           "Current mode: <none>")),
+      logger{std::make_shared<spdlog::logger>("NodeManager", std::make_shared<spdlog::sinks::stdout_color_sink_st>())} {
+}
 
 ModeManager::~ModeManager() {
   imGuiInterface->createOrGetMenuBar().removeChild(subMenu.getName());
@@ -36,7 +39,7 @@ std::optional<ModeManager::Error> ModeManager::addMode(std::shared_ptr<Mode> mod
     return "Model with the same name is already in ModeManager";
   }
   auto name = mode->getName();
-  spdlog::info("[ModeManager] Adding mode '{}'", name);
+  logger->info("Adding mode '{}'", name);
   auto &menuItem = subMenu.createChild(
       ui::ig::MenuButtonItem::Config{.name = mode->getName() + "_menu_item", .label = mode->getName()});
   menuItem.addClickListener([this, mode] { activateMode(mode); });
@@ -45,9 +48,9 @@ std::optional<ModeManager::Error> ModeManager::addMode(std::shared_ptr<Mode> mod
 }
 
 std::optional<ModeManager::Error> ModeManager::activateMode(const std::string &name) {
-  spdlog::info("[ModeManager] Activating mode '{}'", name);
+  logger->info("Activating mode '{}'", name);
   if (activeMode != nullptr && activeMode->name == name) {
-    spdlog::info("[NodeManager] Mode already active '{}'", name);
+    logger->info("[NodeManager] Mode already active '{}'", name);
     return std::nullopt;
   }
   if (const auto modeOpt = findModeByName(name); modeOpt.has_value()) {
@@ -55,23 +58,23 @@ std::optional<ModeManager::Error> ModeManager::activateMode(const std::string &n
     activateMode_impl(mode);
     return std::nullopt;
   }
-  spdlog::error("[ModeManager] Mode '{}' not managed by ModeManager", name);
+  logger->error("Mode '{}' not managed by ModeManager", name);
   return "Mode not managed by ModeManager";
 }
 
 std::optional<ModeManager::Error> ModeManager::activateMode(const std::shared_ptr<Mode> &mode) {
-  spdlog::info("[ModeManager] Activating mode '{}'", mode->getName());
+  logger->info("Activating mode '{}'", mode->getName());
   if (activeMode != nullptr && activeMode->mode == mode) {
-    spdlog::info("[NodeManager] Mode already active '{}'", mode->getName());
+    logger->info("[NodeManager] Mode already active '{}'", mode->getName());
     return std::nullopt;
   }
   if (const auto iter = std::ranges::find(modes, mode, &ModeRecord::mode); iter != modes.end()) {
     const auto mode = &*iter;
     activateMode_impl(mode);
-    spdlog::info("[ModeManager] Mode '{}' activated", mode->name);
+    logger->info("Mode '{}' activated", mode->name);
     return std::nullopt;
   }
-  spdlog::error("[ModeManager] Mode '{}' not managed by ModeManager", mode->getName());
+  logger->error("Mode '{}' not managed by ModeManager", mode->getName());
   return "Mode not managed by ModeManager";
 }
 
@@ -80,18 +83,18 @@ void ModeManager::render(std::chrono::nanoseconds timeDelta) {
 }
 
 void ModeManager::deactivateModes() {
-  std::ranges::for_each(modes, [](auto &mode) {
+  std::ranges::for_each(modes, [this](auto &mode) {
     if (mode.mode->getState() == ModeState::Active) {
-      spdlog::info("[ModeManager] Deactivating mode '{}'", mode.name);
+      logger->info("Deactivating mode '{}'", mode.name);
       mode.mode->deactivate();
     }
   });
 }
 
 void ModeManager::deinitializeModes() {
-  std::ranges::for_each(modes, [](auto &mode) {
+  std::ranges::for_each(modes, [this](auto &mode) {
     if (mode.mode->getState() == ModeState::Initialised) {
-      spdlog::info("[ModeManager] Deinitializing mode '{}'", mode.name);
+      logger->info("Deinitializing mode '{}'", mode.name);
       mode.mode->deinitialize();
     }
   });
