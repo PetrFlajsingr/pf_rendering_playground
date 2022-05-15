@@ -127,7 +127,7 @@ void GlobalVariablesPanel::renderImpl() {
   std::size_t index = 0;
   std::ranges::for_each(elements, [&](auto &element) {
     element->render();
-    ImGui::SameLine();
+    //ImGui::SameLine();
     if (ImGui::Button((std::string{"Remove##rm_btn"} + std::to_string(index++)).c_str())) { toRemove = element.get(); }
     ImGui::Separator();
   });

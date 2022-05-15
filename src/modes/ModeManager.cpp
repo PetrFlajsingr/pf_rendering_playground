@@ -5,19 +5,41 @@
 #include "ModeManager.h"
 #include "spdlog/spdlog.h"
 
+#include "log/UISink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include <utility>
 
 namespace pf {
-ModeManager::ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window,
+namespace gui = ui::ig;
+ModeManager::ModeManager(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window,
                          toml::table config, std::size_t workerThreadCount)
     : imGuiInterface(std::move(imGuiInterface)), window(std::move(window)), config(std::move(config)),
       workerThreads(std::make_shared<ThreadPool>(workerThreadCount)),
-      subMenu(this->imGuiInterface->createOrGetMenuBar().createChild(
-          ui::ig::SubMenu::Config{.name = "modes_menu", .label = "Modes"})),
-      statusBarText(this->imGuiInterface->createOrGetStatusBar().createChild<ui::ig::Text>("mode_mgr_sb_text",
-                                                                                           "Current mode: <none>")),
+      subMenu(this->imGuiInterface->createOrGetMenuBar().addSubmenu("modes_menu", "Modes")),
+      showMainLogWindowCheckboxItem(subMenu.addCheckboxItem("show_main_log", "Show combined log window", false, gui::Persistent::Yes)),
+      subMenuSeparator(subMenu.addSeparator("sep1")),
+      statusBarText(this->imGuiInterface->createOrGetStatusBar().createChild<gui::Text>("mode_mgr_sb_text",
+                                                                                        "Current mode: <none>")),
       logger{std::make_shared<spdlog::logger>("NodeManager", std::make_shared<spdlog::sinks::stdout_color_sink_st>())} {
+  auto &combinedLogWindow = this->imGuiInterface->createWindow("combined_log_win", "Combined log");
+  combinedLogWindow.setVisibility(gui::Visibility::Invisible);
+  combinedLogWindow.setCollapsible(true);
+  combinedLogWindow.setCloseable(true);
+  combinedLogWindow.addCloseListener([this] { showMainLogWindowCheckboxItem.setValue(false); });
+  logPanel = &combinedLogWindow.createChild(
+      gui::LogPanel<spdlog::level::level_enum, 512>::Config{.name = "combined_log_panel"});
+  logPanel->setCategoryAllowed(spdlog::level::level_enum::n_levels, false);
+
+  logPanel->setCategoryColor(spdlog::level::warn, gui::Color::RGB(255, 213, 97));
+  logPanel->setCategoryColor(spdlog::level::err, gui::Color::RGB(173, 23, 23));
+  logPanel->setCategoryColor(spdlog::level::info, gui::Color::RGB(44, 161, 21));
+  logPanel->setCategoryColor(spdlog::level::debug, gui::Color::RGB(235, 161, 52));
+
+  showMainLogWindowCheckboxItem.addValueListener([&combinedLogWindow](bool value) {
+    combinedLogWindow.setVisibility(value ? gui::Visibility::Visible : gui::Visibility::Invisible);
+  }, true);
+
+  logger->sinks().emplace_back(std::make_shared<PfImguiLogSink_st>(*logPanel));
 }
 
 ModeManager::~ModeManager() {
@@ -41,7 +63,7 @@ std::optional<ModeManager::Error> ModeManager::addMode(std::shared_ptr<Mode> mod
   auto name = mode->getName();
   logger->info("Adding mode '{}'", name);
   auto &menuItem = subMenu.createChild(
-      ui::ig::MenuButtonItem::Config{.name = mode->getName() + "_menu_item", .label = mode->getName()});
+      gui::MenuButtonItem::Config{.name = mode->getName() + "_menu_item", .label = mode->getName()});
   menuItem.addClickListener([this, mode] { activateMode(mode); });
   modes.emplace_back(std::move(name), std::move(mode), menuItem);
   return std::nullopt;
@@ -113,6 +135,7 @@ void ModeManager::activateMode_impl(ModeManager::ModeRecord *mode) {
       if (auto configTable = iter->second.as_table(); configTable != nullptr) { modeConfig = *configTable; }
     }
     mode->mode->initialize(imGuiInterface, window, modeConfig, workerThreads);
+    mode->mode->logger->sinks().emplace_back(std::make_shared<PfImguiLogSink_st>(*logPanel));
   }
   if (mode->mode->getState() != ModeState::Active) { mode->mode->activate(); }
 
