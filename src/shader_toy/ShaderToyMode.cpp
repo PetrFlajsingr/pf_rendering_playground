@@ -21,9 +21,9 @@
 #include <utils/opengl_utils.h>
 #include <utils/profiling.h>
 
-#include <gpu/utils.h>
-#include "spdlog/sinks/stdout_color_sinks.h"
 #include "log/UISink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include <gpu/utils.h>
 
 void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
                  const void *) {
@@ -111,7 +111,7 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   ui = std::make_unique<UI>(imguiInterface, *window, std::make_unique<OpenGlImageLoader>(workerThreads),
                             DEFAULT_SHADER_SOURCE, configData.resourcesPath, isFirstRun);
 
-  getLogger().sinks().emplace_back(std::make_shared<PfImguiLogSink_st>(*ui->logPanel));
+  getLogger().sinks().emplace_back(ui->logWindowController->createSpdlogSink());
 
   const auto updateTextureSizeFromUI = [this](auto) {
     const TextureSize textureSize{
@@ -161,7 +161,6 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
 
   ui->hide();
 }
-
 
 std::vector<std::shared_ptr<spdlog::sinks::sink>> ShaderToyMode::createLoggerSinks() {
   return std::vector<std::shared_ptr<spdlog::sinks::sink>>{std::make_shared<spdlog::sinks::stdout_color_sink_st>()};

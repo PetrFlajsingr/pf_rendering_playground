@@ -23,16 +23,8 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
 
   textInputWindow->editor->setText(initShaderCode);
 
-  logWindow = &interface->createWindow("log_window", "Log");
-  logWindow->setIsDockable(true);
-  logPanel = &logWindow->createChild(gui::LogPanel<spdlog::level::level_enum, 512>::Config{.name = "log_panel"});
-  logPanel->setCategoryAllowed(spdlog::level::level_enum::n_levels, false);
-
-  logPanel->setCategoryColor(spdlog::level::warn, gui::Color::RGB(255, 213, 97));
-  logPanel->setCategoryColor(spdlog::level::err, gui::Color::RGB(173, 23, 23));
-  logPanel->setCategoryColor(spdlog::level::info, gui::Color::RGB(44, 161, 21));
-  logPanel->setCategoryColor(spdlog::level::debug, gui::Color::RGB(235, 161, 52));
-
+  logWindowController = std::make_unique<LogWindowController>(
+      std::make_unique<LogWindowView>(*interface, "log_window", "Log"), std::make_shared<LogModel>());
 
   const auto fontPath = resourcesPath / "fonts" / "RobotoMono-Regular.ttf";
   if (std::filesystem::exists(fontPath)) {
@@ -54,7 +46,7 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
 
     auto &logDockBuilder = dockBuilder.split(gui::VerticalDirection::Down);
     logDockBuilder.setSplitRatio(0.3f);
-    logDockBuilder.setWindow(*logWindow);
+    logDockBuilder.setWindow(logWindowController->getView().getWindow());
   }
 
   interface->setStateFromConfig();
@@ -64,14 +56,14 @@ void UI::show() {
   dockingArea->setVisibility(gui::Visibility::Visible);
   outputWindow->window->setVisibility(gui::Visibility::Visible);
   textInputWindow->window->setVisibility(gui::Visibility::Visible);
-  logWindow->setVisibility(gui::Visibility::Visible);
+  logWindowController->show();
 }
 
 void UI::hide() {
   dockingArea->setVisibility(gui::Visibility::Invisible);
   outputWindow->window->setVisibility(gui::Visibility::Invisible);
   textInputWindow->window->setVisibility(gui::Visibility::Invisible);
-  logWindow->setVisibility(gui::Visibility::Invisible);
+  logWindowController->hide();
 }
 
 }  // namespace pf::shader_toy

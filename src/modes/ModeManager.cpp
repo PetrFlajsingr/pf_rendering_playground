@@ -16,30 +16,28 @@ ModeManager::ModeManager(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, st
     : imGuiInterface(std::move(imGuiInterface)), window(std::move(window)), config(std::move(config)),
       workerThreads(std::make_shared<ThreadPool>(workerThreadCount)),
       subMenu(this->imGuiInterface->createOrGetMenuBar().addSubmenu("modes_menu", "Modes")),
-      showMainLogWindowCheckboxItem(subMenu.addCheckboxItem("show_main_log", "Show combined log window", false, gui::Persistent::Yes)),
+      showMainLogWindowCheckboxItem(
+          subMenu.addCheckboxItem("show_main_log", "Show combined log window", false, gui::Persistent::Yes)),
       subMenuSeparator(subMenu.addSeparator("sep1")),
       statusBarText(this->imGuiInterface->createOrGetStatusBar().createChild<gui::Text>("mode_mgr_sb_text",
                                                                                         "Current mode: <none>")),
       logger{std::make_shared<spdlog::logger>("NodeManager", std::make_shared<spdlog::sinks::stdout_color_sink_st>())} {
-  auto &combinedLogWindow = this->imGuiInterface->createWindow("combined_log_win", "Combined log");
-  combinedLogWindow.setVisibility(gui::Visibility::Invisible);
-  combinedLogWindow.setCollapsible(true);
-  combinedLogWindow.setCloseable(true);
-  combinedLogWindow.addCloseListener([this] { showMainLogWindowCheckboxItem.setValue(false); });
-  logPanel = &combinedLogWindow.createChild(
-      gui::LogPanel<spdlog::level::level_enum, 512>::Config{.name = "combined_log_panel"});
-  logPanel->setCategoryAllowed(spdlog::level::level_enum::n_levels, false);
 
-  logPanel->setCategoryColor(spdlog::level::warn, gui::Color::RGB(255, 213, 97));
-  logPanel->setCategoryColor(spdlog::level::err, gui::Color::RGB(173, 23, 23));
-  logPanel->setCategoryColor(spdlog::level::info, gui::Color::RGB(44, 161, 21));
-  logPanel->setCategoryColor(spdlog::level::debug, gui::Color::RGB(235, 161, 52));
+  logWindowController = std::make_unique<LogWindowController>(
+      std::make_unique<LogWindowView>(*this->imGuiInterface, "combined_log_win", "Combined log"),
+      std::make_shared<LogModel>());
 
-  showMainLogWindowCheckboxItem.addValueListener([&combinedLogWindow](bool value) {
-    combinedLogWindow.setVisibility(value ? gui::Visibility::Visible : gui::Visibility::Invisible);
-  }, true);
+  showMainLogWindowCheckboxItem.addValueListener(
+      [this](bool value) {
+        if (value) {
+          logWindowController->show();
+        } else {
+          logWindowController->hide();
+        }
+      },
+      true);
 
-  logger->sinks().emplace_back(std::make_shared<PfImguiLogSink_st>(*logPanel));
+  logger->sinks().emplace_back(logWindowController->createSpdlogSink());
 }
 
 ModeManager::~ModeManager() {
@@ -135,7 +133,7 @@ void ModeManager::activateMode_impl(ModeManager::ModeRecord *mode) {
       if (auto configTable = iter->second.as_table(); configTable != nullptr) { modeConfig = *configTable; }
     }
     mode->mode->initialize(imGuiInterface, window, modeConfig, workerThreads);
-    mode->mode->logger->sinks().emplace_back(std::make_shared<PfImguiLogSink_st>(*logPanel));
+    mode->mode->logger->sinks().emplace_back(logWindowController->createSpdlogSink());
   }
   if (mode->mode->getState() != ModeState::Active) { mode->mode->activate(); }
 

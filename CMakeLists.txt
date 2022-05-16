@@ -89,7 +89,19 @@ add_executable(pf_rendering_playground
         src/gpu/Program.cpp
         src/gpu/Program.h
         src/gpu/opengl/Program.cpp
-        src/gpu/opengl/Program.h src/gpu/Types.h src/gpu/utils.h src/utils/stb_image_impl.cpp src/utils/profiling.h)
+        src/gpu/opengl/Program.h
+        src/gpu/Types.h
+        src/gpu/utils.h
+        src/utils/stb_image_impl.cpp
+        src/utils/profiling.h
+        src/mvc/Controller.h
+        src/mvc/View.h
+        src/mvc/reactive.h
+        src/common_ui/views/LogWindowView.cpp
+        src/common_ui/views/LogWindowView.h
+        src/common_ui/controllers/LogWindowController.cpp
+        src/common_ui/controllers/LogWindowController.h
+        src/common_ui/models/LogModel.h)
 
 target_compile_definitions(pf_rendering_playground PUBLIC NOGDI)
 target_link_libraries(pf_rendering_playground glad

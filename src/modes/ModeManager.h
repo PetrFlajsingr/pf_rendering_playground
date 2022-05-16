@@ -7,6 +7,7 @@
 #include "Mode.h"
 #include <pf_common/parallel/ThreadPool.h>
 #include <pf_imgui/elements/LogPanel.h>
+#include "common_ui/controllers/LogWindowController.h"
 
 namespace pf {
 
@@ -54,7 +55,9 @@ class ModeManager {
   ui::ig::SubMenu &subMenu;
   ui::ig::MenuCheckboxItem &showMainLogWindowCheckboxItem;
   ui::ig::MenuSeparatorItem &subMenuSeparator;
-  ui::ig::LogPanel<spdlog::level::level_enum, 512> *logPanel;
+
+  std::unique_ptr<LogWindowController> logWindowController;
+
   ui::ig::Text &statusBarText;
   std::shared_ptr<spdlog::logger> logger;
 };

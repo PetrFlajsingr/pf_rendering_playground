@@ -12,6 +12,8 @@
 #include <pf_imgui/elements/LogPanel.h>
 #include <spdlog/spdlog.h>
 
+#include "common_ui/controllers/LogWindowController.h"
+
 namespace pf::shader_toy {
 
 struct UI {
@@ -27,8 +29,7 @@ struct UI {
   ui::ig::BackgroundDockingArea *dockingArea;
   std::unique_ptr<OutputWindow> outputWindow;
   std::unique_ptr<InputWindow> textInputWindow;
-  ui::ig::Window *logWindow;
-    ui::ig::LogPanel<spdlog::level::level_enum, 512> *logPanel;
+  std::unique_ptr<LogWindowController> logWindowController;
   // clang-format on
   std::shared_ptr<ui::ig::ImGuiInterface> interface;
 };
