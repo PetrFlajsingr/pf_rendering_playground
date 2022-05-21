@@ -98,7 +98,7 @@ void GlobalVariablesPanel::setFromToml(const toml::table &src) {
                       std::size_t i{};
                       for (const auto &row : *value) {
                         if (auto rowArray = row.as_array(); rowArray != nullptr) {
-                          if (auto vecValue = ui::ig::safeDeserializeGlmVec<T::col_type>(*rowArray);
+                          if (auto vecValue = ui::ig::safeDeserializeGlmVec<typename T::col_type>(*rowArray);
                               vecValue.has_value()) {
                             matValue[i] = vecValue.value();
                           } else {
@@ -128,7 +128,11 @@ void GlobalVariablesPanel::renderImpl() {
   std::ranges::for_each(elements, [&](auto &element) {
     element->render();
     //ImGui::SameLine();
+    ImGui::BeginHorizontal((std::string{"rm_btn_lay"} + std::to_string(index++)).c_str());
+    ImGui::Spring(1.f);
     if (ImGui::Button((std::string{"Remove##rm_btn"} + std::to_string(index++)).c_str())) { toRemove = element.get(); }
+    ImGui::Spring(1.f);
+    ImGui::EndHorizontal();
     ImGui::Separator();
   });
   if (toRemove != nullptr) {

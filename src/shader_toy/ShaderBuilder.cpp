@@ -59,17 +59,17 @@ std::string ShaderBuilder::addTextureAccessCheck(std::string src, const std::str
 }
 
 ShaderBuilder &ShaderBuilder::addUniform(std::string type, std::string name) {
-  uniforms.emplace_back(std::move(type), std::move(name));
+  uniforms.emplace_back(UniformInfo{std::move(type), std::move(name)});
   return *this;
 }
 
 ShaderBuilder &ShaderBuilder::addImage2D(std::string format, std::string name) {
-  image2Ds.emplace_back(std::move(format), std::move(name));
+  image2Ds.emplace_back(Image2DInfo{std::move(format), std::move(name)});
   return *this;
 }
 
 ShaderBuilder &ShaderBuilder::addDefine(std::string name, std::string value) {
-  defines.emplace_back(std::move(name), std::move(value));
+  defines.emplace_back(ShaderDefine{std::move(name), std::move(value)});
   return *this;
 }
 

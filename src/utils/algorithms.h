@@ -14,7 +14,7 @@
 namespace pf {
 
 [[nodiscard]] inline std::vector<std::string> splitByDelimiter(std::string_view src, char delimiter) {
-  return src | ranges::view::split(delimiter) | ranges::view::transform([](auto &&part) {
+  return src | ranges::views::split(delimiter) | ranges::views::transform([](auto &&part) {
            return std::string{&*part.begin(), static_cast<std::string::size_type>(ranges::distance(part))};
          })
       | ranges::to_vector;

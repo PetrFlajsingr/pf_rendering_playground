@@ -17,8 +17,12 @@ void Mode::initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterf
                       const std::shared_ptr<glfw::Window> &window, toml::table modeConfig,
                       std::shared_ptr<ThreadPool> workerThreads) {
   config = std::move(modeConfig);
+
   auto sinks = createLoggerSinks();
   logger = std::make_shared<spdlog::logger>(getName(), sinks.begin(), sinks.end());
+  spdlog::register_logger(logger);
+  logger->set_level(spdlog::level::trace);
+
   logger->info("Initializing", getName());
   initialize_impl(imguiInterface, window, std::move(workerThreads));
   state = ModeState::Initialised;
@@ -44,6 +48,7 @@ void Mode::deinitialize() {
   deinitialize_impl();
   state = ModeState::Uninitialised;
   logger->info("Deinitialized", getName());
+  spdlog::drop(logger->name());
   logger = nullptr;
 }
 

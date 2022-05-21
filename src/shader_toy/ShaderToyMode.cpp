@@ -97,11 +97,9 @@ std::string ShaderToyMode::getName() const { return "ShaderToy"; }
 void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                                     const std::shared_ptr<glfw::Window> &window,
                                     std::shared_ptr<ThreadPool> threadPool) {
-  //setDefaultDebugMessage();
-  //setDebugMessage(debugOpengl, nullptr);
-
   auto isFirstRun = true;
   if (const auto iter = config.find("initialized"); iter != config.end()) {
+    getLogger().debug("First initialisation");
     isFirstRun = !iter->second.value_or(false);
   }
   config.insert_or_assign("initialized", true);
@@ -246,6 +244,7 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
 }
 
 void ShaderToyMode::resetCounters() {
+  getLogger().debug("Resetting frame and time counters");
   frameCounter = 0;
   totalTime = std::chrono::nanoseconds{0};
 }
@@ -270,7 +269,7 @@ glm::uvec2 ShaderToyMode::getTextureSize() const {
 
 void ShaderToyMode::compileShader(const std::string &shaderCode) {
   ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Visible);
-  getLogger().info("Compiling shader");
+  getLogger().trace("Compiling shader");
   compileShader_impl(ui->textInputWindow->editor->getText());
 }
 
@@ -296,8 +295,10 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
   const auto &[source, lineMapping] = builder.build(shaderCode);
   shaderLineMapping = lineMapping;
 
+  getLogger().debug("Enqueueing shader compilation");
   previousShaderCompilationDone = false;
   unfinishedWorkerTasks.emplace_back(workerThreads->enqueue([=, this]() mutable {
+    getLogger().debug("Shader compilation job started");
     const auto compilationStartTime = std::chrono::steady_clock::now();
     auto spirvResult = glslComputeShaderSourceToSpirv(source);
     const auto compilationDuration = std::chrono::steady_clock::now() - compilationStartTime;

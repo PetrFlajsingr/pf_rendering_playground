@@ -26,6 +26,10 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
   logWindowController = std::make_unique<LogWindowController>(
       std::make_unique<LogWindowView>(*interface, "log_window", "Log"), std::make_shared<LogModel>());
 
+  shaderVariablesController = std::make_unique<ShaderVariablesController>(
+      std::make_unique<ShaderVariablesWindowView>(*interface, "shader_vars_win", "Shader variables"),
+      std::make_shared<ShaderVariablesModel>(), interface);
+
   const auto fontPath = resourcesPath / "fonts" / "RobotoMono-Regular.ttf";
   if (std::filesystem::exists(fontPath)) {
     auto codeFont = interface->getFontManager().fontBuilder("RobotoMono-Regular", fontPath).setFontSize(15.f).build();

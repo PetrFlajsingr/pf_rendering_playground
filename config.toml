@@ -5,23 +5,23 @@ resources_path = 'C:\Users\xflajs00\CLionProjects\pf_rendering_playground\resour
 file_dialog_bookmark = ''
 imgui_ini = '''[Window][##background_dock_window]
 Pos=0,20
-Size=2076,1056
+Size=2076,1036
 Collapsed=0
 
 [Window][Output##output_window]
 Pos=8,28
-Size=1309,741
+Size=1309,721
 Collapsed=0
 DockId=0x00000003,0
 
 [Window][Editor##text_input_window]
 Pos=1319,28
-Size=749,1040
+Size=749,1020
 Collapsed=0
 DockId=0x00000002,0
 
 [Window][Log##log_window]
-Pos=8,771
+Pos=8,751
 Size=1309,297
 Collapsed=0
 DockId=0x00000004,0
@@ -54,6 +54,11 @@ Collapsed=0
 [Window][Loading image]
 Pos=798,436
 Size=300,100
+Collapsed=0
+
+[Window][Select an image##FileDialog0]
+Pos=788,388
+Size=500,300
 Collapsed=0
 
 [Table][0x66C13287,4]
@@ -212,8 +217,12 @@ Column 0  Sort=0v
 RefScale=14
 Column 0  Sort=0v
 
+[Table][0x929BA5F3,4]
+RefScale=14
+Column 0  Sort=0v
+
 [Docking][Data]
-DockSpace     ID=0x52D07672 Window=0x946640CE Pos=8,28 Size=2060,1040 Split=X
+DockSpace     ID=0x52D07672 Window=0x946640CE Pos=8,28 Size=2060,1020 Split=X
   DockNode    ID=0x00000001 Parent=0x52D07672 SizeRef=1793,990 Split=Y
     DockNode  ID=0x00000003 Parent=0x00000001 SizeRef=1110,691 CentralNode=1 Selected=0x5DD61B6A
     DockNode  ID=0x00000004 Parent=0x00000001 SizeRef=1110,297 Selected=0xEE7D7E4A
@@ -222,89 +231,82 @@ DockSpace     ID=0x52D07672 Window=0x946640CE Pos=8,28 Size=2060,1040 Split=X
 '''
 path_icons = 'C:\Users\xflajs00\CLionProjects\opengl_template\resources\icons'
 
-[imgui.autocompile_cbkx]
-checked = true
+    [imgui.autocompile_cbkx]
+    checked = true
 
-[imgui.autocompile_f_drag]
-value = 0.10000000149011612
+    [imgui.autocompile_f_drag]
+    value = 0.10000000149011612
 
-[imgui.checkbox_1]
-checked = false
+    [imgui.checkbox_1]
+    checked = false
 
-[[imgui.global_vars_panel.values]]
-isColor = true
-name = 'heartColor'
-typeName = 'vec4'
-value = [ 1.0, 0.0, 0.0, 1.0 ]
+    [[imgui.global_vars_panel.values]]
+    isColor = true
+    name = 'heartColor'
+    typeName = 'vec4'
+    value = [ 1.0, 0.0, 0.0, 1.0 ]
 
-[[imgui.global_vars_panel.values]]
-isColor = true
-name = 'squareColor'
-typeName = 'vec4'
-value = [ 0.0, 0.05098039656877518, 0.43137258291244507, 1.0 ]
+    [[imgui.global_vars_panel.values]]
+    isColor = true
+    name = 'squareColor'
+    typeName = 'vec4'
+    value = [ 0.0, 0.05098039656877518, 0.43137258291244507, 1.0 ]
 
-[[imgui.global_vars_panel.values]]
-isColor = true
-name = 'sphereColor'
-typeName = 'vec4'
-value = [ 0.6901960968971252, 1.0, 0.0, 1.0 ]
+    [[imgui.global_vars_panel.values]]
+    isColor = true
+    name = 'sphereColor'
+    typeName = 'vec4'
+    value = [ 0.6901960968971252, 1.0, 0.0, 1.0 ]
 
-[[imgui.global_vars_panel.values]]
-isColor = true
-name = 'starColor'
-typeName = 'vec4'
-value = [ 0.803921639919281, 0.0, 0.6745098233222961, 1.0 ]
+    [[imgui.global_vars_panel.values]]
+    isColor = true
+    name = 'starColor'
+    typeName = 'vec4'
+    value = [ 0.803921639919281, 0.0, 0.6745098233222961, 1.0 ]
 
-[[imgui.global_vars_panel.values]]
-isColor = true
-name = 'backgroundColor1'
-typeName = 'vec4'
-value = [ 1.0, 0.0, 0.8078432083129883, 1.0 ]
+    [[imgui.global_vars_panel.values]]
+    isColor = true
+    name = 'backgroundColor1'
+    typeName = 'vec4'
+    value = [ 1.0, 0.0, 0.8078432083129883, 1.0 ]
 
-[[imgui.global_vars_panel.values]]
-isColor = true
-name = 'backgroundColor2'
-typeName = 'vec4'
-value = [ 0.0, 0.0941176563501358, 1.0, 1.0 ]
+    [[imgui.global_vars_panel.values]]
+    isColor = true
+    name = 'backgroundColor2'
+    typeName = 'vec4'
+    value = [ 0.0, 0.0941176563501358, 1.0, 1.0 ]
 
-[[imgui.global_vars_panel.values]]
-name = 'highlightRadius'
-typeName = 'float'
-value = 352.6000061035156
+    [[imgui.global_vars_panel.values]]
+    name = 'highlightRadius'
+    typeName = 'float'
+    value = 352.6000061035156
 
-[[imgui.global_vars_panel.values]]
-isColor = true
-name = 'vingetteColor'
-typeName = 'vec4'
-value = [ 0.9098039865493774, 0.5215686559677124, 0.9647059440612793, 1.0 ]
+    [[imgui.global_vars_panel.values]]
+    isColor = true
+    name = 'vingetteColor'
+    typeName = 'vec4'
+    value = [ 0.9098039865493774, 0.5215686559677124, 0.9647059440612793, 1.0 ]
 
-[[imgui.global_vars_panel.values]]
-name = 'fdg'
-typeName = 'mat3'
-value = [ [ 0.0, -3.5999999046325684, 32.5 ], [ 0.0, 19.200000762939453, -49.5 ], [ 0.0, 10.0, 0.0 ] ]
+    [imgui.img_height_cb]
+    selected = '1024'
 
-[imgui.img_height_cb]
-selected = '1024'
+    [imgui.img_panel]
+    images = []
 
-[[imgui.img_panel.images]]
-name = 'vin'
-path = 'C:\Users\xflajs00\CLionProjects\pf_rendering_playground\cmake-build-debug-visual-studio-2022\vignete.png'
+    [imgui.img_width_cb]
+    selected = '2048'
 
-[[imgui.img_panel.images]]
-name = 'testImg'
-path = 'C:\Users\xflajs00\CLionProjects\pf_rendering_playground\cmake-build-debug-visual-studio-2022\test_background.png'
+    [imgui.list_box_1]
+    selected = 'item1'
 
-[imgui.img_width_cb]
-selected = '2048'
+    [imgui.pause_cbkx]
+    checked = false
 
-[imgui.list_box_1]
-selected = 'item1'
+    [imgui.show_main_log]
+    checked = false
 
-[imgui.pause_cbkx]
-checked = false
-
-[imgui.text_editor]
-text = '''float sdSquare(vec2 uv, float size, vec2 offset) {
+    [imgui.text_editor]
+    text = '''float sdSquare(vec2 uv, float size, vec2 offset) {
     float x = uv.x - offset.x;
     float y = uv.y - offset.y;
 

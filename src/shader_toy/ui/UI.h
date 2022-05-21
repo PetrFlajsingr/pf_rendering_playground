@@ -13,6 +13,7 @@
 #include <spdlog/spdlog.h>
 
 #include "common_ui/controllers/LogWindowController.h"
+#include "../controllers/ShaderVariablesController.h"
 
 namespace pf::shader_toy {
 
@@ -29,7 +30,9 @@ struct UI {
   ui::ig::BackgroundDockingArea *dockingArea;
   std::unique_ptr<OutputWindow> outputWindow;
   std::unique_ptr<InputWindow> textInputWindow;
+
   std::unique_ptr<LogWindowController> logWindowController;
+  std::unique_ptr<ShaderVariablesController> shaderVariablesController;
   // clang-format on
   std::shared_ptr<ui::ig::ImGuiInterface> interface;
 };
