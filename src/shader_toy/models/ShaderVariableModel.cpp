@@ -103,6 +103,12 @@ void ShaderVariablesModel::removeVariable(std::string_view varName) {
   std::ranges::for_each(toRemove, [this](const auto &var) { variableRemovedEvent.notify(var); });
 }
 
+void ShaderVariablesModel::clearVariables() {
+  const auto toRemove = variables;
+  variables.clear();
+  std::ranges::for_each(toRemove, [this](const auto &var) { variableRemovedEvent.notify(var); });
+}
+
 toml::table ShaderVariablesModel::toToml() const {
   auto varArray = toml::array{};
   std::ranges::transform(variables, std::back_inserter(varArray), &ShaderVariableModel::toToml);

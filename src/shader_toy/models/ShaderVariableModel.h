@@ -48,6 +48,8 @@ class ShaderVariablesModel : public SavableModel {
 
   void removeVariable(std::string_view varName);
 
+  void clearVariables();
+
   [[nodiscard]] toml::table toToml() const override;
   void setFromToml(const toml::table &src) override;
 
