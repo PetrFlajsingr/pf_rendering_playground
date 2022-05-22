@@ -9,8 +9,6 @@
 #include "utils/glsl_typenames.h"
 #include <string>
 
-#include<spirv_reflect.h>
-
 namespace pf {
 
 

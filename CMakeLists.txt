@@ -33,8 +33,6 @@ find_package(pf_mainloop CONFIG REQUIRED)
 find_package(pf_imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
-find_package(unofficial-spirv-reflect CONFIG REQUIRED)
-
 
 find_package(glslang CONFIG REQUIRED)
 add_library(glad src/glad.c)
@@ -107,7 +105,7 @@ target_link_libraries(pf_rendering_playground glad
         pf_common::pf_common pf_imgui::pf_imgui pf_mainloop::pf_mainloop pf_glfw::pf_glfw
         spdlog::spdlog_header_only
         HLSL SPIRV glslang OGLCompiler
-        unofficial::spirv-reflect::spirv-reflect
+
         )
 
 #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
