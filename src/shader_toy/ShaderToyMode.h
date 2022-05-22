@@ -63,7 +63,6 @@ class ShaderToyMode : public Mode {
   std::shared_ptr<glfw::Window> glfwWindow = nullptr;
   glm::vec2 mousePos{};
 
-  std::vector<std::shared_ptr<ValueRecord>> userDefinedUniforms;
   std::vector<std::pair<std::string, std::shared_ptr<Texture>>> userDefinedTextures;
 
   std::function<std::size_t(std::size_t)> shaderLineMapping;

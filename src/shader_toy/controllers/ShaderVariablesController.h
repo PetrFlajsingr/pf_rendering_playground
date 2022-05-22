@@ -18,7 +18,7 @@ class ShaderVariablesController : public Controller<ShaderVariablesWindowView, S
   void filterVariablesByName(std::string_view searchStr);
 
   void showAddVariableDialog();
-
+  // TODO: this is unused for now, gotta add image names
   void clearVarNamesInUse();
   void addVarNameInUse(std::string name);
 

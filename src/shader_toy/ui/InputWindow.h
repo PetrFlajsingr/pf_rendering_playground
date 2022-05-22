@@ -5,10 +5,10 @@
 #pragma once
 
 #include "ImagesPanel.h"
-#include "GlobalVariablesPanel.h"
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/Button.h>
 #include <pf_imgui/elements/Checkbox.h>
+#include <pf_imgui/elements/DragInput.h>
 #include <pf_imgui/elements/Separator.h>
 #include <pf_imgui/elements/Spinner.h>
 #include <pf_imgui/elements/TabBar.h>
@@ -40,15 +40,9 @@ class InputWindow {
             ui::ig::Text *infoText;
             ui::ig::Spinner *compilationSpinner;
           ui::ig::TextEditor *editor;
-        ui::ig::Tab *globalVarsTab;
-          ui::ig::VerticalLayout *globalVarsLayout;
-            ui::ig::Button *addVarButton;
-            GlobalVariablesPanel *varPanel;
         ui::ig::Tab *imagesTab;
           ImagesPanel *imagesPanel;
   // clang-format on
-
 };
 
 }  // namespace pf::shader_toy
-

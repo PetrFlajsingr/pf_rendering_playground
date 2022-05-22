@@ -131,19 +131,17 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   autoCompileShader = ui->textInputWindow->autoCompileCheckbox->getValue();
   ui->textInputWindow->autoCompileCheckbox->bind(autoCompileShader);
 
-  ui->textInputWindow->varPanel->addVariablesChangedListener([this] {
+  const auto markShaderChanged = [this](auto...) {
     isShaderChanged = true;
     lastShaderChangeTime = std::chrono::steady_clock::now();
-  });
-  ui->textInputWindow->imagesPanel->addImagesChangedListener([this] {
-    isShaderChanged = true;
-    lastShaderChangeTime = std::chrono::steady_clock::now();
-  });
+  };
 
-  ui->textInputWindow->editor->addTextListener([this](std::string_view) {
-    isShaderChanged = true;
-    lastShaderChangeTime = std::chrono::steady_clock::now();
-  });
+  ui->shaderVariablesController->getModel()->variableAddedEvent.addEventListener(markShaderChanged);
+  ui->shaderVariablesController->getModel()->variableRemovedEvent.addEventListener(markShaderChanged);
+
+  ui->textInputWindow->imagesPanel->addImagesChangedListener(markShaderChanged);
+
+  ui->textInputWindow->editor->addTextListener(markShaderChanged);
 
   ui->textInputWindow->codeToClipboardButton->addClickListener(
       [this] { ImGui::SetClipboardText(currentShaderSrc.c_str()); });
@@ -214,9 +212,18 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   mainProgram->setUniform("mouseState", static_cast<int>(mouseState));
   mainProgram->setUniform("mousePos", glm::vec3{mousePos, 0.f});
 
-  std::ranges::for_each(userDefinedUniforms, [&](const auto &valueRecord) {
-    std::visit([&]<typename T>(T uniformValue) { mainProgram->setUniform(valueRecord->name, uniformValue); },
-               valueRecord->data);
+  std::ranges::for_each(ui->shaderVariablesController->getModel()->getVariables(), [&](const auto &variable) {
+    std::visit(
+        [&]<typename T>(T uniformValue) {
+          if constexpr (std::same_as<T, ui::ig::Color>) {
+            mainProgram->setUniform(
+                *variable->name,
+                glm::vec4{uniformValue.red(), uniformValue.green(), uniformValue.blue(), uniformValue.alpha()});
+          } else {
+            mainProgram->setUniform(*variable->name, uniformValue);
+          }
+        },
+        *variable->value);
   });
 
   mainProgram->getUniformValue(
@@ -285,13 +292,26 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
       .addUniform<glm::vec3>("mousePos")
       .addImage2D("rgba32f", "outImage")
       .setLocalGroupSize(COMPUTE_LOCAL_GROUP_SIZE);
-  for (const auto &valueRecord : ui->textInputWindow->varPanel->getValueRecords()) {
-    builder.addUniform(valueRecord->typeName, valueRecord->name);
-  }
+  // clang-format on
+
+  std::ranges::for_each(ui->shaderVariablesController->getModel()->getVariables(),
+                        [&](const std::shared_ptr<ShaderVariableModel> &variable) {
+                          std::string_view typeName = "";
+                          std::visit(
+                              [&]<typename T>(T) {
+                                if constexpr (std::same_as<T, ui::ig::Color>) {
+                                  typeName = getGLSLTypeName<glm::vec4>();
+                                } else {
+                                  typeName = getGLSLTypeName<T>();
+                                }
+                              },
+                              *variable->value);
+                          builder.addUniform(std::string{typeName}, *variable->name);
+                        });
+
   for (const auto &[name, texture] : ui->textInputWindow->imagesPanel->getTextures()) {
     builder.addImage2D("rgba8", name);
   }
-  // clang-format on
   const auto &[source, lineMapping] = builder.build(shaderCode);
   shaderLineMapping = lineMapping;
 
@@ -326,7 +346,6 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
           } else {
             mainProgram = std::move(newProgram);
 
-            userDefinedUniforms = ui->textInputWindow->varPanel->getValueRecords();
             userDefinedTextures = ui->textInputWindow->imagesPanel->getTextures();
 
             totalTime = std::chrono::nanoseconds{0};

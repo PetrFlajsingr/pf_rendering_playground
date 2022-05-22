@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "GlobalVariablesPanel.h"
 #include "InputWindow.h"
 #include "OutputWindow.h"
 #include <pf_glfw/Window.h>

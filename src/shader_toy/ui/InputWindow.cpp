@@ -71,13 +71,6 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface, std::unique_ptr<Im
   auto &tooltipLayout = tooltip.createChild<gui::VerticalLayout>("info_ttip_layout", gui::Size{400, 500});
   tooltipLayout.createChild<gui::MarkdownText>("info_md_text", imGuiInterface, INFO_MD_TEXT);
 
-  globalVarsTab = &tabBar->addTab("global_vars_tab", "Variables", Flags{gui::TabMod::DisableMidMouseClose});
-
-  globalVarsLayout = &globalVarsTab->createChild<gui::VerticalLayout>("globalvars_layout", gui::Size::Auto());
-  addVarButton = &globalVarsLayout->createChild<gui::Button>("add_var_btn", "Add variable");
-  varPanel = &globalVarsLayout->createChild<GlobalVariablesPanel>("global_vars_panel", gui::Size::Auto(),
-                                                                  gui::Persistent::Yes);
-
   imagesTab = &tabBar->addTab("images_tab", "Images", Flags{gui::TabMod::DisableMidMouseClose});
   imagesPanel = &imagesTab->createChild<ImagesPanel>("img_panel", imGuiInterface, std::move(imageLoader),
                                                      ui::ig::Size::Auto(), ui::ig::Persistent::Yes);
@@ -89,10 +82,6 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface, std::unique_ptr<Im
   const auto varNameValidator = [&](std::string_view varName) -> std::optional<std::string> {
     if (!isValidGlslIdentifier(varName)) { return "Invalid variable name"; }
     {
-      const auto &valueRecords = varPanel->getValueRecords();
-      if (std::ranges::find(valueRecords, std::string{varName}, &ValueRecord::name) != valueRecords.end()) {
-        return "Name is already in use";
-      }
       const auto &textures = imagesPanel->getTextures();
       if (std::ranges::find(textures, std::string{varName}, &std::pair<std::string, std::shared_ptr<Texture>>::first)
           != textures.end()) {
@@ -111,31 +100,6 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface, std::unique_ptr<Im
     if (unsupportedType) { return "Selected type is not currently supported"; }
     return std::nullopt;
   };
-
-  addVarButton->addClickListener([&, varSelectValidator] {
-    constexpr auto COLOR_RECORD = "Color (vec4)";
-    GlslVariableInputDialogBuilder{imGuiInterface}
-        .addTypeNames(getGlslTypeNames())
-        .addTypeName(COLOR_RECORD)
-        .inputValidator(varSelectValidator)
-        .onInput([&](std::string_view typeName, std::string_view varName) {
-          if (typeName == COLOR_RECORD) {
-            varPanel->addColorVariable(varName, gui::Color::White);
-          } else {
-            getTypeForGlslName(typeName, [&]<typename T>() {
-              if constexpr (isUnsupportedType.operator()<T>()) {
-                assert(false
-                       && "This should never happen");  // this needs to be here due to template instantiation errors
-              } else if constexpr (std::same_as<T, bool>) {
-                varPanel->addBoolVariable(varName, false);
-              } else {
-                varPanel->addDragVariable<T>(varName, T{});
-              }
-            });
-          }
-        })
-        .show();
-  });
 
   imagesPanel->addImageButton->addClickListener([&, varNameValidator] {
     imGuiInterface.getDialogManager()

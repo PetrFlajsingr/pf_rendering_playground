@@ -62,8 +62,6 @@ add_executable(pf_rendering_playground
         src/utils/FPSCounter.cpp
         src/shader_toy/ShaderBuilder.cpp
         src/shader_toy/ShaderBuilder.h
-        src/shader_toy/ui/GlobalVariablesPanel.cpp
-        src/shader_toy/ui/GlobalVariablesPanel.h
         src/utils/glsl_typenames.h
         src/modes/Mode.cpp src/shader_toy/utils.h
         src/shader_toy/ui/dialogs/GlslLVariableInputDialog.cpp

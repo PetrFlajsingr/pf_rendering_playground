@@ -36,9 +36,9 @@ ShaderVariablesController::ShaderVariablesController(std::unique_ptr<ShaderVaria
       const auto iter = subscriptions.find(varModel);
       std::ranges::for_each(iter->second, &Subscription::unsubscribe);
       subscriptions.erase(iter);
-      view->varsLayout->removeChild(*varModel->name);
       const auto [rmBeg, rmEnd] = std::ranges::remove(view->elements, *varModel->name, &gui::Element::getName);
       view->elements.erase(rmBeg, rmEnd);
+      view->varsLayout->removeChild(*varModel->name);
     });
   });
 }
