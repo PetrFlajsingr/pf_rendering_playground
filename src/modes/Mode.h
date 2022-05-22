@@ -19,7 +19,7 @@ class Mode {
  public:
   virtual ~Mode() = default;
 
-  [[nodiscard]] const toml::table &getConfig() const;
+  [[nodiscard]] const toml::table &getConfig();
 
   [[nodiscard]] ModeState getState() const;
 
@@ -43,6 +43,8 @@ class Mode {
   virtual void deactivate_impl() = 0;
   void deinitialize();
   virtual void deinitialize_impl() = 0;
+
+  virtual void updateConfig() = 0;
 
   virtual void render(std::chrono::nanoseconds timeDelta) = 0;
 

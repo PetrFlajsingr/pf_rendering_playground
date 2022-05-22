@@ -9,7 +9,10 @@
 
 namespace pf {
 
-const toml::table &Mode::getConfig() const { return config; }
+const toml::table &Mode::getConfig() {
+  updateConfig();
+  return config;
+}
 
 ModeState Mode::getState() const { return state; }
 

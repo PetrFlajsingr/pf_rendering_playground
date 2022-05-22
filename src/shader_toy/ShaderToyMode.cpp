@@ -138,6 +138,11 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
 
   ui->shaderVariablesController->getModel()->variableAddedEvent.addEventListener(markShaderChanged);
   ui->shaderVariablesController->getModel()->variableRemovedEvent.addEventListener(markShaderChanged);
+  if (const auto iter = config.find("shader_variables"); iter != config.end()) {
+    if (const auto varsTbl = iter->second.as_table(); varsTbl != nullptr) {
+      ui->shaderVariablesController->getModel()->setFromToml(*varsTbl);
+    }
+  }
 
   ui->textInputWindow->imagesPanel->addImagesChangedListener(markShaderChanged);
 
@@ -166,6 +171,7 @@ void ShaderToyMode::activate_impl() {
   resetCounters();
   ui->show();
   ui->interface->setStateFromConfig();
+  // TODO: load data from config
 }
 
 void ShaderToyMode::deactivate_impl() {
@@ -380,6 +386,11 @@ void ShaderToyMode::updateUI() {
     lastFPSVisualUpdate = std::chrono::steady_clock::now();
     ui->outputWindow->fpsText->setText("FPS: {}", fpsCounter.averageFPS());
   }
+}
+
+void ShaderToyMode::updateConfig() {
+  auto shaderVarsToml = ui->shaderVariablesController->getModel()->toToml();
+  config.insert_or_assign("shader_variables", std::move(shaderVarsToml));
 }
 
 }  // namespace pf::shader_toy

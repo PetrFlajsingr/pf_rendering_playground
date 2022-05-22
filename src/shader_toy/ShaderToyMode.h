@@ -33,6 +33,8 @@ class ShaderToyMode : public Mode {
   void deinitialize_impl() override;
   void render(std::chrono::nanoseconds timeDelta) override;
 
+  void updateConfig() override;
+
  private:
   void resetCounters();
 

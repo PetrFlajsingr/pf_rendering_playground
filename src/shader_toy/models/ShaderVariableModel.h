@@ -5,6 +5,7 @@
 #pragma once
 
 #include "mvc/reactive.h"
+#include "mvc/Model.h"
 #include "utils/glsl_typenames.h"
 #include <pf_imgui/Color.h>
 #include <string>
@@ -15,14 +16,17 @@
 
 namespace pf {
 // TODO: change this so it can't be changed later (value type)
-class ShaderVariableModel {
+class ShaderVariableModel : public SavableModel {
  public:
   ShaderVariableModel(std::string_view varName, std::variant<PF_GLSL_TYPES, ui::ig::Color> val);
   Observable<std::string> name;
   Observable<std::variant<PF_GLSL_TYPES, ui::ig::Color>> value;
+
+  [[nodiscard]] toml::table toToml() const override;
+  void setFromToml(const toml::table &src) override;
 };
 
-class ShaderVariablesModel {
+class ShaderVariablesModel : public SavableModel {
   using ShaderVariableModels = std::vector<std::shared_ptr<ShaderVariableModel>>;
   template<typename ...Args>
   using Event = Event<ShaderVariablesModel, Args...>;
@@ -43,6 +47,9 @@ class ShaderVariablesModel {
   std::optional<std::string> addVariable(std::shared_ptr<ShaderVariableModel> variable);
 
   void removeVariable(std::string_view varName);
+
+  [[nodiscard]] toml::table toToml() const override;
+  void setFromToml(const toml::table &src) override;
 
  private:
   ShaderVariableModels variables;
