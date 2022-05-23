@@ -41,7 +41,7 @@ class ImageLoader {
 
  protected:
   void enqueue(std::invocable auto &&fnc) {
-    futures.emplace_back(threadPool.enqueue(std::forward<decltype(fnc)>(fnc)));
+    futures.emplace_back(threadPool->enqueue(std::forward<decltype(fnc)>(fnc)));
   }
 
  private:
