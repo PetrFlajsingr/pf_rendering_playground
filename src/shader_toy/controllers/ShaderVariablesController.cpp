@@ -65,7 +65,7 @@ void ShaderVariablesController::showAddVariableDialog() {
         return "Name is already in use";
       }
 
-      if (std::ranges::find(varNamesInUse, std::string{varName}) != varNamesInUse.end()) {
+      if (std::ranges::find(addDisallowedName, std::string{varName}) != varNamesInUse.end()) {
         return "Name is already in use";
       }
     }
@@ -106,9 +106,9 @@ void ShaderVariablesController::showAddVariableDialog() {
       .show();
 }
 
-void ShaderVariablesController::clearVarNamesInUse() { varNamesInUse.clear(); }
+void ShaderVariablesController::clearDisallowedNames() { addDisallowedName.clear(); }
 
-void ShaderVariablesController::addVarNameInUse(std::string name) { varNamesInUse.emplace_back(std::move(name)); }
+void ShaderVariablesController::addDisallowedName(std::string name) { addDisallowedName.emplace_back(std::move(name)); }
 
 void ShaderVariablesController::createUIForShaderVariableModel(const std::shared_ptr<ShaderVariableModel> &varModel) {
   std::visit(

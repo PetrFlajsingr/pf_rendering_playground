@@ -19,14 +19,14 @@ class ShaderVariablesController : public Controller<ShaderVariablesWindowView, S
 
   void showAddVariableDialog();
   // TODO: this is unused for now, gotta add image names
-  void clearVarNamesInUse();
-  void addVarNameInUse(std::string name);
+  void clearDisallowedNames();
+  void addDisallowedName(std::string name);
 
  private:
   void createUIForShaderVariableModel(const std::shared_ptr<ShaderVariableModel> &varModel);
 
   std::shared_ptr<ui::ig::ImGuiInterface> interface;
-  std::vector<std::string> varNamesInUse;
+  std::vector<std::string> disallowedNames;
 
   std::unordered_map<std::shared_ptr<ShaderVariableModel>, std::vector<Subscription>> subscriptions;
 };
