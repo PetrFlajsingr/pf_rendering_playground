@@ -86,13 +86,14 @@ void OpenGLStbImageLoader::loadTextureAsync(
         default:
           onLoadDone(
               tl::make_unexpected(fmt::format("Unsupported channel count '{}'", imageData.value().info.channels)));
-          return;
+          return; // unsupported channel count
       }
       MainLoop::Get()->enqueue([onLoadDone, textureFormat, imageData = std::move(imageData)] {
         auto texture = std::make_shared<OpenGlTexture>(TextureTarget::_2D, textureFormat, TextureLevel{0},
                                                        imageData.value().info.size);
         if (const auto errOpt = texture->create(); errOpt.has_value()) {
-          return tl::make_unexpected(errOpt.value().message);
+          onLoadDone(tl::make_unexpected(errOpt.value().message));
+          return; // texture creation failed
         }
         texture->set2Ddata(std::span{imageData->data.data(), imageData->data.size()}, TextureLevel{0});
         onLoadDone(std::move(texture));
