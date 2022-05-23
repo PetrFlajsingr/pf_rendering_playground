@@ -5,6 +5,6 @@
 #include "ImageAssetsController.h"
 
 namespace pf {
-ImageAssetsController::ImageAssetsController(std::unique_ptr<UIView> uiView, std::shared_ptr<UserImageAssetsModel> mod)
+ImageAssetsController::ImageAssetsController(std::unique_ptr<ImageAssetsView> uiView, std::shared_ptr<UserImageAssetsModel> mod)
     : Controller(std::move(uiView), std::move(mod)) {}
 }  // namespace pf

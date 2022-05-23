@@ -13,7 +13,7 @@ namespace pf {
 // TODO: rename everything related
 class ImageAssetsController : public Controller<ImageAssetsView, UserImageAssetsModel> {
  public:
-  ImageAssetsController(std::unique_ptr<UIView> uiView, std::shared_ptr<UserImageAssetsModel> mod);
+  ImageAssetsController(std::unique_ptr<ImageAssetsView> uiView, std::shared_ptr<UserImageAssetsModel> mod);
 };
 
 }  // namespace pf
