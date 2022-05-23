@@ -11,15 +11,15 @@
 #include <pf_imgui/elements/LogPanel.h>
 #include <spdlog/spdlog.h>
 
-#include "common_ui/controllers/LogWindowController.h"
 #include "../controllers/ShaderVariablesController.h"
+#include "common_ui/controllers/LogWindowController.h"
+#include "shader_toy/controllers/ImageAssetsController.h"
 
 namespace pf::shader_toy {
 
 struct UI {
-  UI(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, glfw::Window &window,
-     std::unique_ptr<ImageLoader> imageLoader, const std::string &initShaderCode,
-     const std::filesystem::path &resourcesPath, bool initializeDocking);
+  UI(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, glfw::Window &window, const std::string &initShaderCode,
+     const std::filesystem::path &resourcesPath, bool initializeDocking, std::shared_ptr<ThreadPool> threadpool);
 
   void show();
 
@@ -32,6 +32,7 @@ struct UI {
 
   std::unique_ptr<LogWindowController> logWindowController;
   std::unique_ptr<ShaderVariablesController> shaderVariablesController;
+  std::unique_ptr<ImageAssetsController> imageAssetsController;
   // clang-format on
   std::shared_ptr<ui::ig::ImGuiInterface> interface;
 };

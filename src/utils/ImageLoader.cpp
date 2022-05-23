@@ -23,6 +23,8 @@ std::optional<ImageInfo> StbImageLoader::getImageInfo(const std::filesystem::pat
   return std::nullopt;
 }
 
+StbImageLoader::StbImageLoader(const std::shared_ptr<ThreadPool> &threadPool) : ImageLoader(threadPool) {}
+
 tl::expected<ImageData, std::string> StbImageLoader::loadImage(const std::filesystem::path &imagePath) {
   int x;
   int y;
@@ -41,6 +43,9 @@ void StbImageLoader::loadImageAsync(const std::filesystem::path &imagePath,
                                     std::function<void(tl::expected<ImageData, std::string>)> onLoadDone) {
   enqueue([this, imagePath, onLoadDone] { onLoadDone(loadImage(imagePath)); });
 }
+
+OpenGLStbImageLoader::OpenGLStbImageLoader(const std::shared_ptr<ThreadPool> &threadPool)
+    : StbImageLoader(threadPool) {}
 
 tl::expected<std::shared_ptr<Texture>, std::string>
 OpenGLStbImageLoader::loadTexture(const std::filesystem::path &imagePath) {
@@ -79,10 +84,11 @@ void OpenGLStbImageLoader::loadTextureAsync(
         case 3: textureFormat = TextureFormat::RGB8; break;
         case 4: textureFormat = TextureFormat::RGBA8; break;
         default:
-          onLoadDone(tl::make_unexpected(fmt::format("Unsupported channel count '{}'", imageData.value().info.channels)));
+          onLoadDone(
+              tl::make_unexpected(fmt::format("Unsupported channel count '{}'", imageData.value().info.channels)));
           return;
       }
-      MainLoop::Get()->enqueue([this, textureFormat, imageData = std::move(imageData)] {
+      MainLoop::Get()->enqueue([onLoadDone, textureFormat, imageData = std::move(imageData)] {
         auto texture = std::make_shared<OpenGlTexture>(TextureTarget::_2D, textureFormat, TextureLevel{0},
                                                        imageData.value().info.size);
         if (const auto errOpt = texture->create(); errOpt.has_value()) {
@@ -96,4 +102,5 @@ void OpenGLStbImageLoader::loadTextureAsync(
     }
   });
 }
+
 }  // namespace pf

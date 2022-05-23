@@ -37,10 +37,8 @@ std::optional<std::string> UserImageAssetsModel::addTexture(std::shared_ptr<Text
 }
 
 void UserImageAssetsModel::removeTexture(std::string_view texName) {
-  TextureModels toRemove;
-  std::ranges::remove_copy_if(textures, std::back_inserter(toRemove),
-                              [texName](const auto &texture) { return *texture->name != texName; });
-  std::ranges::for_each(toRemove, [this](const auto &texture) { imageRemovedEvent.notify(texture); });
+  const auto toRemove = erase_and_extract_if(textures, [texName](const auto &tex) { return *tex->name == texName; });
+  std::ranges::for_each(toRemove, [this](const auto &var) { imageRemovedEvent.notify(var); });
 }
 
 void UserImageAssetsModel::clearTextures() {

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <range/v3/range/conversion.hpp>
 #include <range/v3/view/split.hpp>
 #include <range/v3/view/transform.hpp>
@@ -20,5 +21,16 @@ namespace pf {
       | ranges::to_vector;
 }
 
-}  // namespace pf
+template<typename T>
+[[nodiscard]] inline std::vector<T> erase_and_extract_if(std::vector<T> &vec,
+                                               std::predicate<typename std::vector<T>::value_type> auto &&pred) {
+  std::vector<T> result{};
+  auto iter = std::ranges::find_if(vec, pred);
+  for (; iter != vec.end(); iter = std::ranges::find_if(vec, pred)) {
+    result.emplace_back(std::move(*iter));
+    vec.erase(iter);
+  }
+  return result;
+}
 
+}  // namespace pf

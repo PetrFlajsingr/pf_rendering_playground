@@ -4,6 +4,7 @@
 
 #include "ShaderVariableModel.h"
 #include "pf_imgui/serialization.h"
+#include "utils/algorithms.h"
 
 namespace pf {
 ShaderVariableModel::ShaderVariableModel(std::string_view varName, std::variant<PF_GLSL_TYPES, ui::ig::Color> val)
@@ -97,9 +98,7 @@ std::optional<std::string> ShaderVariablesModel::addVariable(std::shared_ptr<Sha
 }
 
 void ShaderVariablesModel::removeVariable(std::string_view varName) {
-  ShaderVariableModels toRemove;
-  std::ranges::remove_copy_if(variables, std::back_inserter(toRemove),
-                              [varName](const auto &var) { return *var->name != varName; });
+  const auto toRemove = erase_and_extract_if(variables, [varName](const auto &var) { return *var->name == varName; });
   std::ranges::for_each(toRemove, [this](const auto &var) { variableRemovedEvent.notify(var); });
 }
 

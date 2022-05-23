@@ -46,6 +46,7 @@ ImageAssetsView::ImageAssetsView(ui::ig::ImGuiInterface &interface, std::string_
   imagesLayout = &layout->createChild(gui::WrapLayout::Config{.name = "imgs_layout",
                                                               .layoutDirection = gui::LayoutDirection::LeftToRight,
                                                               .size = gui::Size::Auto()});
+  imagesLayout->setScrollable(true);
 }
 
 ImageTile &ImageAssetsView::addImageTile(std::string_view name, std::shared_ptr<Texture> texture) {

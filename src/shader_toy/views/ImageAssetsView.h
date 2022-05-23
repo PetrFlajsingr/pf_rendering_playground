@@ -19,6 +19,7 @@
 namespace pf {
 
 // TODO move this out
+// TODO: add texture format
 class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
  public:
   ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<Texture> texture);

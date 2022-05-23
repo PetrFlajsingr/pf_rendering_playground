@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "ImagesPanel.h"
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/Button.h>
 #include <pf_imgui/elements/Checkbox.h>
@@ -20,7 +19,7 @@ namespace pf::shader_toy {
 
 class InputWindow {
  public:
-  InputWindow(ui::ig::ImGuiInterface &imGuiInterface, std::unique_ptr<ImageLoader> &&imageLoader);
+  InputWindow(ui::ig::ImGuiInterface &imGuiInterface);
 
   // clang-format off
   ui::ig::Window *window;
@@ -40,8 +39,6 @@ class InputWindow {
             ui::ig::Text *infoText;
             ui::ig::Spinner *compilationSpinner;
           ui::ig::TextEditor *editor;
-        ui::ig::Tab *imagesTab;
-          ImagesPanel *imagesPanel;
   // clang-format on
 };
 

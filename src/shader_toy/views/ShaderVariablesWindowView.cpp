@@ -21,6 +21,7 @@ ShaderVariablesWindowView::ShaderVariablesWindowView(ui::ig::ImGuiInterface &int
   });
   varsLayout = &window->createChild(
       gui::VerticalLayout::Config{.name = "vars_layout", .size = gui::Size::Auto(), .showBorder = false});
+  varsLayout->setScrollable(true);
 }
 
 ShaderVariableRecordElement<ui::ig::Checkbox> &ShaderVariablesWindowView::addCheckboxInput(std::string_view name,

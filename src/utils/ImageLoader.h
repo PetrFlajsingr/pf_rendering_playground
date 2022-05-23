@@ -51,6 +51,7 @@ class ImageLoader {
 
 class StbImageLoader : public ImageLoader {
  public:
+  explicit StbImageLoader(const std::shared_ptr<ThreadPool> &threadPool);
   std::optional<ImageInfo> getImageInfo(const std::filesystem::path &imagePath) override;
 
   tl::expected<ImageData, std::string> loadImage(const std::filesystem::path &imagePath) override;
@@ -60,6 +61,7 @@ class StbImageLoader : public ImageLoader {
 
 class OpenGLStbImageLoader : public StbImageLoader {
  public:
+  explicit OpenGLStbImageLoader(const std::shared_ptr<ThreadPool> &threadPool);
   tl::expected<std::shared_ptr<Texture>, std::string> loadTexture(const std::filesystem::path &imagePath) override;
 
   void loadTextureAsync(const std::filesystem::path &imagePath,

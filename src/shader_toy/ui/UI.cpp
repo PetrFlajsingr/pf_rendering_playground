@@ -10,16 +10,15 @@
 namespace pf::shader_toy {
 
 namespace gui = ui::ig;
-UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window,
-       std::unique_ptr<ImageLoader> imageLoader, const std::string &initShaderCode,
-       const std::filesystem::path &resourcesPath, bool initializeDocking)
+UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window, const std::string &initShaderCode,
+       const std::filesystem::path &resourcesPath, bool initializeDocking, std::shared_ptr<ThreadPool> threadpool)
     : interface(std::move(imGuiInterface)) {
   gui::setDarkStyle(*interface);
 
   dockingArea = &interface->createOrGetBackgroundDockingArea();
 
   outputWindow = std::make_unique<OutputWindow>(*interface);
-  textInputWindow = std::make_unique<InputWindow>(*interface, std::move(imageLoader));
+  textInputWindow = std::make_unique<InputWindow>(*interface);
 
   textInputWindow->editor->setText(initShaderCode);
 
@@ -29,6 +28,10 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
   shaderVariablesController = std::make_unique<ShaderVariablesController>(
       std::make_unique<ShaderVariablesWindowView>(*interface, "shader_vars_win", "Shader variables"),
       std::make_shared<ShaderVariablesModel>(), interface);
+
+  imageAssetsController = std::make_unique<ImageAssetsController>(
+      std::make_unique<ImageAssetsView>(*interface, "image_assets_win", "Images"),
+      std::make_shared<UserImageAssetsModel>(), interface, std::make_shared<OpenGLStbImageLoader>(threadpool));
 
   const auto fontPath = resourcesPath / "fonts" / "RobotoMono-Regular.ttf";
   if (std::filesystem::exists(fontPath)) {

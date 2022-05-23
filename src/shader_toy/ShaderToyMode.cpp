@@ -30,64 +30,6 @@ void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei
   spdlog::error("{} {}, {}, {}, {}", source, type, id, severity, std::string_view{message, message + length});
 }
 
-// TODO: refactor this
-namespace pf {
-class OpenGlImageLoader : public ImageLoader {
- public:
-  explicit OpenGlImageLoader(std::shared_ptr<ThreadPool> threadPool) : threadPool(std::move(threadPool)) {}
-  tl::expected<std::shared_ptr<Texture>, std::string> createTexture(const std::filesystem::path &imagePath) override {
-    if (const auto imgSize = getTextureFileSize(imagePath); imgSize.has_value()) {
-      auto texture =
-          std::make_shared<OpenGlTexture>(TextureTarget::_2D, TextureFormat::RGBA8, TextureLevel{0}, imgSize.value());
-      if (const auto errOpt = texture->create(); errOpt.has_value()) {
-        return tl::make_unexpected(errOpt.value().message);
-      }
-      const auto textureData = getTextureData(imagePath);
-      if (textureData.has_value()) {
-        texture->set2Ddata(std::span{textureData->data(), textureData->size()}, TextureLevel{0});
-      } else {
-        return tl::make_unexpected(textureData.error());
-      }
-      return texture;
-    } else {
-      return tl::make_unexpected("File could not be open");
-    }
-  }
-  void
-  createTextureAsync(const std::filesystem::path &imagePath,
-                     std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) override {
-    // TODO: do the texture creation on rendering thread
-    threadPool->enqueue([=] {
-      if (const auto imgSize = getTextureFileSize(imagePath); imgSize.has_value()) {
-        MainLoop::Get()->enqueue([=] {
-          auto texture = std::make_shared<OpenGlTexture>(TextureTarget::_2D, TextureFormat::RGBA8, TextureLevel{0},
-                                                         imgSize.value());
-          if (const auto errOpt = texture->create(); errOpt.has_value()) {
-            onLoadDone(tl::make_unexpected(errOpt.value().message));
-          }
-          threadPool->enqueue([=] {
-            const auto textureData = getTextureData(imagePath);
-            MainLoop::Get()->enqueue([=] {
-              if (textureData.has_value()) {
-                texture->set2Ddata(std::span{textureData->data(), textureData->size()}, TextureLevel{0});
-                onLoadDone(texture);
-              } else {
-                onLoadDone(tl::make_unexpected(textureData.error()));
-              }
-            });
-          });
-        });
-      } else {
-        onLoadDone(tl::make_unexpected("File could not be open"));
-      }
-    });
-  }
-
- private:
-  std::shared_ptr<ThreadPool> threadPool;
-};
-}  // namespace pf
-
 namespace pf::shader_toy {
 
 ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{std::move(resourcesPath)} {}
@@ -106,8 +48,8 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   glfwWindow = window;
   workerThreads = threadPool;
 
-  ui = std::make_unique<UI>(imguiInterface, *window, std::make_unique<OpenGlImageLoader>(workerThreads),
-                            DEFAULT_SHADER_SOURCE, configData.resourcesPath, isFirstRun);
+  ui = std::make_unique<UI>(imguiInterface, *window, DEFAULT_SHADER_SOURCE, configData.resourcesPath, isFirstRun,
+                            threadPool);
 
   getLogger().sinks().emplace_back(ui->logWindowController->createSpdlogSink());
 
@@ -143,8 +85,6 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
       ui->shaderVariablesController->getModel()->setFromToml(*varsTbl);
     }
   }
-
-  ui->textInputWindow->imagesPanel->addImagesChangedListener(markShaderChanged);
 
   ui->textInputWindow->editor->addTextListener(markShaderChanged);
 
@@ -237,11 +177,10 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
       Visitor{[&](int binding) { outputTexture->bindImage(Binding{binding}, ImageTextureUnitAccess::ReadWrite); },
               [](auto) {}});
 
-  std::ranges::for_each(userDefinedTextures, [&](const auto &textureRecord) {
-    const auto &[name, texture] = textureRecord;
+  std::ranges::for_each(ui->imageAssetsController->getModel()->getTextures(), [&](const auto &tex) {
     mainProgram->getUniformValue(
-        name,
-        Visitor{[&](int binding) { texture->bindImage(Binding{binding}, ImageTextureUnitAccess::ReadWrite); },
+        *tex->name,
+        Visitor{[&](int binding) { (*tex->texture)->bindImage(Binding{binding}, ImageTextureUnitAccess::ReadWrite); },
                 [](auto) {}});
   });
 
@@ -315,9 +254,22 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
                           builder.addUniform(std::string{typeName}, *variable->name);
                         });
 
-  for (const auto &[name, texture] : ui->textInputWindow->imagesPanel->getTextures()) {
-    builder.addImage2D("rgba8", name);
-  }
+  std::ranges::for_each(ui->imageAssetsController->getModel()->getTextures(),
+                        [&](const std::shared_ptr<TextureAssetModel> &tex) {
+                          const auto texFormat = (*tex->texture)->getFormat();
+                          std::string formatStr;
+                          switch (texFormat) {
+                            case TextureFormat::R8: formatStr = "r8"; break;
+                            case TextureFormat::RGB8: formatStr = "rgb8"; break;
+                            case TextureFormat::RGBA8: formatStr = "rgba8"; break;
+                            default:
+                              getLogger().critical("Unsupported image type '{}' in ShaderToyMode::compileShader_impl",
+                                                   magic_enum::enum_name(texFormat));
+                              return;
+                          }
+                          builder.addImage2D(formatStr, *tex->name);
+                        });
+
   const auto &[source, lineMapping] = builder.build(shaderCode);
   shaderLineMapping = lineMapping;
 
@@ -351,8 +303,6 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
             getLogger().error("{}", programCreateResult.value().message);
           } else {
             mainProgram = std::move(newProgram);
-
-            userDefinedTextures = ui->textInputWindow->imagesPanel->getTextures();
 
             totalTime = std::chrono::nanoseconds{0};
             frameCounter = 0;

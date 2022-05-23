@@ -69,8 +69,6 @@ add_executable(pf_rendering_playground
         src/utils/algorithms.h
         src/modes/DummyMode.h
         src/utils/opengl_utils.h
-        src/shader_toy/ui/ImagesPanel.cpp
-        src/shader_toy/ui/ImagesPanel.h
         src/gpu/Texture.cpp
         src/gpu/Texture.h
         src/gpu/GpuObject.h
@@ -97,7 +95,22 @@ add_executable(pf_rendering_playground
         src/common_ui/views/LogWindowView.h
         src/common_ui/controllers/LogWindowController.cpp
         src/common_ui/controllers/LogWindowController.h
-        src/common_ui/models/LogModel.h src/shader_toy/models/ImageAssetModel.cpp src/shader_toy/models/ImageAssetModel.h src/shader_toy/models/ShaderVariableModel.cpp src/shader_toy/models/ShaderVariableModel.h src/shader_toy/views/ImageAssetsView.cpp src/shader_toy/views/ImageAssetsView.h src/shader_toy/views/ShaderVariablesWindowView.cpp src/shader_toy/views/ShaderVariablesWindowView.h src/shader_toy/controllers/ShaderVariablesController.cpp src/shader_toy/controllers/ShaderVariablesController.h src/mvc/Model.h src/shader_toy/controllers/ImageAssetsController.cpp src/shader_toy/controllers/ImageAssetsController.h src/utils/ImageLoader.cpp src/utils/ImageLoader.h)
+        src/common_ui/models/LogModel.h
+        src/shader_toy/models/ImageAssetModel.cpp
+        src/shader_toy/models/ImageAssetModel.h
+        src/shader_toy/models/ShaderVariableModel.cpp
+        src/shader_toy/models/ShaderVariableModel.h
+        src/shader_toy/views/ImageAssetsView.cpp
+        src/shader_toy/views/ImageAssetsView.h
+        src/shader_toy/views/ShaderVariablesWindowView.cpp
+        src/shader_toy/views/ShaderVariablesWindowView.h
+        src/shader_toy/controllers/ShaderVariablesController.cpp
+        src/shader_toy/controllers/ShaderVariablesController.h
+        src/mvc/Model.h
+        src/shader_toy/controllers/ImageAssetsController.cpp
+        src/shader_toy/controllers/ImageAssetsController.h
+        src/utils/ImageLoader.cpp
+        src/utils/ImageLoader.h)
 
 target_compile_definitions(pf_rendering_playground PUBLIC NOGDI)
 target_link_libraries(pf_rendering_playground glad
