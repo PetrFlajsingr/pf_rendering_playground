@@ -10,7 +10,6 @@
 #include <pf_imgui/elements/DragInput.h>
 #include <pf_imgui/elements/Separator.h>
 #include <pf_imgui/elements/Spinner.h>
-#include <pf_imgui/elements/TabBar.h>
 #include <pf_imgui/elements/Text.h>
 #include <pf_imgui/elements/TextEditor.h>
 #include <pf_imgui/layouts/VerticalLayout.h>
@@ -24,21 +23,19 @@ class InputWindow {
   // clang-format off
   ui::ig::Window *window;
     ui::ig::VerticalLayout *layout;
-      ui::ig::TabBar *tabBar;
-        ui::ig::Tab *mainShaderTab;
-          ui::ig::HorizontalLayout *controlsLayout;
-            ui::ig::Button *compileButton;
-            //ui::ig::Separator *sep1;
-            ui::ig::Checkbox *timePausedCheckbox;
-            ui::ig::Button *restartButton;
-            //ui::ig::Separator *sep2;
-            ui::ig::Checkbox *autoCompileCheckbox;
-            ui::ig::DragInput<float> *autoCompileFrequencyDrag;
-          ui::ig::Button *codeToClipboardButton;
-          ui::ig::HorizontalLayout *infoLayout;
-            ui::ig::Text *infoText;
-            ui::ig::Spinner *compilationSpinner;
-          ui::ig::TextEditor *editor;
+       ui::ig::HorizontalLayout *controlsLayout;
+         ui::ig::Button *compileButton;
+         //ui::ig::Separator *sep1;
+         ui::ig::Checkbox *timePausedCheckbox;
+         ui::ig::Button *restartButton;
+         //ui::ig::Separator *sep2;
+         ui::ig::Checkbox *autoCompileCheckbox;
+         ui::ig::DragInput<float> *autoCompileFrequencyDrag;
+       ui::ig::Button *codeToClipboardButton;
+       ui::ig::HorizontalLayout *infoLayout;
+         ui::ig::Text *infoText;
+         ui::ig::Spinner *compilationSpinner;
+       ui::ig::TextEditor *editor;
   // clang-format on
 };
 

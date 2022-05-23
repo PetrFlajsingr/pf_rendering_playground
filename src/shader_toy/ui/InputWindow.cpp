@@ -21,12 +21,8 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
   window = &imGuiInterface.createWindow("text_input_window", "Editor");
   window->setIsDockable(true);
   layout = &window->createChild(gui::VerticalLayout::Config{.name = "text_input_layout", .size = gui::Size::Auto()});
-  tabBar = &layout->createChild<gui::TabBar>("tabbar", true);
 
-  mainShaderTab =
-      &tabBar->addTab("main_shader_tab", "Main", Flags{gui::TabMod::DisableMidMouseClose} | gui::TabMod::ForceLeft);
-
-  controlsLayout = &mainShaderTab->createChild(
+  controlsLayout = &layout->createChild(
       gui::HorizontalLayout::Config{.name = "text_controls_layout", .size = gui::Size{gui::Width::Auto(), 80}});
   compileButton = &controlsLayout->createChild(gui::Button::Config{"compile_btn", "Compile"});
   //sep1 = &controlsLayout->createChild<gui::Separator>("sep1");
@@ -49,9 +45,9 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
       [this](bool value) { autoCompileFrequencyDrag->setEnabled(value ? Enabled::Yes : Enabled::No); });
 
   codeToClipboardButton =
-      &mainShaderTab->createChild<gui::Button>("copy_shtoy_to_clip", "Generated shader to clipboard");
+      &layout->createChild<gui::Button>("copy_shtoy_to_clip", "Generated shader to clipboard");
 
-  infoLayout = &mainShaderTab->createChild(
+  infoLayout = &layout->createChild(
       gui::HorizontalLayout::Config{.name = "info_layout", .size = gui::Size{gui::Width::Auto(), 30}});
   infoText = &infoLayout->createChild<gui::Text>("info_txt", "Info");
   compilationSpinner =
@@ -71,7 +67,7 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
   auto &tooltipLayout = tooltip.createChild<gui::VerticalLayout>("info_ttip_layout", gui::Size{400, 500});
   tooltipLayout.createChild<gui::MarkdownText>("info_md_text", imGuiInterface, INFO_MD_TEXT);
 
-  editor = &mainShaderTab->createChild(gui::TextEditor::Config{.name = "text_editor", .persistent = true});
+  editor = &layout->createChild(gui::TextEditor::Config{.name = "text_editor", .persistent = true});
 }
 
 }  // namespace pf::shader_toy

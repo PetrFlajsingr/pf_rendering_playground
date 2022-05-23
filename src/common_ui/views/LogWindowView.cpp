@@ -8,6 +8,7 @@ namespace pf {
 
 namespace gui = ui::ig;
 
+// TODO: make persistent when new pf_imgui version is released
 LogWindowView::LogWindowView(ui::ig::ImGuiInterface &interface, std::string_view windowName,
                              std::string_view windowTitle)
     : UIViewWindow{&interface.createWindow(std::string{windowName}, std::string{windowTitle})},
