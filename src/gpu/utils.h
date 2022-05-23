@@ -6,6 +6,7 @@
 
 #include "Texture.h"
 #include "gpu/opengl/Texture.h"
+#include <filesystem>
 #include <imgui.h>
 #include <stb/stb_image.h>
 

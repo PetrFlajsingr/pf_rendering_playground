@@ -19,7 +19,7 @@
 #include <pf_mainloop/MainLoop.h>
 
 namespace pf {
-// TODO: image size based on aspect ratio
+
 class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
  public:
   ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<Texture> texture, const std::string &varName,

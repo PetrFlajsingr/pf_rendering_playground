@@ -21,6 +21,7 @@
 
 namespace pf {
 
+// TODO move this out
 template<std::derived_from<ui::ig::Element> T>
 class ShaderVariableRecordElement : public T {
  public:
@@ -50,6 +51,8 @@ class ShaderVariablesWindowView : public UIViewWindow {
 
   ShaderVariableRecordElement<ui::ig::ColorEdit<ui::ig::ColorChooserFormat::RGBA>> &
   addColorInput(std::string_view name, ui::ig::Color initialValue);
+
+  // TODO: add remove function which safely deletes froms layout and vector
 
   // clang-format off
   ui::ig::HorizontalLayout *controlsLayout;
