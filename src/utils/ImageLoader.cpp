@@ -64,7 +64,10 @@ OpenGLStbImageLoader::loadTexture(const std::filesystem::path &imagePath) {
     if (const auto errOpt = texture->create(); errOpt.has_value()) {
       return tl::make_unexpected(errOpt.value().message);
     }
-    texture->set2Ddata(std::span{imageData->data.data(), imageData->data.size()}, TextureLevel{0});
+    const auto setResult = texture->set2Ddata(std::span{imageData->data.data(), imageData->data.size()}, TextureLevel{0});
+    if (setResult.has_value()) {
+      return tl::make_unexpected(setResult->message);
+    }
     return texture;
   } else {
     return tl::make_unexpected(imageData.error());
@@ -95,7 +98,10 @@ void OpenGLStbImageLoader::loadTextureAsync(
           onLoadDone(tl::make_unexpected(errOpt.value().message));
           return; // texture creation failed
         }
-        texture->set2Ddata(std::span{imageData->data.data(), imageData->data.size()}, TextureLevel{0});
+        const auto setResult = texture->set2Ddata(std::span{imageData->data.data(), imageData->data.size()}, TextureLevel{0});
+        if (setResult.has_value()) {
+          onLoadDone(tl::make_unexpected(setResult->message));
+        }
         onLoadDone(std::move(texture));
       });
     } else {

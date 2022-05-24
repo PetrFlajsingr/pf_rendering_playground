@@ -52,9 +52,9 @@ class ShaderBuilder {
   [[nodiscard]] Result build(std::string userCode);
 
  private:
-  std::string uniformsAsString(const std::vector<UniformInfo> &uniforms);
-  std::string image2DsAsString(const std::vector<Image2DInfo> &uniforms);
-  std::string definesAsString(const std::vector<ShaderDefine> &defines);
+  std::string uniformsAsString(const std::vector<UniformInfo> &uniformInfos);
+  std::string image2DsAsString(const std::vector<Image2DInfo> &image2DInfos);
+  std::string definesAsString(const std::vector<ShaderDefine> &shaderDefines);
 
   std::string addTextureAccessCheck(std::string src, const std::string &textureName);
 

@@ -20,27 +20,27 @@ if (gl_GlobalInvocationID.y >= _pf_generated_renderTextureSize.y) {{
 }}
 )glsl"sv;
 
-std::string ShaderBuilder::uniformsAsString(const std::vector<UniformInfo> &uniforms) {
+std::string ShaderBuilder::uniformsAsString(const std::vector<UniformInfo> &uniformInfos) {
   std::string result;
-  std::ranges::for_each(uniforms, [&](const UniformInfo &uniformInfo) {
+  std::ranges::for_each(uniformInfos, [&](const UniformInfo &uniformInfo) {
     result.append(fmt::format("layout(location = {}) uniform {} {};\n", layoutLocationCounter++, uniformInfo.type,
                               uniformInfo.varName));
   });
   return result;
 }
 
-std::string ShaderBuilder::image2DsAsString(const std::vector<Image2DInfo> &uniforms) {
+std::string ShaderBuilder::image2DsAsString(const std::vector<Image2DInfo> &image2DInfos) {
   std::string result;
-  std::ranges::for_each(uniforms, [&](const Image2DInfo &imageInfo) {
+  std::ranges::for_each(image2DInfos, [&](const Image2DInfo &imageInfo) {
     result.append(fmt::format("layout({}, binding = {}) uniform image2D {};\n", imageInfo.format,
                               bindingCounter++, imageInfo.name));
   });
   return result;
 }
 
-std::string ShaderBuilder::definesAsString(const std::vector<ShaderDefine> &defines) {
+std::string ShaderBuilder::definesAsString(const std::vector<ShaderDefine> &shaderDefines) {
   std::string result;
-  std::ranges::for_each(defines, [&](const ShaderDefine &defineInfo) {
+  std::ranges::for_each(shaderDefines, [&](const ShaderDefine &defineInfo) {
     result.append(fmt::format("#define {} {}\n", defineInfo.name, defineInfo.value));
   });
   return result;
@@ -91,12 +91,12 @@ layout(local_size_x={}, local_size_y={})in;
                   image2DsAsString(image2Ds));
   if (!image2Ds.empty()) { userCode = addTextureAccessCheck(userCode, image2Ds[0].name); }
   const auto sourceWithUserCode = sourceWithoutUserCode + userCode;
-  const auto startOffset = std::ranges::count(sourceWithoutUserCode, '\n') + 1;
+  const auto startOffset = static_cast<std::size_t>(std::ranges::count(sourceWithoutUserCode, '\n') + 1);
   const auto dimensionCheckPos = sourceWithUserCode.find("_pf_generated_renderTextureSize");
   const auto dimensionCheckLine = dimensionCheckPos != std::string::npos
       ? std::ranges::count(sourceWithUserCode.begin(), sourceWithUserCode.begin() + dimensionCheckPos, '\n')
       : -1;
-  const auto dimensionCheckLineCount = std::ranges::count(dimensionCheckTemplate, '\n');
+  const auto dimensionCheckLineCount = static_cast<std::size_t>(std::ranges::count(dimensionCheckTemplate, '\n'));
 
   Result result;
   result.sourceLineToUserSourceLine = [=](std::size_t line) {

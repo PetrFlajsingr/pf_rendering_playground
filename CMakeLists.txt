@@ -7,6 +7,28 @@ else ()
     set(CMAKE_CXX_STANDARD 20) # /std:c++latest for msvc and -std=c++20 for everyone else.
 endif ()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    list(APPEND flags "/std:c++latest" "/W4" "/wd4201")
+else ()
+    list(APPEND flags "-fconcepts" "-fconcepts-diagnostics-depth=10" "-Werror=return-type" "-fcoroutines"
+            "-Wall" "-Wextra" "-Werror" "-Wpedantic" "-Wno-unknown-pragmas" "-Wno-unused-function"
+            "-Wpointer-arith" "-Wno-cast-qual" "-Wno-type-limits" "-fno-strict-aliasing" "-Wno-format-security")
+endif ()
+
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        list(APPEND flags "/WX")
+    endif ()
+elseif (CMAKE_BUILD_TYPE MATCHES ASAN)
+    list(APPEND flags "-fno-omit-frame-pointer" "-fsanitize=address")
+elseif (CMAKE_BUILD_TYPE MATCHES LSAN)
+    list(APPEND flags "-fno-omit-frame-pointer" "-fsanitize=leak")
+elseif (CMAKE_BUILD_TYPE MATCHES UBSAN)
+    list(APPEND flags "-fsanitize=undefined")
+elseif (CMAKE_BUILD_TYPE MATCHES TSAN)
+    list(APPEND flags "-fsanitize=thread")
+endif ()
+
 
 add_compile_definitions(GLFW_INCLUDE_NONE)
 add_compile_definitions(GLM_FORCE_SWIZZLE)
@@ -38,7 +60,7 @@ find_package(glslang CONFIG REQUIRED)
 add_library(glad src/glad.c)
 
 
-add_executable(pf_rendering_playground
+add_executable(${PROJECT_NAME}
         src/main.cpp
         src/utils/files.h
         src/utils/files.cpp
@@ -112,34 +134,12 @@ add_executable(pf_rendering_playground
         src/utils/ImageLoader.cpp
         src/utils/ImageLoader.h)
 
-target_compile_definitions(pf_rendering_playground PUBLIC NOGDI)
-target_link_libraries(pf_rendering_playground glad
+target_compile_definitions(${PROJECT_NAME} PUBLIC NOGDI)
+target_link_libraries(${PROJECT_NAME} glad
         ${OPENGL_LIBRARIES}
         pf_common::pf_common pf_imgui::pf_imgui pf_mainloop::pf_mainloop pf_glfw::pf_glfw
         spdlog::spdlog_header_only
         HLSL SPIRV glslang OGLCompiler
-
         )
 
-#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy
-#        "${PROJECT_SOURCE_DIR}/config.toml"
-#        $<TARGET_FILE_DIR:${PROJECT_NAME}>/config.toml)
-#
-#
-#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy
-#        "${PROJECT_SOURCE_DIR}/src/shaders/simple_shader.frag"
-#        "${PROJECT_SOURCE_DIR}/resources/shaders/simple_shader.frag")
-#
-#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy
-#        "${PROJECT_SOURCE_DIR}/src/shaders/simple_shader.vert"
-#        "${PROJECT_SOURCE_DIR}/resources/shaders/simple_shader.vert")
-
-
-#get_cmake_property(_variableNames VARIABLES)
-#list (SORT _variableNames)
-#foreach (_variableName ${_variableNames})
-#    message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()
+target_compile_options(${PROJECT_NAME} PRIVATE ${flags})
