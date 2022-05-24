@@ -24,6 +24,8 @@ class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
  public:
   ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<Texture> texture);
 
+  void setTexture(std::shared_ptr<Texture> newTexture);
+
   // clang-format off
    ui::ig::VerticalLayout layout;
     ui::ig::Text *nameText;
@@ -32,10 +34,11 @@ class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
       ui::ig::Button *removeButton;
   // clang-format on
 
-  std::shared_ptr<Texture> texture;
-
  protected:
   void renderImpl() override;
+
+ private:
+  std::shared_ptr<Texture> texture;
 };
 
 class ImageAssetsView : public UIViewWindow {

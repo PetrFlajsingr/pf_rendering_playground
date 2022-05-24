@@ -21,7 +21,7 @@ namespace pf {
   }
 }
 
-inline std::optional<TextureSize> getTextureFileSize(const std::filesystem::path &path) {
+[[nodiscard]] inline std::optional<TextureSize> getTextureFileSize(const std::filesystem::path &path) {
   int x;
   int y;
   int n;
@@ -32,7 +32,7 @@ inline std::optional<TextureSize> getTextureFileSize(const std::filesystem::path
   return std::nullopt;
 }
 
-inline tl::expected<std::vector<std::byte>, std::string> getTextureData(const std::filesystem::path &path) {
+[[nodiscard]] inline tl::expected<std::vector<std::byte>, std::string> getTextureData(const std::filesystem::path &path) {
   int x;
   int y;
   int n;

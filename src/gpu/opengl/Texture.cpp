@@ -186,11 +186,31 @@ void OpenGlTexture::bindImage(Binding unit, ImageTextureUnitAccess access) {
 GpuOperationResult<TextureError> OpenGlTexture::set2DdataImpl(std::span<const std::byte> data, TextureLevel level,
                                                               TextureOffset xOffset, TextureOffset yOffset,
                                                               TextureWidth width, TextureHeight height) {
+  int glFormat{};
+  int glSubImageFormat{};
+  switch (getFormat()) {
+    case TextureFormat::RGBA8:
+      glFormat = GL_RGBA8;
+      glSubImageFormat = GL_RGBA;
+      break;
+    case TextureFormat::RGB8:
+      glFormat = GL_RGB8;
+      glSubImageFormat = GL_RGB;
+      break;
+    case TextureFormat::R8:
+      glFormat = GL_R8;
+      glSubImageFormat = GL_R;
+      break;
+    default:
+      return GpuError{TextureError::WrongDataFormat,
+                      fmt::format("Currently unsupported format '{}' in OpenGlTexture::set2DdataImpl",
+                                  magic_enum::enum_name(getFormat()))};
+  }
   // FIXME: different types support
   // TODO: move this call somewhere where it actually should be
-  glTextureStorage2D(*handle, 1, GL_RGBA8, width.get(), height.get());
+  glTextureStorage2D(*handle, 1, glFormat, width.get(), height.get());
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glTextureSubImage2D(*handle, level.get(), xOffset.get(), yOffset.get(), width.get(), height.get(), GL_RGBA,
+  glTextureSubImage2D(*handle, level.get(), xOffset.get(), yOffset.get(), width.get(), height.get(), glSubImageFormat,
                       GL_UNSIGNED_BYTE, data.data());
   return std::nullopt;
 }

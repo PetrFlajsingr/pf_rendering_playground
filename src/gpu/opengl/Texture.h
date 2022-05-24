@@ -16,7 +16,7 @@ class OpenGlTexture final : public Texture, public OpenGlHandleOwner {
 
   OpenGlTexture(TextureTarget target, TextureFormat format, TextureLevel levels, TextureSize size);
 
-  GpuOperationResult<TextureError> create() override;
+  [[nodiscard]] GpuOperationResult<TextureError> create() override;
 
   void setParam(TextureMinificationFilter filter) override;
   void setParam(TextureMagnificationFilter filter) override;

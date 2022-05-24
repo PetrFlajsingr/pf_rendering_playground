@@ -30,6 +30,10 @@ ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr
   removeButton = &controlsLayout->createChild<ui::ig::Button>("remove_btn", "Remove");
 }
 
+void ImageTile::setTexture(std::shared_ptr<Texture> newTexture) {
+  texture = std::move(newTexture);
+}
+
 void ImageTile::renderImpl() { layout.render(); }
 
 ImageAssetsView::ImageAssetsView(ui::ig::ImGuiInterface &interface, std::string_view windowName,

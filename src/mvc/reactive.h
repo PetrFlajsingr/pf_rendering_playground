@@ -11,6 +11,9 @@
 
 namespace pf {
 
+// TODO: make a special observable version for pointer like structures
+// so the undeerylying value can be monitored as well, not just the pointer value
+
 template<typename T, typename ValueType>
 concept ObservableChangeDetector = std::constructible_from<T, ValueType> && requires(T t, const ValueType &newValue) {
                                                                               {

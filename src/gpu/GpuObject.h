@@ -42,6 +42,7 @@ using ExpectedGpuOperationResult = tl::expected<Expected, GpuError<E>>;
   [[nodiscard]] inline GpuApi getObjectApi() const final { return GetClassApi(); }                                     \
   [[nodiscard]] inline static GpuApi GetClassApi() { return x; }
 
+// TODO: i guess just create a custom RTTI for this thing
 /**
  * @warning Implement `GPUObject::Type T::GetClassType()` otherwise some functions won't work
  * @warning Implement `GpuApi T::GetClassApi()` otherwise some functions won't work

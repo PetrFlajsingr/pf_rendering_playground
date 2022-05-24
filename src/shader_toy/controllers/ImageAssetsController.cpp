@@ -6,6 +6,7 @@
 #include "../ui/dialogs/GlslLVariableInputDialog.h"
 #include "pf_imgui/dialogs/FileDialog.h"
 #include "shader_toy/utils.h"
+#include "spdlog/spdlog.h"
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/Spinner.h>
 #include <pf_mainloop/MainLoop.h>
@@ -20,6 +21,34 @@ ImageAssetsController::ImageAssetsController(std::unique_ptr<ImageAssetsView> ui
     : Controller(std::move(uiView), std::move(mod)), interface(std::move(imguiInterface)),
       imageLoader(std::move(imageLoader)) {
   view->addImageButton->addClickListener(std::bind_front(&ImageAssetsController::showAddImageDialog, this));
+
+  view->searchInputText->addValueListener(std::bind_front(&ImageAssetsController::filterImagesByName, this));
+
+  std::ranges::for_each(model->getTextures(), std::bind_front(&ImageAssetsController::createUIForImageModel, this));
+
+  model->imageAddedEvent.addEventListener(std::bind_front(&ImageAssetsController::createUIForImageModel, this));
+  model->imageRemovedEvent.addEventListener([this](const auto &imageModel) {
+    MainLoop::Get()->forceEnqueue([this, imageModel] {
+      const auto iter = subscriptions.find(imageModel);
+      std::ranges::for_each(iter->second, &Subscription::unsubscribe);
+      subscriptions.erase(iter);
+      const auto [rmBeg, rmEnd] = std::ranges::remove(view->imageTiles, *imageModel->name, &gui::Element::getName);
+      view->imageTiles.erase(rmBeg, rmEnd);
+      view->imagesLayout->removeChild(*imageModel->name);
+    });
+  });
+}
+
+void ImageAssetsController::filterImagesByName(std::string_view searchStr) {
+  std::ranges::for_each(view->imageTiles, [searchStr](const auto &element) {
+    if (const auto labellable = dynamic_cast<gui::Labellable *>(element); labellable != nullptr) {
+      const auto label = labellable->getLabel();
+      const auto containsSearchStr = std::string_view{label}.find(searchStr) != std::string_view::npos;
+      element->setVisibility(containsSearchStr ? gui::Visibility::Visible : gui::Visibility::Invisible);
+    } else {
+      element->setVisibility(gui::Visibility::Visible);
+    }
+  });
 }
 
 void ImageAssetsController::clearDisallowedNames() { disallowedNames.clear(); }
@@ -27,7 +56,7 @@ void ImageAssetsController::clearDisallowedNames() { disallowedNames.clear(); }
 void ImageAssetsController::addDisallowedName(std::string name) { disallowedNames.emplace_back(std::move(name)); }
 
 void ImageAssetsController::showAddImageDialog() {
-  const auto varNameValidator = [&](std::string_view varName) -> std::optional<std::string> {
+  const auto varNameValidator = [this](std::string_view varName) -> std::optional<std::string> {
     if (!isValidGlslIdentifier(varName)) { return "Invalid variable name"; }
     {
       auto variables = model->getTextures();
@@ -48,22 +77,22 @@ void ImageAssetsController::showAddImageDialog() {
       .size(ui::ig::Size{500, 300})
       .label("Select an image")
       .extension({{"jpg", "png", "bmp"}, "Image file", ui::ig::Color::Red})
-      .onSelect([&](const std::vector<std::filesystem::path> &selected) {
+      .onSelect([&, varNameValidator](const std::vector<std::filesystem::path> &selected) {
         const auto &imgFile = selected[0];
 
         auto &waitDlg = interface->getDialogManager().createDialog("img_wait_dlg", "Loading image");
         waitDlg.setSize(ui::ig::Size{300, 100});
-        waitDlg.createChild<ui::ig::Spinner>("img_wait_spinner", 20.f, 4.f);
+        waitDlg.createChild<ui::ig::Spinner>("img_wait_spinner", 20.f, 4);
         // TODO: clean this up
-        const auto onLoadDone = [=, &waitDlg, this](tl::expected<std::shared_ptr<Texture>, std::string> loadingResult) {
+        const auto onLoadDone = [=, &waitDlg,
+                                 this](const tl::expected<std::shared_ptr<Texture>, std::string> &loadingResult) {
           MainLoop::Get()->enqueue([=, &waitDlg, this] {
             waitDlg.close();
             if (loadingResult.has_value()) {
               shader_toy::GlslVariableNameInputDialogBuilder{*interface}
                   .inputValidator(varNameValidator)
-                  .onInput([=](std::string_view varName) {
-                    model->addTexture(varName, imgFile, std::move(loadingResult.value()));
-                  })
+                  .onInput(
+                      [=](std::string_view varName) { model->addTexture(varName, imgFile, loadingResult.value()); })
                   .show();
             } else {
               interface->getNotificationManager()
@@ -78,6 +107,29 @@ void ImageAssetsController::showAddImageDialog() {
       })
       .modal()
       .build();
+}
+
+void ImageAssetsController::createUIForImageModel(const std::shared_ptr<TextureAssetModel> &imgModel) {
+  if (*imgModel->texture == nullptr) {
+    // TODO: use a placeholder or something
+    spdlog::error("Texture not loaded in TextureAssetModel with name '{}'", *imgModel->name);
+    return;
+  }
+  std::vector<Subscription> modelsSubscriptions;
+  auto &newTile = view->addImageTile(*imgModel->name, *imgModel->texture);
+  modelsSubscriptions.emplace_back(
+      imgModel->name.addValueListener([&newTile](const auto &newName) { newTile.nameText->setText(newName); }));
+  modelsSubscriptions.emplace_back(imgModel->texture.addValueListener([&newTile](const auto &newTexture) {
+    if (newTexture == nullptr) {
+      // TODO: used some placeholder for it or make it invisible
+      spdlog::error("Invalid texture value");
+      return;
+    }
+    newTile.setTexture(newTexture);
+  }));
+  modelsSubscriptions.emplace_back(
+      newTile.removeButton->addClickListener([this, imgModel] { model->removeTexture(*imgModel->name); }));
+  subscriptions.emplace(imgModel, std::move(modelsSubscriptions));
 }
 
 }  // namespace pf

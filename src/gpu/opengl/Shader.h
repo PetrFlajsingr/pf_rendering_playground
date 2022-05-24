@@ -13,9 +13,9 @@ class OpenGlShader : public Shader, public OpenGlHandleOwner {
  public:
   PF_GPU_OBJECT_API(GpuApi::OpenGl)
 
-  GpuOperationResult<ShaderError> create(const SpirvCompilationResult &spirvData,
+  [[nodiscard]] GpuOperationResult<ShaderError> create(const SpirvCompilationResult &spirvData,
                                          const std::string &entryPoint) override;
-  GpuOperationResult<ShaderError> create(const std::string &source) override;
+  [[nodiscard]] GpuOperationResult<ShaderError> create(const std::string &source) override;
 
   [[nodiscard]] constexpr static GLenum ShaderTypeToOpenGlConstant(ShaderType shaderType);
 
@@ -23,7 +23,7 @@ class OpenGlShader : public Shader, public OpenGlHandleOwner {
   void deleteOpenGlObject(GLuint objectHandle) const override;
 
  private:
-  GpuOperationResult<ShaderError> createImpl(std::invocable<GLuint> auto &&compileFnc);
+  [[nodiscard]] GpuOperationResult<ShaderError> createImpl(std::invocable<GLuint> auto &&compileFnc);
 };
 
 GpuOperationResult<ShaderError> OpenGlShader::createImpl(std::invocable<GLuint> auto &&compileFnc) {
