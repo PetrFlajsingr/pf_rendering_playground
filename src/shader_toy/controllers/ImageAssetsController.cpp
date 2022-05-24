@@ -41,13 +41,9 @@ ImageAssetsController::ImageAssetsController(std::unique_ptr<ImageAssetsView> ui
 
 void ImageAssetsController::filterImagesByName(std::string_view searchStr) {
   std::ranges::for_each(view->imageTiles, [searchStr](const auto &element) {
-    if (const auto labellable = dynamic_cast<gui::Labellable *>(element); labellable != nullptr) {
-      const auto label = labellable->getLabel();
-      const auto containsSearchStr = std::string_view{label}.find(searchStr) != std::string_view::npos;
-      element->setVisibility(containsSearchStr ? gui::Visibility::Visible : gui::Visibility::Invisible);
-    } else {
-      element->setVisibility(gui::Visibility::Visible);
-    }
+    const auto label = element->nameText->getText();
+    const auto containsSearchStr = std::string_view{label}.find(searchStr) != std::string_view::npos;
+    element->setVisibility(containsSearchStr ? gui::Visibility::Visible : gui::Visibility::Invisible);
   });
 }
 
