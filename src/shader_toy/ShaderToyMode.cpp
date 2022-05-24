@@ -86,6 +86,10 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
     }
   }
 
+  ui->imageAssetsController->getModel()->imageAddedEvent.addEventListener(markShaderChanged);
+  ui->imageAssetsController->getModel()->imageRemovedEvent.addEventListener(markShaderChanged);
+  // TODO: init images
+
   ui->textInputWindow->editor->addTextListener(markShaderChanged);
 
   ui->textInputWindow->codeToClipboardButton->addClickListener(
@@ -261,10 +265,9 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
                           std::string formatStr;
                           switch (texFormat) {
                             case TextureFormat::R8: formatStr = "r8"; break;
-                            case TextureFormat::RGB8: formatStr = "rgb8"; break;
                             case TextureFormat::RGBA8: formatStr = "rgba8"; break;
                             default:
-                              getLogger().critical("Unsupported image type '{}' in ShaderToyMode::compileShader_impl",
+                              getLogger().error("Unsupported image type '{}' in ShaderToyMode::compileShader_impl",
                                                    magic_enum::enum_name(texFormat));
                               return;
                           }

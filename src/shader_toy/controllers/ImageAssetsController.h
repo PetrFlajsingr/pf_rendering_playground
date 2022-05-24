@@ -20,7 +20,7 @@ class ImageAssetsController : public Controller<ImageAssetsView, UserImageAssets
 
 
   void filterImagesByName(std::string_view searchStr);
-  // TODO: this is unused for now, gotta add image names
+  // TODO: this is unused for now, gotta add variable names
   void clearDisallowedNames();
   void addDisallowedName(std::string name);
 

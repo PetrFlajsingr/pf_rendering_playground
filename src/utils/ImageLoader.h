@@ -58,7 +58,7 @@ class StbImageLoader : public ImageLoader {
   void loadImageAsync(const std::filesystem::path &imagePath,
                       std::function<void(tl::expected<ImageData, std::string>)> onLoadDone) override;
 };
-
+// TODO: force format
 class OpenGLStbImageLoader : public StbImageLoader {
  public:
   explicit OpenGLStbImageLoader(const std::shared_ptr<ThreadPool> &threadPool);

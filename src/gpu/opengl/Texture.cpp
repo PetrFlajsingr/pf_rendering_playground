@@ -199,7 +199,7 @@ GpuOperationResult<TextureError> OpenGlTexture::set2DdataImpl(std::span<const st
       break;
     case TextureFormat::R8:
       glFormat = GL_R8;
-      glSubImageFormat = GL_R;
+      glSubImageFormat = GL_RED;
       break;
     default:
       return GpuError{TextureError::WrongDataFormat,
