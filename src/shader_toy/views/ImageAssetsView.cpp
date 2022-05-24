@@ -27,13 +27,20 @@ ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr
   nameText = &layout.createChild<ui::ig::Text>("name_txt", name);
   formatText = &layout.createChild<ui::ig::Text>("format_txt", "");
   formatText->setColor<gui::style::ColorOf::Text>(gui::Color::RGB(91, 142, 34));
+  if (texture != nullptr) { formatText->setText("{}", magic_enum::enum_name(texture->getFormat())); }
   image =
       &layout.createChild<ui::ig::Image>("img", getImTextureID(*this->texture), ui::ig::Size{imageWidth, imageHeight});
   controlsLayout = &layout.createChild<ui::ig::HorizontalLayout>("controls_layout", ui::ig::Size::Auto());
   removeButton = &controlsLayout->createChild<ui::ig::Button>("remove_btn", "Remove");
 }
 
-void ImageTile::setTexture(std::shared_ptr<Texture> newTexture) { texture = std::move(newTexture); }
+void ImageTile::setTexture(std::shared_ptr<Texture> newTexture) {
+  texture = std::move(newTexture);
+  if (texture != nullptr) {
+    image->setTextureId(getImTextureID(*this->texture));
+    formatText->setText("{}", magic_enum::enum_name(texture->getFormat()));
+  }
+}
 
 void ImageTile::renderImpl() { layout.render(); }
 
