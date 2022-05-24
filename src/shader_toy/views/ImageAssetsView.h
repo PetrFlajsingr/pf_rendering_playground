@@ -29,6 +29,7 @@ class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
   // clang-format off
    ui::ig::VerticalLayout layout;
     ui::ig::Text *nameText;
+    ui::ig::Text *formatText;
     ui::ig::Image *image;
     ui::ig::HorizontalLayout *controlsLayout;
       ui::ig::Button *removeButton;
@@ -65,7 +66,7 @@ class ImageAssetsView : public UIViewWindow {
  private:
   ui::ig::ImGuiInterface &interface;
 
-  ui::ig::Size tileSize{220, 150};
+  ui::ig::Size tileSize{220, 180};
 };
 
 }  // namespace pf

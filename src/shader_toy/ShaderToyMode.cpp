@@ -187,8 +187,9 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   mainProgram->use();
 
   const auto textureSize = getTextureSize();
-  mainProgram->dispatch(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y);
-
+  const auto dispatchResult =
+      mainProgram->dispatch(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y);
+  if (dispatchResult.has_value()) { getLogger().error("Program dispatch failed: '{}'", dispatchResult->message); }
   fpsCounter.onFrame();
   updateUI();
   if (!timeCounterPaused) { totalTime += timeDelta; }

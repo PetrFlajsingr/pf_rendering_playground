@@ -12,7 +12,8 @@ ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr
     : ui::ig::Element(name), Resizable(size), layout("layout", size), texture(std::move(texture)) {
   layout.setDrawBorder(true);
 
-  const auto maxImageHeight = static_cast<float>(size.height) - 60.f;
+  // total height minus heights of other elements
+  const auto maxImageHeight = static_cast<float>(size.height) - 80.f;
 
   const auto textureSize = this->texture->getSize();
   const auto textureHeightAspectRatio =
@@ -24,15 +25,15 @@ ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr
   const auto imageWidth = imageHeight * textureWidthAspectRatio;
 
   nameText = &layout.createChild<ui::ig::Text>("name_txt", name);
+  formatText = &layout.createChild<ui::ig::Text>("format_txt", "");
+  formatText->setColor<gui::style::ColorOf::Text>(gui::Color::RGB(91, 142, 34));
   image =
       &layout.createChild<ui::ig::Image>("img", getImTextureID(*this->texture), ui::ig::Size{imageWidth, imageHeight});
   controlsLayout = &layout.createChild<ui::ig::HorizontalLayout>("controls_layout", ui::ig::Size::Auto());
   removeButton = &controlsLayout->createChild<ui::ig::Button>("remove_btn", "Remove");
 }
 
-void ImageTile::setTexture(std::shared_ptr<Texture> newTexture) {
-  texture = std::move(newTexture);
-}
+void ImageTile::setTexture(std::shared_ptr<Texture> newTexture) { texture = std::move(newTexture); }
 
 void ImageTile::renderImpl() { layout.render(); }
 

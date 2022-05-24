@@ -113,6 +113,7 @@ void ImageAssetsController::createUIForImageModel(const std::shared_ptr<TextureA
   }
   std::vector<Subscription> modelsSubscriptions;
   auto &newTile = view->addImageTile(*imgModel->name, *imgModel->texture);
+  newTile.formatText->setText("{}", magic_enum::enum_name((*imgModel->texture)->getFormat()));
   modelsSubscriptions.emplace_back(
       imgModel->name.addValueListener([&newTile](const auto &newName) { newTile.nameText->setText(newName); }));
   modelsSubscriptions.emplace_back(imgModel->texture.addValueListener([&newTile](const auto &newTexture) {
@@ -121,6 +122,7 @@ void ImageAssetsController::createUIForImageModel(const std::shared_ptr<TextureA
       spdlog::error("Invalid texture value");
       return;
     }
+    newTile.formatText->setText("{}", magic_enum::enum_name(newTexture->getFormat()));
     newTile.setTexture(newTexture);
   }));
   modelsSubscriptions.emplace_back(
