@@ -8,8 +8,8 @@
 
 namespace pf {
 namespace gui = ui::ig;
-ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<Texture> texture)
-    : ui::ig::Element(name), Resizable(size), layout("layout", size), texture(std::move(texture)) {
+ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<Texture> newTexture)
+    : ui::ig::Element(name), Resizable(size), layout("layout", size), texture(std::move(newTexture)) {
   layout.setDrawBorder(true);
 
   // total height minus heights of other elements
