@@ -70,6 +70,7 @@ class ShaderToyMode : public Mode {
   std::string currentShaderSrc{};
   std::shared_ptr<glfw::Window> glfwWindow = nullptr;
   glm::vec2 mousePos{};
+  std::shared_ptr<ImageLoader> imageLoader;
 
   std::function<std::size_t(std::size_t)> shaderLineMapping;
 

@@ -39,6 +39,8 @@ class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
   void renderImpl() override;
 
  private:
+  [[nodiscard]] ui::ig::Size calculateImageSize() const;
+
   std::shared_ptr<Texture> texture;
 };
 

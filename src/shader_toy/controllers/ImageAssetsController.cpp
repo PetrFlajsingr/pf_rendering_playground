@@ -106,11 +106,7 @@ void ImageAssetsController::showAddImageDialog() {
 }
 
 void ImageAssetsController::createUIForImageModel(const std::shared_ptr<TextureAssetModel> &imgModel) {
-  if (*imgModel->texture == nullptr) {
-    // TODO: use a placeholder or something
-    spdlog::error("Texture not loaded in TextureAssetModel with name '{}'", *imgModel->name);
-    return;
-  }
+  // TODO: placeholder if texture nullptr
   std::vector<Subscription> modelsSubscriptions;
   auto &newTile = view->addImageTile(*imgModel->name, *imgModel->texture);
   modelsSubscriptions.emplace_back(
@@ -118,8 +114,6 @@ void ImageAssetsController::createUIForImageModel(const std::shared_ptr<TextureA
   modelsSubscriptions.emplace_back(imgModel->texture.addValueListener([&newTile](const auto &newTexture) {
     if (newTexture == nullptr) {
       // TODO: used some placeholder for it or make it invisible
-      spdlog::error("Invalid texture value");
-      return;
     }
     newTile.setTexture(newTexture);
   }));

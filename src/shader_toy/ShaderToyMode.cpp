@@ -48,8 +48,10 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   glfwWindow = window;
   workerThreads = threadPool;
 
+  imageLoader = std::make_shared<OpenGLStbImageLoader>(workerThreads);
+
   ui = std::make_unique<UI>(imguiInterface, *window, DEFAULT_SHADER_SOURCE, configData.resourcesPath, isFirstRun,
-                            threadPool);
+                            imageLoader);
 
   getLogger().sinks().emplace_back(ui->logWindowController->createSpdlogSink());
 
@@ -88,7 +90,31 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
 
   ui->imageAssetsController->getModel()->imageAddedEvent.addEventListener(markShaderChanged);
   ui->imageAssetsController->getModel()->imageRemovedEvent.addEventListener(markShaderChanged);
-  // TODO: init images
+  if (const auto iter = config.find("images"); iter != config.end()) {
+    if (const auto imagesTbl = iter->second.as_table(); imagesTbl != nullptr) {
+      ui->imageAssetsController->getModel()->setFromToml(*imagesTbl);
+    }
+  }
+  std::ranges::for_each(
+      ui->imageAssetsController->getModel()->getTextures(), [this, imguiInterface](const auto &textureModel) {
+        if (*textureModel->texture == nullptr) {
+          const auto onLoadDone = [=, this](const tl::expected<std::shared_ptr<Texture>, std::string> &loadingResult) {
+            MainLoop::Get()->enqueue([=, this] {
+              if (loadingResult.has_value()) {
+                *textureModel->texture.modify() = loadingResult.value();
+              } else {
+                imguiInterface->getNotificationManager()
+                    .createNotification("notif_loading_err", "Texture loading failed")
+                    .createChild<ui::ig::Text>("notif_txt",
+                                               fmt::format("Texture loading failed: '{}'.\n{}", loadingResult.error(),
+                                                           *textureModel->imagePath))
+                    .setColor<ui::ig::style::ColorOf::Text>(ui::ig::Color::Red);
+              }
+            });
+          };
+          imageLoader->loadTextureAsync(*textureModel->imagePath, onLoadDone);
+        }
+      });
 
   ui->textInputWindow->editor->addTextListener(markShaderChanged);
 
@@ -360,6 +386,8 @@ void ShaderToyMode::updateUI() {
 void ShaderToyMode::updateConfig() {
   auto shaderVarsToml = ui->shaderVariablesController->getModel()->toToml();
   config.insert_or_assign("shader_variables", std::move(shaderVarsToml));
+  auto imagesToml = ui->imageAssetsController->getModel()->toToml();
+  config.insert_or_assign("images", std::move(imagesToml));
 }
 
 }  // namespace pf::shader_toy

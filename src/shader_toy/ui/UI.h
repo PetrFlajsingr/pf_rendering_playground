@@ -19,7 +19,7 @@ namespace pf::shader_toy {
 
 struct UI {
   UI(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, glfw::Window &window, const std::string &initShaderCode,
-     const std::filesystem::path &resourcesPath, bool initializeDocking, std::shared_ptr<ThreadPool> threadpool);
+     const std::filesystem::path &resourcesPath, bool initializeDocking, std::shared_ptr<ImageLoader> imageLoader);
 
   void show();
 

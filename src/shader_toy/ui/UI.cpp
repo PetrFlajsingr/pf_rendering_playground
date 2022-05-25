@@ -11,7 +11,7 @@ namespace pf::shader_toy {
 
 namespace gui = ui::ig;
 UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window, const std::string &initShaderCode,
-       const std::filesystem::path &resourcesPath, bool initializeDocking, std::shared_ptr<ThreadPool> threadpool)
+       const std::filesystem::path &resourcesPath, bool initializeDocking, std::shared_ptr<ImageLoader> imageLoader)
     : interface(std::move(imGuiInterface)) {
   gui::setDarkStyle(*interface);
 
@@ -31,7 +31,7 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
 
   imageAssetsController = std::make_unique<ImageAssetsController>(
       std::make_unique<ImageAssetsView>(*interface, "image_assets_win", "Images"),
-      std::make_shared<UserImageAssetsModel>(), interface, std::make_shared<OpenGLStbImageLoader>(threadpool));
+      std::make_shared<UserImageAssetsModel>(), interface, imageLoader);
 
   const auto fontPath = resourcesPath / "fonts" / "RobotoMono-Regular.ttf";
   if (std::filesystem::exists(fontPath)) {

@@ -12,24 +12,16 @@ ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr
     : ui::ig::Element(name), Resizable(size), layout("layout", size), texture(std::move(newTexture)) {
   layout.setDrawBorder(true);
 
-  // total height minus heights of other elements
-  const auto maxImageHeight = static_cast<float>(size.height) - 80.f;
-
-  const auto textureSize = this->texture->getSize();
-  const auto textureHeightAspectRatio =
-      static_cast<float>(textureSize.height.get()) / static_cast<float>(textureSize.width.get());
-  const auto textureWidthAspectRatio =
-      static_cast<float>(textureSize.width.get()) / static_cast<float>(textureSize.height.get());
-
-  const auto imageHeight = std::min(maxImageHeight, static_cast<float>(size.width) * textureHeightAspectRatio);
-  const auto imageWidth = imageHeight * textureWidthAspectRatio;
-
   nameText = &layout.createChild<ui::ig::Text>("name_txt", name);
   formatText = &layout.createChild<ui::ig::Text>("format_txt", "");
   formatText->setColor<gui::style::ColorOf::Text>(gui::Color::RGB(91, 142, 34));
-  if (texture != nullptr) { formatText->setText("{}", magic_enum::enum_name(texture->getFormat())); }
-  image =
-      &layout.createChild<ui::ig::Image>("img", getImTextureID(*this->texture), ui::ig::Size{imageWidth, imageHeight});
+  ImTextureID textureID = 0;  // TODO: some placeholder thing
+  if (texture != nullptr) {
+    formatText->setText("{}", magic_enum::enum_name(texture->getFormat()));
+    textureID = getImTextureID(*this->texture);
+  }
+
+  image = &layout.createChild<ui::ig::Image>("img", textureID, calculateImageSize());
   controlsLayout = &layout.createChild<ui::ig::HorizontalLayout>("controls_layout", ui::ig::Size::Auto());
   removeButton = &controlsLayout->createChild<ui::ig::Button>("remove_btn", "Remove");
 }
@@ -39,10 +31,31 @@ void ImageTile::setTexture(std::shared_ptr<Texture> newTexture) {
   if (texture != nullptr) {
     image->setTextureId(getImTextureID(*this->texture));
     formatText->setText("{}", magic_enum::enum_name(texture->getFormat()));
+  } else {
+    // TODO: placeholder thing
+    image->setTextureId(0);
+    formatText->setText("");
   }
+  image->setSize(calculateImageSize());
 }
 
 void ImageTile::renderImpl() { layout.render(); }
+
+ui::ig::Size ImageTile::calculateImageSize() const {
+  // TODO: some placeholder thing
+  // total height minus heights of other elements
+  const auto maxImageHeight = static_cast<float>(getSize().height) - 80.f;
+  const auto textureSize =
+      texture != nullptr ? texture->getSize() : TextureSize{TextureWidth{1024}, TextureHeight{1024}, TextureDepth{1}};
+  const auto textureHeightAspectRatio =
+      static_cast<float>(textureSize.height.get()) / static_cast<float>(textureSize.width.get());
+  const auto textureWidthAspectRatio =
+      static_cast<float>(textureSize.width.get()) / static_cast<float>(textureSize.height.get());
+
+  const auto imageHeight = std::min(maxImageHeight, static_cast<float>(getSize().width) * textureHeightAspectRatio);
+  const auto imageWidth = imageHeight * textureWidthAspectRatio;
+  return gui::Size{imageWidth, imageHeight};
+}
 
 ImageAssetsView::ImageAssetsView(ui::ig::ImGuiInterface &interface, std::string_view windowName,
                                  std::string_view windowTitle)
