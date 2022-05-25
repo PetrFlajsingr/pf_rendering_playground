@@ -32,6 +32,7 @@ endif ()
 
 add_compile_definitions(GLFW_INCLUDE_NONE)
 add_compile_definitions(GLM_FORCE_SWIZZLE)
+add_compile_definitions(ASSERT_USE_MAGIC_ENUM)
 #add_compile_definitions(FMT_HEADER_ONLY )
 #add_compile_definitions(SPDLOG_FMT_EXTERNAL  )
 
@@ -40,6 +41,7 @@ find_package(OpenGL REQUIRED)
 include_directories(include)
 include_directories(src)
 include_directories(include/stb)
+include_directories(include/libassert)
 
 find_package(GLFW3 REQUIRED)
 

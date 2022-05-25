@@ -13,7 +13,7 @@
 
 namespace pf {
 
-using ChannelCount = fluent::NamedType<std::uint8_t, struct ChannelCountTag>;
+using ChannelCount = fluent::NamedType<std::uint8_t, struct ChannelCountTag, fluent::Comparable>;
 
 struct ImageInfo {
   TextureSize size;
@@ -24,27 +24,42 @@ struct ImageData {
   ImageInfo info;
   std::vector<std::byte> data;
 };
-
+// TODO: split this up into a 'normal' and an async loader and also separate texture creation from this
 class ImageLoader {
  public:
   explicit ImageLoader(std::shared_ptr<ThreadPool> threadPool);
   virtual ~ImageLoader() = default;
 
-  virtual std::optional<ImageInfo> getImageInfo(const std::filesystem::path &imagePath) = 0;
+  [[nodiscard]] virtual std::optional<ImageInfo> getImageInfo(const std::filesystem::path &imagePath) = 0;
 
-  virtual tl::expected<ImageData, std::string> loadImage(const std::filesystem::path &imagePath) = 0;
+  [[nodiscard]] virtual tl::expected<ImageData, std::string> loadImage(const std::filesystem::path &imagePath) = 0;
   virtual void loadImageAsync(const std::filesystem::path &imagePath,
-                              std::function<void(tl::expected<ImageData, std::string>)> onLoadDone) = 0;
+                              std::function<void(tl::expected<ImageData, std::string>)> onLoadDone);
 
-  virtual tl::expected<std::shared_ptr<Texture>, std::string> loadTexture(const std::filesystem::path &imagePath) = 0;
+  [[nodiscard]] virtual tl::expected<ImageData, std::string>
+  loadImageWithChannels(const std::filesystem::path &imagePath, ChannelCount requiredChannels);
+  virtual void loadImageWithChannelsAsync(const std::filesystem::path &imagePath, ChannelCount requiredChannels,
+                                          std::function<void(tl::expected<ImageData, std::string>)> onLoadDone);
+
+  [[nodiscard]] virtual tl::expected<std::shared_ptr<Texture>, std::string>
+  loadTexture(const std::filesystem::path &imagePath) = 0;
   virtual void
   loadTextureAsync(const std::filesystem::path &imagePath,
                    std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) = 0;
+
+  [[nodiscard]] virtual tl::expected<std::shared_ptr<Texture>, std::string>
+  loadTextureWithChannels(const std::filesystem::path &imagePath, ChannelCount requiredChannels) = 0;
+  virtual void
+  loadTextureWithChannelsAsync(const std::filesystem::path &imagePath, ChannelCount requiredChannels,
+                               std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) = 0;
 
  protected:
   void enqueue(std::invocable auto &&fnc) {
     futures.emplace_back(threadPool->enqueue(std::forward<decltype(fnc)>(fnc)));
   }
+
+  [[nodiscard]] tl::expected<ImageData, std::string> convertImageChannels(ImageData &&data,
+                                                                          ChannelCount requiredChannels);
 
  private:
   std::shared_ptr<ThreadPool> threadPool;
@@ -54,20 +69,28 @@ class ImageLoader {
 class StbImageLoader : public ImageLoader {
  public:
   explicit StbImageLoader(const std::shared_ptr<ThreadPool> &threadPool);
-  std::optional<ImageInfo> getImageInfo(const std::filesystem::path &imagePath) override;
+  [[nodiscard]] std::optional<ImageInfo> getImageInfo(const std::filesystem::path &imagePath) override;
 
-  tl::expected<ImageData, std::string> loadImage(const std::filesystem::path &imagePath) override;
-  void loadImageAsync(const std::filesystem::path &imagePath,
-                      std::function<void(tl::expected<ImageData, std::string>)> onLoadDone) override;
+  [[nodiscard]] tl::expected<ImageData, std::string> loadImage(const std::filesystem::path &imagePath) override;
 };
 // TODO: force format
 class OpenGLStbImageLoader : public StbImageLoader {
  public:
   explicit OpenGLStbImageLoader(const std::shared_ptr<ThreadPool> &threadPool);
-  tl::expected<std::shared_ptr<Texture>, std::string> loadTexture(const std::filesystem::path &imagePath) override;
 
+  [[nodiscard]] tl::expected<std::shared_ptr<Texture>, std::string>
+  loadTexture(const std::filesystem::path &imagePath) override;
   void loadTextureAsync(const std::filesystem::path &imagePath,
                         std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) override;
+
+  tl::expected<std::shared_ptr<Texture>, std::string> loadTextureWithChannels(const std::filesystem::path &imagePath,
+                                                                              ChannelCount requiredChannels) override;
+  void loadTextureWithChannelsAsync(
+      const std::filesystem::path &imagePath, ChannelCount requiredChannels,
+      std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) override;
+
+ private:
+  tl::expected<std::shared_ptr<Texture>, std::string> createAndFillTexture(const ImageData &data);
 };
 
 }  // namespace pf
