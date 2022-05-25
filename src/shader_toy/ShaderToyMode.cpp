@@ -133,67 +133,23 @@ void ShaderToyMode::deinitialize_impl() {
 }
 
 void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
-  if (autoCompileShader && isShaderChanged
-      && (std::chrono::steady_clock::now() - lastShaderChangeTime) > std::chrono::milliseconds{
-             static_cast<int>(ui->textInputWindow->autoCompileFrequencyDrag->getValue() * 1000.f)}) {
-    if (previousShaderCompilationDone) {
-      getLogger().trace("Auto recompiling shader");
-      compileShader(ui->textInputWindow->editor->getText());
-      isShaderChanged = false;
-    }
-  }
+  checkShaderStatus();
   if (mainProgram == nullptr) { return; }
 
-  auto mouseState = MouseState::None;
-  if (ui->outputWindow->image->isHovered()) {
-    if (glfwWindow->getLastMouseButtonState(pf::glfw::MouseButton::Left) == pf::glfw::ButtonState::Down) {
-      mouseState = MouseState::LeftDown;
-    } else if (glfwWindow->getLastMouseButtonState(pf::glfw::MouseButton::Right) == pf::glfw::ButtonState::Down) {
-      mouseState = MouseState::RightDown;
-    }
-  }
+  const auto mouseState = getMouseState();
 
   const auto timeFloat = static_cast<float>(totalTime.count()) / 1'000'000'000.0f;
   const auto timeDeltaFloat = static_cast<float>(timeDelta.count()) / 1'000'000'000.0f;
 
-  mainProgram->setUniform("time", timeFloat);
-  mainProgram->setUniform("timeDelta", timeDeltaFloat);
-  mainProgram->setUniform("frameNum", frameCounter);
-  mainProgram->setUniform("mouseState", static_cast<int>(mouseState));
-  mainProgram->setUniform("mousePos", glm::vec3{mousePos, 0.f});
-
-  std::ranges::for_each(ui->shaderVariablesController->getModel()->getVariables(), [&](const auto &variable) {
-    std::visit(
-        [&]<typename T>(T uniformValue) {
-          if constexpr (std::same_as<T, ui::ig::Color>) {
-            mainProgram->setUniform(
-                *variable->name,
-                glm::vec4{uniformValue.red(), uniformValue.green(), uniformValue.blue(), uniformValue.alpha()});
-          } else {
-            mainProgram->setUniform(*variable->name, uniformValue);
-          }
-        },
-        *variable->value);
-  });
-
-  mainProgram->getUniformValue(
-      "outImage",
-      Visitor{[&](int binding) { outputTexture->bindImage(Binding{binding}, ImageTextureUnitAccess::ReadWrite); },
-              [](auto) {}});
-
-  std::ranges::for_each(ui->imageAssetsController->getModel()->getTextures(), [&](const auto &tex) {
-    mainProgram->getUniformValue(
-        *tex->name,
-        Visitor{[&](int binding) { (*tex->texture)->bindImage(Binding{binding}, ImageTextureUnitAccess::ReadWrite); },
-                [](auto) {}});
-  });
+  setUniforms(timeFloat, timeDeltaFloat, mouseState);
+  setBindings();
 
   mainProgram->use();
 
   const auto textureSize = getTextureSize();
   const auto dispatchResult =
       mainProgram->dispatch(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y);
-  if (dispatchResult.has_value()) { getLogger().error("Program dispatch failed: '{}'", dispatchResult->message); }
+  if (dispatchResult.has_value()) { getLogger().error("Program dispatch failed: '{}'", dispatchResult->message()); }
   fpsCounter.onFrame();
   updateUI();
   if (!timeCounterPaused) { totalTime += timeDelta; }
@@ -224,10 +180,22 @@ glm::uvec2 ShaderToyMode::getTextureSize() const {
   return {outputTexture->getSize().width.get(), outputTexture->getSize().height.get()};
 }
 
+void ShaderToyMode::checkShaderStatus() {
+  if (autoCompileShader && isShaderChanged
+      && (std::chrono::steady_clock::now() - lastShaderChangeTime) > std::chrono::milliseconds{
+             static_cast<int>(ui->textInputWindow->autoCompileFrequencyDrag->getValue() * 1000.f)}) {
+    if (previousShaderCompilationDone) {
+      getLogger().trace("Auto recompiling shader");
+      compileShader(ui->textInputWindow->editor->getText());
+      isShaderChanged = false;
+    }
+  }
+}
+
 void ShaderToyMode::compileShader(const std::string &shaderCode) {
   ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Visible);
   getLogger().trace("Compiling shader");
-  compileShader_impl(ui->textInputWindow->editor->getText());
+  compileShader_impl(shaderCode);
 }
 
 // TODO: clean this up
@@ -268,7 +236,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
                             case TextureFormat::RGBA8: formatStr = "rgba8"; break;
                             default:
                               getLogger().error("Unsupported image type '{}' in ShaderToyMode::compileShader_impl",
-                                                   magic_enum::enum_name(texFormat));
+                                                magic_enum::enum_name(texFormat));
                               return;
                           }
                           builder.addImage2D(formatStr, *tex->name);
@@ -298,13 +266,13 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
         const auto shaderCreateResult = shader->create(spirvResult.value(), "main");
         if (shaderCreateResult.has_value()) {
           getLogger().error("Shader creation failed:");
-          getLogger().error("{}", shaderCreateResult.value().message);
+          getLogger().error("{}", shaderCreateResult.value().message());
         } else {
           auto newProgram = std::make_unique<OpenGlProgram>(std::move(shader));
           const auto programCreateResult = newProgram->create();
           if (programCreateResult.has_value()) {
             getLogger().error("Program creation failed:");
-            getLogger().error("{}", programCreateResult.value().message);
+            getLogger().error("{}", programCreateResult.value().message());
           } else {
             mainProgram = std::move(newProgram);
 
@@ -332,6 +300,53 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
       }
     });
   }));
+}
+
+MouseState ShaderToyMode::getMouseState() const {
+  if (ui->outputWindow->image->isHovered()) {
+    if (glfwWindow->getLastMouseButtonState(pf::glfw::MouseButton::Left) == pf::glfw::ButtonState::Down) {
+      return MouseState::LeftDown;
+    } else if (glfwWindow->getLastMouseButtonState(pf::glfw::MouseButton::Right) == pf::glfw::ButtonState::Down) {
+      return MouseState::RightDown;
+    }
+  }
+  return MouseState::None;
+}
+
+void ShaderToyMode::setUniforms(float timeFloat, float timeDeltaFloat, MouseState mouseState) {
+  auto ignoredResult = mainProgram->setUniform("time", timeFloat);
+  ignoredResult = mainProgram->setUniform("timeDelta", timeDeltaFloat);
+  ignoredResult = mainProgram->setUniform("frameNum", frameCounter);
+  ignoredResult = mainProgram->setUniform("mouseState", static_cast<int>(mouseState));
+  ignoredResult = mainProgram->setUniform("mousePos", glm::vec3{mousePos, 0.f});
+
+  std::ranges::for_each(ui->shaderVariablesController->getModel()->getVariables(), [&](const auto &variable) {
+    std::visit(
+        [&]<typename T>(T uniformValue) {
+          if constexpr (std::same_as<T, ui::ig::Color>) {
+            ignoredResult = mainProgram->setUniform(
+                *variable->name,
+                glm::vec4{uniformValue.red(), uniformValue.green(), uniformValue.blue(), uniformValue.alpha()});
+          } else {
+            ignoredResult = mainProgram->setUniform(*variable->name, uniformValue);
+          }
+        },
+        *variable->value);
+  });
+}
+
+void ShaderToyMode::setBindings() {
+  auto ignoredResult = mainProgram->getUniformValue(
+      "outImage",
+      Visitor{[&](int binding) { outputTexture->bindImage(Binding{binding}, ImageTextureUnitAccess::ReadWrite); },
+              [](auto) {}});
+  // TODO: read only?
+  std::ranges::for_each(ui->imageAssetsController->getModel()->getTextures(), [&](const auto &tex) {
+    ignoredResult = mainProgram->getUniformValue(
+        *tex->name,
+        Visitor{[&](int binding) { (*tex->texture)->bindImage(Binding{binding}, ImageTextureUnitAccess::ReadWrite); },
+                [](auto) {}});
+  });
 }
 
 void ShaderToyMode::updateUI() {

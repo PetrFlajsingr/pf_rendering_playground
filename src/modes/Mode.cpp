@@ -55,6 +55,10 @@ void Mode::deinitialize() {
   logger = nullptr;
 }
 
-spdlog::logger &Mode::getLogger() { return *logger; }
+spdlog::logger &Mode::getLogger() const { return *logger; }
+
+const std::shared_ptr<spdlog::logger> &Mode::getLoggerShared() {
+  return logger;
+}
 
 }  // namespace pf

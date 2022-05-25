@@ -17,7 +17,7 @@ std::optional<ImageInfo> StbImageLoader::getImageInfo(const std::filesystem::pat
   if (stbi_info(imagePath.string().c_str(), &x, &y, &n)) {
     const auto textureSize = TextureSize{TextureWidth{static_cast<std::uint32_t>(x)},
                                          TextureHeight{static_cast<std::uint32_t>(y)}, TextureDepth{1}};
-    const std::uint8_t channels = n;
+    const auto channels = static_cast<std::uint8_t>(n);
     return ImageInfo{textureSize, channels};
   }
   return std::nullopt;
@@ -62,12 +62,11 @@ OpenGLStbImageLoader::loadTexture(const std::filesystem::path &imagePath) {
     auto texture = std::make_shared<OpenGlTexture>(TextureTarget::_2D, textureFormat, TextureLevel{0},
                                                    imageData.value().info.size);
     if (const auto errOpt = texture->create(); errOpt.has_value()) {
-      return tl::make_unexpected(errOpt.value().message);
+      return tl::make_unexpected(std::string{errOpt.value().message()});
     }
-    const auto setResult = texture->set2Ddata(std::span{imageData->data.data(), imageData->data.size()}, TextureLevel{0});
-    if (setResult.has_value()) {
-      return tl::make_unexpected(setResult->message);
-    }
+    const auto setResult =
+        texture->set2Ddata(std::span{imageData->data.data(), imageData->data.size()}, TextureLevel{0});
+    if (setResult.has_value()) { return tl::make_unexpected(std::string{setResult->message()}); }
     return texture;
   } else {
     return tl::make_unexpected(imageData.error());
@@ -89,18 +88,19 @@ void OpenGLStbImageLoader::loadTextureAsync(
         default:
           onLoadDone(
               tl::make_unexpected(fmt::format("Unsupported channel count '{}'", imageData.value().info.channels)));
-          return; // unsupported channel count
+          return;  // unsupported channel count
       }
       MainLoop::Get()->enqueue([onLoadDone, textureFormat, imageData = std::move(imageData)] {
         auto texture = std::make_shared<OpenGlTexture>(TextureTarget::_2D, textureFormat, TextureLevel{0},
                                                        imageData.value().info.size);
         if (const auto errOpt = texture->create(); errOpt.has_value()) {
-          onLoadDone(tl::make_unexpected(errOpt.value().message));
+          onLoadDone(tl::make_unexpected(std::string{errOpt.value().message()}));
           return; // texture creation failed
         }
-        const auto setResult = texture->set2Ddata(std::span{imageData->data.data(), imageData->data.size()}, TextureLevel{0});
+        const auto setResult =
+            texture->set2Ddata(std::span{imageData->data.data(), imageData->data.size()}, TextureLevel{0});
         if (setResult.has_value()) {
-          onLoadDone(tl::make_unexpected(setResult->message));
+          onLoadDone(tl::make_unexpected(std::string{setResult->message()}));
         }
         onLoadDone(std::move(texture));
       });

@@ -13,7 +13,7 @@ namespace pf {
 
 template<std::invocable<GLuint> Deleter>
 class OpenGlHandle {
-  constexpr static GLuint INVALID_HANDLE = -1;
+  constexpr static GLuint INVALID_HANDLE = static_cast<GLuint>(-1);
 
  public:
   OpenGlHandle()

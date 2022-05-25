@@ -48,7 +48,8 @@ class Mode {
 
   virtual void render(std::chrono::nanoseconds timeDelta) = 0;
 
-  [[nodiscard]] spdlog::logger &getLogger();
+  [[nodiscard]] spdlog::logger &getLogger() const;
+  [[nodiscard]] const std::shared_ptr<spdlog::logger> &getLoggerShared();
 
   toml::table config;
 

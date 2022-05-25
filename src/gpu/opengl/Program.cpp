@@ -118,7 +118,7 @@ std::vector<BufferInfo> OpenGlProgram::extractBuffers() {
   std::vector<BufferInfo> result{};
   GLint bufferCount;
   glGetProgramInterfaceiv(*handle, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &bufferCount);
-  for (GLuint i = 0; i < bufferCount; ++i) {
+  for (GLint i = 0; i < bufferCount; ++i) {
     std::string name = getResourceName(GL_SHADER_STORAGE_BLOCK, i);
     {
       std::size_t pos = name.find("[0]");

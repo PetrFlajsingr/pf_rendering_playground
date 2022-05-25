@@ -82,19 +82,19 @@ std::optional<ModeManager::Error> ModeManager::activateMode(const std::string &n
   return "Mode not managed by ModeManager";
 }
 
-std::optional<ModeManager::Error> ModeManager::activateMode(const std::shared_ptr<Mode> &mode) {
-  logger->info("Activating mode '{}'", mode->getName());
-  if (activeMode != nullptr && activeMode->mode == mode) {
-    logger->info("[NodeManager] Mode already active '{}'", mode->getName());
+std::optional<ModeManager::Error> ModeManager::activateMode(const std::shared_ptr<Mode> &modeToActivate) {
+  logger->info("Activating mode '{}'", modeToActivate->getName());
+  if (activeMode != nullptr && activeMode->mode == modeToActivate) {
+    logger->info("[NodeManager] Mode already active '{}'", modeToActivate->getName());
     return std::nullopt;
   }
-  if (const auto iter = std::ranges::find(modes, mode, &ModeRecord::mode); iter != modes.end()) {
+  if (const auto iter = std::ranges::find(modes, modeToActivate, &ModeRecord::mode); iter != modes.end()) {
     const auto mode = &*iter;
     activateMode_impl(mode);
     logger->info("Mode '{}' activated", mode->name);
     return std::nullopt;
   }
-  logger->error("Mode '{}' not managed by ModeManager", mode->getName());
+  logger->error("Mode '{}' not managed by ModeManager", modeToActivate->getName());
   return "Mode not managed by ModeManager";
 }
 

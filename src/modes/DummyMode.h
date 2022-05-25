@@ -20,7 +20,7 @@ class DummyMode : public Mode {
   inline void activate_impl() override {}
   inline void deactivate_impl() override {}
   inline void deinitialize_impl() override {}
-  inline void render(std::chrono::nanoseconds timeDelta) override {}
+  inline void render(std::chrono::nanoseconds) override {}
 
   void updateConfig() override {}
 };

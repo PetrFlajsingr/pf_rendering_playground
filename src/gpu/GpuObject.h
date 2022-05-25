@@ -8,11 +8,11 @@
 #include <concepts>
 #include <fmt/format.h>
 #include <optional>
-#include <type_traits>
 #include <pf_common/enums.h>
 #include <string_view>
-#include <utility>
 #include <tl/expected.hpp>
+#include <type_traits>
+#include <utility>
 
 namespace pf {
 
@@ -22,9 +22,14 @@ enum class GpuApi {
 
 template<Enum E>
 struct GpuError {
-  GpuError(const E code, std::string message) : code(code), message(std::move(message)) {}
-  const E code;
-  const std::string message;
+ public:
+  GpuError(const E code, std::string message) : code_(code), message_(std::move(message)) {}
+  [[nodiscard]] E code() const { return code_; }
+  [[nodiscard]] std::string_view message() const { return message_; }
+
+ private:
+  E code_;
+  std::string message_;
 };
 
 template<Enum E>
@@ -88,7 +93,6 @@ class GpuObject {
     if (IsTypeInterfaceClass<T>()) { return isSameObjectType; }
     return isSameObjectType && (getObjectApi() == T::GetClassApi());
   }
-
 
   template<std::derived_from<GpuObject> T>
   [[nodiscard]] static bool IsTypeInterfaceClass() {

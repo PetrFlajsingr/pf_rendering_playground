@@ -42,8 +42,14 @@ class ShaderToyMode : public Mode {
 
   [[nodiscard]] glm::uvec2 getTextureSize() const;
 
+  void checkShaderStatus();
   void compileShader(const std::string &shaderCode);
   void compileShader_impl(const std::string &shaderCode);
+
+  [[nodiscard]] MouseState getMouseState() const;
+
+  void setUniforms(float timeFloat, float timeDeltaFloat, MouseState mouseState);
+  void setBindings();
 
   void updateUI();
 

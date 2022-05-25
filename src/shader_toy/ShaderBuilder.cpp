@@ -93,9 +93,9 @@ layout(local_size_x={}, local_size_y={})in;
   const auto sourceWithUserCode = sourceWithoutUserCode + userCode;
   const auto startOffset = static_cast<std::size_t>(std::ranges::count(sourceWithoutUserCode, '\n') + 1);
   const auto dimensionCheckPos = sourceWithUserCode.find("_pf_generated_renderTextureSize");
-  const auto dimensionCheckLine = dimensionCheckPos != std::string::npos
+  const auto dimensionCheckLine = static_cast<std::size_t>(dimensionCheckPos != std::string::npos
       ? std::ranges::count(sourceWithUserCode.begin(), sourceWithUserCode.begin() + dimensionCheckPos, '\n')
-      : -1;
+      : -1);
   const auto dimensionCheckLineCount = static_cast<std::size_t>(std::ranges::count(dimensionCheckTemplate, '\n'));
 
   Result result;

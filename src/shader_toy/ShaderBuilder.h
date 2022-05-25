@@ -109,10 +109,10 @@ std::string ShaderBuilder::getEnumTypeName() const {
   auto iter1 = enumTypeName.begin();
   auto iter2 = iter1 + 1;
   for (; iter2 != enumTypeName.end(); ++iter1, ++iter2) {
-    result.push_back(::toupper(*iter1));
+    result.push_back(static_cast<char>(::toupper(*iter1)));
     if (::islower(*iter1) && ::isupper(*iter2)) { result.push_back('_'); }
   }
-  result.push_back(::toupper(*iter1));
+  result.push_back(static_cast<char>(::toupper(*iter1)));
   return result;
 }
 }  // namespace pf::shader_toy
