@@ -11,7 +11,9 @@
 #include <range/v3/range/conversion.hpp>
 #include <range/v3/view/cache1.hpp>
 #include <range/v3/view/chunk.hpp>
+#include <range/v3/view/concat.hpp>
 #include <range/v3/view/join.hpp>
+#include <range/v3/view/single.hpp>
 #include <range/v3/view/transform.hpp>
 
 namespace pf {
@@ -32,6 +34,7 @@ tl::expected<ImageData, std::string> ImageLoader::loadImageWithChannels(const st
   }
 }
 
+// TODO: this needs refactoring and it also needs to get moved out
 tl::expected<ImageData, std::string> ImageLoader::convertImageChannels(ImageData &&data,
                                                                        ChannelCount requiredChannels) {
   if (requiredChannels == data.info.channels) { return data; }
@@ -39,47 +42,61 @@ tl::expected<ImageData, std::string> ImageLoader::convertImageChannels(ImageData
     return static_cast<std::byte>(0.299 * static_cast<float>(r) + 0.587 * static_cast<float>(g)
                                   + 0.114 * static_cast<float>(b));
   };
+  std::vector<std::byte> res;
+  res.reserve(data.info.size.width.get() * data.info.size.height.get() * requiredChannels.get());
   switch (requiredChannels.get()) {
     case 1: {
       if (data.info.channels.get() == 3) {
-        data.data = data.data | ranges::views::transform([](auto value) { return make_array(value, value, value); })
-            | ranges::views::cache1 | ranges::views::join | ranges::to_vector;
+        for (std::size_t i = 0; i < data.data.size(); i += 3) {
+          res.emplace_back(rgbToGray(data.data[i + 0], data.data[i + 1], data.data[i + 2]));
+        }
       } else {
-        data.data = data.data | ranges::views::transform([](auto value) {
-                      return make_array(value, value, value, static_cast<std::byte>(255u));
-                    })
-            | ranges::views::cache1 | ranges::views::join | ranges::to_vector;
+        for (std::size_t i = 0; i < data.data.size(); i += 4) {
+          res.emplace_back(rgbToGray(data.data[i + 0], data.data[i + 1], data.data[i + 2]));
+        }
       }
       data.info.channels = ChannelCount{1};
       break;
     }
     case 3: {
       if (data.info.channels.get() == 1) {
-        data.data = data.data | ranges::views::chunk(3)
-            | ranges::views::transform([&](auto rgb) { return rgbToGray(rgb[0], rgb[1], rgb[2]); }) | ranges::to_vector;
+        for (std::size_t i = 0; i < data.data.size(); ++i) {
+          res.emplace_back(data.data[i]);
+          res.emplace_back(data.data[i]);
+          res.emplace_back(data.data[i]);
+        }
       } else {
-        data.data = data.data | ranges::views::chunk(3) | ranges::views::transform([](auto rgb) {
-                      return make_array(rgb[0], rgb[1], rgb[2], static_cast<std::byte>(255u));
-                    })
-            | ranges::views::cache1 | ranges::views::join | ranges::to_vector;
+        for (std::size_t i = 0; i < data.data.size(); i += 4) {
+          res.emplace_back(data.data[i]);
+          res.emplace_back(data.data[i + 1]);
+          res.emplace_back(data.data[i + 2]);
+        }
       }
       data.info.channels = ChannelCount{3};
       break;
     }
     case 4: {
       if (data.info.channels.get() == 1) {
-        data.data = data.data | ranges::views::chunk(4)
-            | ranges::views::transform([&](auto rgb) { return rgbToGray(rgb[0], rgb[1], rgb[2]); }) | ranges::to_vector;
+        for (std::size_t i = 0; i < data.data.size(); ++i) {
+          res.emplace_back(data.data[i]);
+          res.emplace_back(data.data[i]);
+          res.emplace_back(data.data[i]);
+          res.emplace_back(std::byte{255u});
+        }
       } else {
-        data.data = data.data | ranges::views::chunk(4)
-            | ranges::views::transform([](auto rgb) { return make_array(rgb[0], rgb[1], rgb[2]); })
-            | ranges::views::cache1 | ranges::views::join | ranges::to_vector;
+        for (std::size_t i = 0; i < data.data.size(); i += 3) {
+          res.emplace_back(data.data[i]);
+          res.emplace_back(data.data[i + 1]);
+          res.emplace_back(data.data[i + 2]);
+          res.emplace_back(std::byte{255u});
+        }
       }
       data.info.channels = ChannelCount{4};
       break;
     }
     default: return tl::make_unexpected(fmt::format("Unsupported channel count '{}'", requiredChannels.get()));
   }
+  data.data = std::move(res);
   return data;
 }
 

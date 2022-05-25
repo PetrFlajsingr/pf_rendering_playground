@@ -99,7 +99,12 @@ void ImageAssetsController::showAddImageDialog() {
             }
           });
         };
-        imageLoader->loadTextureAsync(imgFile, onLoadDone);
+        const auto imgInfo = imageLoader->getImageInfo(imgFile);
+        if (imgInfo.has_value()) {
+          ChannelCount requiredChannels{imgInfo->channels};
+          if (requiredChannels.get() == 3) { requiredChannels = ChannelCount{4}; }
+          imageLoader->loadTextureWithChannelsAsync(imgFile, requiredChannels, onLoadDone);
+        }
       })
       .modal()
       .build();

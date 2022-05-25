@@ -112,7 +112,12 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
               }
             });
           };
-          imageLoader->loadTextureAsync(*textureModel->imagePath, onLoadDone);
+          const auto imgInfo = imageLoader->getImageInfo(*textureModel->imagePath);
+          if (imgInfo.has_value()) {
+            ChannelCount requiredChannels{imgInfo->channels};
+            if (requiredChannels.get() == 3) { requiredChannels = ChannelCount{4}; }
+            imageLoader->loadTextureWithChannelsAsync(*textureModel->imagePath, requiredChannels, onLoadDone);
+          }
         }
       });
 
