@@ -18,7 +18,7 @@ std::optional<ImageInfo> StbImageLoader::getImageInfo(const std::filesystem::pat
     const auto textureSize = TextureSize{TextureWidth{static_cast<std::uint32_t>(x)},
                                          TextureHeight{static_cast<std::uint32_t>(y)}, TextureDepth{1}};
     const auto channels = static_cast<std::uint8_t>(n);
-    return ImageInfo{textureSize, channels};
+    return ImageInfo{textureSize, ChannelCount{channels}};
   }
   return std::nullopt;
 }
@@ -35,7 +35,7 @@ tl::expected<ImageData, std::string> StbImageLoader::loadImage(const std::filesy
   auto stbFree = RAII{[&] { stbi_image_free(data); }};
   return ImageData{{TextureSize{TextureWidth{static_cast<std::uint32_t>(x)},
                                 TextureHeight{static_cast<std::uint32_t>(y)}, TextureDepth{1}},
-                    static_cast<std::uint8_t>(n)},
+                    ChannelCount{static_cast<std::uint8_t>(n)}},
                    std::vector<std::byte>{dataSpan.begin(), dataSpan.end()}};
 }
 
@@ -52,12 +52,13 @@ OpenGLStbImageLoader::loadTexture(const std::filesystem::path &imagePath) {
   const auto imageData = loadImage(imagePath);
   if (imageData.has_value()) {
     TextureFormat textureFormat;
-    switch (imageData.value().info.channels) {
+    switch (imageData.value().info.channels.get()) {
       case 1: textureFormat = TextureFormat::R8; break;
       case 3: textureFormat = TextureFormat::RGB8; break;
       case 4: textureFormat = TextureFormat::RGBA8; break;
       default:
-        return tl::make_unexpected(fmt::format("Unsupported channel count '{}'", imageData.value().info.channels));
+        return tl::make_unexpected(
+            fmt::format("Unsupported channel count '{}'", imageData.value().info.channels.get()));
     }
     auto texture = std::make_shared<OpenGlTexture>(TextureTarget::_2D, textureFormat, TextureLevel{0},
                                                    imageData.value().info.size);
@@ -81,13 +82,13 @@ void OpenGLStbImageLoader::loadTextureAsync(
 
     if (imageData.has_value()) {
       TextureFormat textureFormat;
-      switch (imageData.value().info.channels) {
+      switch (imageData.value().info.channels.get()) {
         case 1: textureFormat = TextureFormat::R8; break;
         case 3: textureFormat = TextureFormat::RGB8; break;
         case 4: textureFormat = TextureFormat::RGBA8; break;
         default:
-          onLoadDone(
-              tl::make_unexpected(fmt::format("Unsupported channel count '{}'", imageData.value().info.channels)));
+          onLoadDone(tl::make_unexpected(
+              fmt::format("Unsupported channel count '{}'", imageData.value().info.channels.get())));
           return;  // unsupported channel count
       }
       MainLoop::Get()->enqueue([onLoadDone, textureFormat, imageData = std::move(imageData)] {
@@ -95,13 +96,11 @@ void OpenGLStbImageLoader::loadTextureAsync(
                                                        imageData.value().info.size);
         if (const auto errOpt = texture->create(); errOpt.has_value()) {
           onLoadDone(tl::make_unexpected(std::string{errOpt.value().message()}));
-          return; // texture creation failed
+          return;  // texture creation failed
         }
         const auto setResult =
             texture->set2Ddata(std::span{imageData->data.data(), imageData->data.size()}, TextureLevel{0});
-        if (setResult.has_value()) {
-          onLoadDone(tl::make_unexpected(std::string{setResult->message()}));
-        }
+        if (setResult.has_value()) { onLoadDone(tl::make_unexpected(std::string{setResult->message()})); }
         onLoadDone(std::move(texture));
       });
     } else {

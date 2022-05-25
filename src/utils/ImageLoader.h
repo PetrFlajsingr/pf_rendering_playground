@@ -13,9 +13,11 @@
 
 namespace pf {
 
+using ChannelCount = fluent::NamedType<std::uint8_t, struct ChannelCountTag>;
+
 struct ImageInfo {
   TextureSize size;
-  std::uint8_t channels;
+  ChannelCount channels;
 };
 
 struct ImageData {
