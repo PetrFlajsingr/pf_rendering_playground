@@ -5,6 +5,9 @@
 #include "OutputModel.h"
 
 namespace pf {
+OutputModel::OutputModel(std::pair<std::uint32_t, std::uint32_t> res, std::shared_ptr<Texture> tex)
+    : resolution{res}, texture{std::move(tex)} {}
+
 toml::table OutputModel::toToml() const {
   return toml::table{{"width", resolution->first}, {"height", resolution->second}};
 }

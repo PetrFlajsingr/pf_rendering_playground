@@ -13,6 +13,8 @@ namespace pf {
 
 class OutputModel : public SavableModel {
  public:
+  OutputModel(std::pair<std::uint32_t, std::uint32_t> res, std::shared_ptr<Texture> tex);
+
   Observable<std::pair<std::uint32_t, std::uint32_t>> resolution;
   Observable<std::shared_ptr<Texture>> texture;
 

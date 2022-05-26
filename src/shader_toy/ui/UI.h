@@ -14,6 +14,7 @@
 #include "common_ui/controllers/LogWindowController.h"
 #include "shader_toy/controllers/ImageAssetsController.h"
 #include "shader_toy/controllers/GlslEditorController.h"
+#include "shader_toy/controllers/OutputController.h"
 
 namespace pf::shader_toy {
 
@@ -33,7 +34,7 @@ struct UI {
   std::unique_ptr<ShaderVariablesController> shaderVariablesController;
   std::unique_ptr<ImageAssetsController> imageAssetsController;
   std::unique_ptr<GlslEditorController> glslEditorController;
-  // TODO: editor controller
+  std::unique_ptr<OutputController> outputController;
   // clang-format on
   std::shared_ptr<ui::ig::ImGuiInterface> interface;
 };

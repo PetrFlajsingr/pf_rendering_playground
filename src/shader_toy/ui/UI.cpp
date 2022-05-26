@@ -37,6 +37,10 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
       std::make_unique<GlslEditorView>(*interface, "glsl_editor_win", "Code"),
       std::make_shared<GlslEditorModel>(true, std::chrono::milliseconds{1000}, false, "test code boi"));
 
+  outputController =
+      std::make_unique<OutputController>(std::make_unique<OutputView>(*interface, "output_win", "Output"),
+                                         std::make_shared<OutputModel>(std::pair{2048u, 1024u}, nullptr));
+
   const auto fontPath = resourcesPath / "fonts" / "RobotoMono-Regular.ttf";
   if (std::filesystem::exists(fontPath)) {
     auto codeFont = interface->getFontManager().fontBuilder("RobotoMono-Regular", fontPath).setFontSize(15.f).build();

@@ -42,7 +42,6 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
                                     std::shared_ptr<ThreadPool> threadPool) {
   auto isFirstRun = true;
   if (const auto iter = config.find("initialized"); iter != config.end()) {
-    getLogger().debug("First initialisation");
     isFirstRun = !iter->second.value_or(false);
   }
   config.insert_or_assign("initialized", true);

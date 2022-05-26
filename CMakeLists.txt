@@ -63,6 +63,7 @@ add_library(glad src/glad.c)
 
 
 add_executable(${PROJECT_NAME}
+        include/libassert/assert.cpp
         src/main.cpp
         src/utils/files.h
         src/utils/files.cpp
@@ -140,6 +141,7 @@ target_link_libraries(${PROJECT_NAME} glad
         pf_common::pf_common pf_imgui::pf_imgui pf_mainloop::pf_mainloop pf_glfw::pf_glfw
         spdlog::spdlog_header_only
         HLSL SPIRV glslang OGLCompiler
+        $<$<CXX_COMPILER_ID:MSVC>:dbghelp>
         )
 
 target_compile_options(${PROJECT_NAME} PRIVATE ${flags})
