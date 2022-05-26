@@ -4,6 +4,8 @@
 
 #pragma once
 
-namespace pf{
-class LogModel{};
-}
+#include "mvc/Model.h"
+
+namespace pf {
+class LogModel : public Model {};
+}  // namespace pf

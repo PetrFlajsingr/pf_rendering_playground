@@ -2,8 +2,7 @@
 // Created by Petr on 26/05/2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_GLSLEDITORVIEW_H
-#define PF_RENDERING_PLAYGROUND_GLSLEDITORVIEW_H
+#pragma once
 
 #include "mvc/View.h"
 #include <pf_imgui/elements/Button.h>
@@ -43,5 +42,3 @@ class GlslEditorView : public UIViewWindow {
 };
 
 }  // namespace pf
-
-#endif  //PF_RENDERING_PLAYGROUND_GLSLEDITORVIEW_H

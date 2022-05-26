@@ -5,11 +5,12 @@
 #pragma once
 
 #include "View.h"
+#include "Model.h"
 #include "reactive.h"
 
 namespace pf{
 
-template<std::derived_from<UIViewBase> UIView, typename Model>
+template<std::derived_from<UIViewBase> UIView, std::derived_from<Model> Model>
 class Controller {
  public:
   Controller(std::unique_ptr<UIView> uiView, std::shared_ptr<Model> mod)

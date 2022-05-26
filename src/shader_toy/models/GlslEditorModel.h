@@ -2,8 +2,7 @@
 // Created by Petr on 26/05/2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_GLSLEDITORMODEL_H
-#define PF_RENDERING_PLAYGROUND_GLSLEDITORMODEL_H
+#pragma once
 
 #include "mvc/Model.h"
 #include "mvc/reactive.h"
@@ -39,4 +38,3 @@ class GlslEditorModel : public SavableModel {
 
 }  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_GLSLEDITORMODEL_H

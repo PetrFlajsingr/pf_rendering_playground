@@ -15,6 +15,7 @@ namespace gui = ui::ig;
 GlslEditorView::GlslEditorView(gui::ImGuiInterface &interface, std::string_view windowName,
                                std::string_view windowTitle)
     : UIViewWindow(&interface.createWindow(std::string{windowName}, std::string{windowTitle})) {
+  window->setIsDockable(true);
   layout = &window->createChild(gui::VerticalLayout::Config{.name = "text_input_layout", .size = gui::Size::Auto()});
 
   controlsLayout = &layout->createChild(gui::HorizontalLayout::Config{.name = "text_controls_layout",

@@ -2,8 +2,7 @@
 // Created by Petr on 26/05/2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_GLSLEDITORCONTROLLER_H
-#define PF_RENDERING_PLAYGROUND_GLSLEDITORCONTROLLER_H
+#pragma once
 
 #include "../models/GlslEditorModel.h"
 #include "../views/GlslEditorView.h"
@@ -20,4 +19,3 @@ class GlslEditorController : public Controller<GlslEditorView, GlslEditorModel> 
 
 }  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_GLSLEDITORCONTROLLER_H

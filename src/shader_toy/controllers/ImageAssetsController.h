@@ -2,8 +2,7 @@
 // Created by Petr on 23/05/2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_IMAGEASSETSCONTROLLER_H
-#define PF_RENDERING_PLAYGROUND_IMAGEASSETSCONTROLLER_H
+#pragma once
 
 #include "../models/ImageAssetModel.h"
 #include "../views/ImageAssetsView.h"
@@ -38,4 +37,3 @@ class ImageAssetsController : public Controller<ImageAssetsView, UserImageAssets
 
 }  // namespace pf
 
-#endif  //PF_RENDERING_PLAYGROUND_IMAGEASSETSCONTROLLER_H
