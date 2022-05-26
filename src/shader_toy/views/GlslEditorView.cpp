@@ -1,51 +1,43 @@
 //
-// Created by xflajs00 on 18.04.2022.
+// Created by Petr on 26/05/2022.
 //
 
-#include "InputWindow.h"
-#include "shader_toy/ui/dialogs/GlslLVariableInputDialog.h"
-#include "shader_toy/utils.h"
-#include <pf_imgui/elements/Button.h>
-#include <pf_imgui/elements/Combobox.h>
-#include <pf_imgui/elements/InputText.h>
+#include "GlslEditorView.h"
+#include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/MarkdownText.h>
 #include <pf_imgui/interface/decorators/WidthDecorator.h>
-#include <pf_mainloop/MainLoop.h>
-#include <spdlog/spdlog.h>
 
-namespace pf::shader_toy {
+namespace pf {
 
 namespace gui = ui::ig;
-
-InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
-  window = &imGuiInterface.createWindow("text_input_window", "Editor");
-  window->setIsDockable(true);
+// TODO: remake controls
+// TODO: better help, best to just use a separate window for help - extract from PhysarumSim into pf_imgui?
+GlslEditorView::GlslEditorView(gui::ImGuiInterface &interface, std::string_view windowName,
+                               std::string_view windowTitle)
+    : UIViewWindow(&interface.createWindow(std::string{windowName}, std::string{windowTitle})) {
   layout = &window->createChild(gui::VerticalLayout::Config{.name = "text_input_layout", .size = gui::Size::Auto()});
 
-  controlsLayout = &layout->createChild(
-      gui::HorizontalLayout::Config{.name = "text_controls_layout", .size = gui::Size{gui::Width::Auto(), 80}});
+  controlsLayout = &layout->createChild(gui::HorizontalLayout::Config{.name = "text_controls_layout",
+                                                                      .size = gui::Size{gui::Width::Auto(), 80},
+                                                                      .showBorder = true});
   compileButton = &controlsLayout->createChild(gui::Button::Config{"compile_btn", "Compile"});
-  //sep1 = &controlsLayout->createChild<gui::Separator>("sep1");
-  timePausedCheckbox = &controlsLayout->createChild(
-      gui::Checkbox::Config{.name = "pause_cbkx", .label = "Pause time", .persistent = true});
+  sep1 = &controlsLayout->createChild<gui::Separator>("sep1");
+  timePausedCheckbox = &controlsLayout->createChild(gui::Checkbox::Config{.name = "pause_cbkx", .label = "Pause time"});
   restartButton = &controlsLayout->createChild(gui::Button::Config{"restart_btn", "Restart"});
-  autoCompileCheckbox = &controlsLayout->createChild(
-      gui::Checkbox::Config{.name = "autocompile_cbkx", .label = "Auto compile", .persistent = true});
-  autoCompileFrequencyDrag = &controlsLayout->createChild(
+  sep2 = &controlsLayout->createChild<gui::Separator>("sep2");
+  autoCompileCheckbox =
+      &controlsLayout->createChild(gui::Checkbox::Config{.name = "autocompile_cbkx", .label = "Auto compile"});
+  autoCompilePeriodDrag = &controlsLayout->createChild(
       gui::WidthDecorator<gui::DragInput<float>>::Config{.width = 50,
                                                          .config = {.name = "autocompile_f_drag",
-                                                                    .label = "Frequency",
+                                                                    .label = "Period",
                                                                     .speed = 0.01f,
                                                                     .min = 0.1f,
                                                                     .max = 10.f,
                                                                     .value = 1.f,
-                                                                    .format = "%.1f sec",
-                                                                    .persistent = true}});
+                                                                    .format = "%.1f sec"}});
   autoCompileCheckbox->addValueListener(
-      [this](bool value) { autoCompileFrequencyDrag->setEnabled(value ? Enabled::Yes : Enabled::No); });
-
-  codeToClipboardButton =
-      &layout->createChild<gui::Button>("copy_shtoy_to_clip", "Generated shader to clipboard");
+      [this](bool value) { autoCompilePeriodDrag->setEnabled(value ? Enabled::Yes : Enabled::No); });
 
   infoLayout = &layout->createChild(
       gui::HorizontalLayout::Config{.name = "info_layout", .size = gui::Size{gui::Width::Auto(), 30}});
@@ -65,9 +57,9 @@ InputWindow::InputWindow(gui::ImGuiInterface &imGuiInterface) {
 )md";
 
   auto &tooltipLayout = tooltip.createChild<gui::VerticalLayout>("info_ttip_layout", gui::Size{400, 500});
-  tooltipLayout.createChild<gui::MarkdownText>("info_md_text", imGuiInterface, INFO_MD_TEXT);
+  tooltipLayout.createChild<gui::MarkdownText>("info_md_text", interface, INFO_MD_TEXT);
 
-  editor = &layout->createChild(gui::TextEditor::Config{.name = "text_editor", .persistent = true});
+  editor = &layout->createChild(gui::TextEditor::Config{.name = "text_editor"});
 }
 
-}  // namespace pf::shader_toy
+}  // namespace pf

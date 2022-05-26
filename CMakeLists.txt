@@ -71,8 +71,6 @@ add_executable(${PROJECT_NAME}
         src/imgui/impl/imgui_impl_opengl3.cpp
         src/shader_toy/ui/OutputWindow.cpp
         src/shader_toy/ui/OutputWindow.h
-        src/shader_toy/ui/InputWindow.cpp
-        src/shader_toy/ui/InputWindow.h
         src/modes/Mode.h
         src/shader_toy/ShaderToyMode.cpp
         src/shader_toy/ShaderToyMode.h
@@ -134,7 +132,7 @@ add_executable(${PROJECT_NAME}
         src/shader_toy/controllers/ImageAssetsController.cpp
         src/shader_toy/controllers/ImageAssetsController.h
         src/utils/ImageLoader.cpp
-        src/utils/ImageLoader.h)
+        src/utils/ImageLoader.h src/shader_toy/views/GlslEditorView.cpp src/shader_toy/views/GlslEditorView.h src/shader_toy/models/GlslEditorModel.cpp src/shader_toy/models/GlslEditorModel.h src/shader_toy/controllers/GlslEditorController.cpp src/shader_toy/controllers/GlslEditorController.h)
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOGDI)
 target_link_libraries(${PROJECT_NAME} glad

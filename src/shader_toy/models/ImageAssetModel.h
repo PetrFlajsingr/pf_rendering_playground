@@ -28,7 +28,7 @@ class TextureAssetModel : public SavableModel {
 class UserImageAssetsModel : public SavableModel {
   using TextureModels = std::vector<std::shared_ptr<TextureAssetModel>>;
   template<typename... Args>
-  using Event = Event<UserImageAssetsModel, Args...>;
+  using Event = ClassEvent<UserImageAssetsModel, Args...>;
   using ImageAddedEvent = Event<std::shared_ptr<TextureAssetModel>>;
   using ImageRemovedEvent = Event<std::shared_ptr<TextureAssetModel>>;
 

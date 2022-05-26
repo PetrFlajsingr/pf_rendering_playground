@@ -10,17 +10,17 @@
 namespace pf::shader_toy {
 
 namespace gui = ui::ig;
-UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window, const std::string &initShaderCode,
-       const std::filesystem::path &resourcesPath, bool initializeDocking, std::shared_ptr<ImageLoader> imageLoader)
+UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window,
+       [[maybe_unused]] const std::string &initShaderCode, const std::filesystem::path &resourcesPath,
+       bool initializeDocking, std::shared_ptr<ImageLoader> imageLoader)
     : interface(std::move(imGuiInterface)) {
   gui::setDarkStyle(*interface);
 
   dockingArea = &interface->createOrGetBackgroundDockingArea();
 
   outputWindow = std::make_unique<OutputWindow>(*interface);
-  textInputWindow = std::make_unique<InputWindow>(*interface);
 
-  textInputWindow->editor->setText(initShaderCode);
+  // TODO: textInputWindow->editor->setText(initShaderCode);
 
   logWindowController = std::make_unique<LogWindowController>(
       std::make_unique<LogWindowView>(*interface, "log_window", "Log"), std::make_shared<LogModel>());
@@ -33,13 +33,18 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
       std::make_unique<ImageAssetsView>(*interface, "image_assets_win", "Images"),
       std::make_shared<UserImageAssetsModel>(), interface, imageLoader);
 
+  glslEditorController = std::make_unique<GlslEditorController>(
+      std::make_unique<GlslEditorView>(*interface, "glsl_editor_win", "Code"),
+      std::make_shared<GlslEditorModel>(true, std::chrono::milliseconds{1000}, false, "test code boi"));
+
   const auto fontPath = resourcesPath / "fonts" / "RobotoMono-Regular.ttf";
   if (std::filesystem::exists(fontPath)) {
     auto codeFont = interface->getFontManager().fontBuilder("RobotoMono-Regular", fontPath).setFontSize(15.f).build();
-    textInputWindow->editor->setFont(codeFont);
+    // TODO: textInputWindow->editor->setFont(codeFont);
   }
 
   if (initializeDocking) {
+    // TODO: fix this up
     const auto windowSize = window.getSize();
     const auto dockAreaSize =
         gui::Size{gui::Width{static_cast<float>(windowSize.width)}, gui::Height{static_cast<float>(windowSize.height)}};
@@ -49,7 +54,7 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
 
     auto &editorDockBuilder = dockBuilder.split(gui::HorizontalDirection::Right);
     editorDockBuilder.setSplitRatio(0.4f);
-    editorDockBuilder.setWindow(*textInputWindow->window);
+    //editorDockBuilder.setWindow(*textInputWindow->window);
 
     auto &logDockBuilder = dockBuilder.split(gui::VerticalDirection::Down);
     logDockBuilder.setSplitRatio(0.3f);
@@ -60,16 +65,16 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
 }
 
 void UI::show() {
+  // TODO: add new views/controllers here
   dockingArea->setVisibility(gui::Visibility::Visible);
   outputWindow->window->setVisibility(gui::Visibility::Visible);
-  textInputWindow->window->setVisibility(gui::Visibility::Visible);
   logWindowController->show();
 }
 
 void UI::hide() {
+  // TODO: add new views/controllers here
   dockingArea->setVisibility(gui::Visibility::Invisible);
   outputWindow->window->setVisibility(gui::Visibility::Invisible);
-  textInputWindow->window->setVisibility(gui::Visibility::Invisible);
   logWindowController->hide();
 }
 

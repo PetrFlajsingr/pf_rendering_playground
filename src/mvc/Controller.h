@@ -21,7 +21,7 @@ class Controller {
 
  protected:
   template<typename ...Args>
-  using Event = Event<Controller, Args...>;
+  using Event = ClassEvent<Controller, Args...>;
 
   void notifyEvent(auto &event) {
     event.notify();

@@ -74,6 +74,9 @@ class Observable {
     Detector detector;
   };
 
+  Observable()
+    requires(std::is_default_constructible_v<value_type>)
+  : value{} {}
   explicit Observable(value_type val) : value(std::move(val)) {}
   ~Observable() { destroyObservableImpl.notify(*this); }
 
@@ -116,7 +119,7 @@ class Observable {
 };
 
 template<typename Owner, typename... Args>
-class Event {
+class ClassEvent {
   friend Owner;
 
  public:
@@ -126,6 +129,18 @@ class Event {
 
  private:
   void notify(const Args &...args) { observableImpl.notify(args...); }
+  ui::ig::Observable_impl<Args...> observableImpl;
+};
+
+template<typename... Args>
+class PublicEvent {
+ public:
+  Subscription addEventListener(std::invocable<Args...> auto &&listener) {
+    return observableImpl.addListener(std::forward<decltype(listener)>(listener));
+  }
+  void notify(const Args &...args) { observableImpl.notify(args...); }
+
+ private:
   ui::ig::Observable_impl<Args...> observableImpl;
 };
 

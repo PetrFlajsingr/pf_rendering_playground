@@ -20,6 +20,7 @@
 #include <utils/GlslToSpirv.h>
 #include <utils/opengl_utils.h>
 #include <utils/profiling.h>
+#include <pf_common/Visitor.h>
 
 #include "log/UISink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
@@ -65,15 +66,15 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   ui->outputWindow->widthCombobox->addValueListener(updateTextureSizeFromUI);
   ui->outputWindow->heightCombobox->addValueListener(updateTextureSizeFromUI, true);
 
-  ui->textInputWindow->compileButton->addClickListener([&] { compileShader(ui->textInputWindow->editor->getText()); });
-  ui->textInputWindow->restartButton->addClickListener([&] {
-    getLogger().info("Restarting time");
-    totalTime = std::chrono::nanoseconds{0};
-  });
-  ui->textInputWindow->timePausedCheckbox->bind(timeCounterPaused);
-
-  autoCompileShader = ui->textInputWindow->autoCompileCheckbox->getValue();
-  ui->textInputWindow->autoCompileCheckbox->bind(autoCompileShader);
+  // TODO: ui->textInputWindow->compileButton->addClickListener([&] { compileShader(ui->textInputWindow->editor->getText()); });
+  // TODO: ui->textInputWindow->restartButton->addClickListener([&] {
+  // TODO:   getLogger().info("Restarting time");
+  // TODO:   totalTime = std::chrono::nanoseconds{0};
+  // TODO: });
+  // TODO: ui->textInputWindow->timePausedCheckbox->bind(timeCounterPaused);
+  // TODO:
+  // TODO: autoCompileShader = ui->textInputWindow->autoCompileCheckbox->getValue();
+  // TODO: ui->textInputWindow->autoCompileCheckbox->bind(autoCompileShader);
 
   const auto markShaderChanged = [this](auto...) {
     isShaderChanged = true;
@@ -121,10 +122,10 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
         }
       });
 
-  ui->textInputWindow->editor->addTextListener(markShaderChanged);
-
-  ui->textInputWindow->codeToClipboardButton->addClickListener(
-      [this] { ImGui::SetClipboardText(currentShaderSrc.c_str()); });
+  // TODO: ui->textInputWindow->editor->addTextListener(markShaderChanged);
+  // TODO:
+  // TODO: ui->textInputWindow->codeToClipboardButton->addClickListener(
+  // TODO:     [this] { ImGui::SetClipboardText(currentShaderSrc.c_str()); });
 
   ui->outputWindow->image->addMousePositionListener([&](auto pos) {
     const auto size = ui->outputWindow->image->getSize();
@@ -212,21 +213,21 @@ glm::uvec2 ShaderToyMode::getTextureSize() const {
 }
 
 void ShaderToyMode::checkShaderStatus() {
-  if (autoCompileShader && isShaderChanged
-      && (std::chrono::steady_clock::now() - lastShaderChangeTime) > std::chrono::milliseconds{
-             static_cast<int>(ui->textInputWindow->autoCompileFrequencyDrag->getValue() * 1000.f)}) {
-    if (previousShaderCompilationDone) {
-      getLogger().trace("Auto recompiling shader");
-      compileShader(ui->textInputWindow->editor->getText());
-      isShaderChanged = false;
-    }
-  }
+  // TODO: if (autoCompileShader && isShaderChanged
+  // TODO:     && (std::chrono::steady_clock::now() - lastShaderChangeTime) > std::chrono::milliseconds{
+  // TODO:            static_cast<int>(ui->textInputWindow->autoCompileFrequencyDrag->getValue() * 1000.f)}) {
+  // TODO:   if (previousShaderCompilationDone) {
+  // TODO:     getLogger().trace("Auto recompiling shader");
+  // TODO:     compileShader(ui->textInputWindow->editor->getText());
+  // TODO:     isShaderChanged = false;
+  // TODO:   }
+  // TODO: }
 }
 
-void ShaderToyMode::compileShader(const std::string &shaderCode) {
-  ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Visible);
-  getLogger().trace("Compiling shader");
-  compileShader_impl(shaderCode);
+void ShaderToyMode::compileShader([[maybe_unused]] const std::string &shaderCode) {
+  // TODO: ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Visible);
+  // TODO: getLogger().trace("Compiling shader");
+  // TODO: compileShader_impl(shaderCode);
 }
 
 // TODO: clean this up
@@ -286,12 +287,12 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
     getLogger().debug("Compilation took {}",
                       std::chrono::duration_cast<std::chrono::milliseconds>(compilationDuration));
     pf::MainLoop::Get()->enqueue([spirvResult = std::move(spirvResult), source = std::move(source), this]() mutable {
-      auto onDone = RAII{[this] {
-        previousShaderCompilationDone = true;
-        ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Invisible);
-      }};
-      ui->textInputWindow->editor->clearWarningMarkers();
-      ui->textInputWindow->editor->clearErrorMarkers();
+      // TODO: auto onDone = RAII{[this] {
+      // TODO:   previousShaderCompilationDone = true;
+      // TODO:   ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Invisible);
+      // TODO: }};
+      // TODO: ui->textInputWindow->editor->clearWarningMarkers();
+      // TODO: ui->textInputWindow->editor->clearErrorMarkers();
       if (spirvResult.has_value()) {
         auto shader = std::make_shared<OpenGlShader>();
         const auto shaderCreateResult = shader->create(spirvResult.value(), "main");
@@ -319,14 +320,14 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
         for (SpirvErrorRecord rec : errors) {
           using enum SpirvErrorRecord::Type;
           if (!rec.line.has_value()) { continue; }
-          const auto errMessage = fmt::format("{}: {}", rec.error, rec.errorDesc);
-          const auto marker =
-              ui::ig::TextEditorMarker{static_cast<uint32_t>(shaderLineMapping(rec.line.value())), errMessage};
-          getLogger().error("{}", errMessage);
-          switch (rec.type) {
-            case Warning: ui->textInputWindow->editor->addWarningMarker(marker); break;
-            case Error: ui->textInputWindow->editor->addErrorMarker(marker); break;
-          }
+          // TODO: const auto errMessage = fmt::format("{}: {}", rec.error, rec.errorDesc);
+          // TODO: const auto marker =
+          // TODO:     ui::ig::TextEditorMarker{static_cast<uint32_t>(shaderLineMapping(rec.line.value())), errMessage};
+          // TODO: getLogger().error("{}", errMessage);
+          // TODO: switch (rec.type) {
+          // TODO:   case Warning: ui->textInputWindow->editor->addWarningMarker(marker); break;
+          // TODO:   case Error: ui->textInputWindow->editor->addErrorMarker(marker); break;
+          // TODO: }
         }
       }
     });

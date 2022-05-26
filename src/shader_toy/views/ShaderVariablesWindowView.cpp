@@ -11,6 +11,7 @@ namespace gui = ui::ig;
 ShaderVariablesWindowView::ShaderVariablesWindowView(ui::ig::ImGuiInterface &interface, std::string_view windowName,
                                                      std::string_view windowTitle)
     : UIViewWindow{&interface.createWindow(std::string{windowName}, std::string{windowTitle})} {
+  window->setIsDockable(true);
   controlsLayout = &window->createChild(
       gui::HorizontalLayout::Config{.name = "layout", .size = gui::Size{gui::Width::Auto(), 35}, .showBorder = true});
   addButton = &controlsLayout->createChild<gui::Button>("add_var_btn", "Add variable");

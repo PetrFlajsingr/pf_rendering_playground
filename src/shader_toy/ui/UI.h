@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "InputWindow.h"
 #include "OutputWindow.h"
 #include <pf_glfw/Window.h>
 #include <pf_imgui/ImGuiInterface.h>
@@ -14,6 +13,7 @@
 #include "../controllers/ShaderVariablesController.h"
 #include "common_ui/controllers/LogWindowController.h"
 #include "shader_toy/controllers/ImageAssetsController.h"
+#include "shader_toy/controllers/GlslEditorController.h"
 
 namespace pf::shader_toy {
 
@@ -28,11 +28,12 @@ struct UI {
   // clang-format off
   ui::ig::BackgroundDockingArea *dockingArea;
   std::unique_ptr<OutputWindow> outputWindow;
-  std::unique_ptr<InputWindow> textInputWindow;
 
   std::unique_ptr<LogWindowController> logWindowController;
   std::unique_ptr<ShaderVariablesController> shaderVariablesController;
   std::unique_ptr<ImageAssetsController> imageAssetsController;
+  std::unique_ptr<GlslEditorController> glslEditorController;
+  // TODO: editor controller
   // clang-format on
   std::shared_ptr<ui::ig::ImGuiInterface> interface;
 };
