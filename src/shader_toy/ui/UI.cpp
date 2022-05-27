@@ -33,7 +33,7 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
 
   glslEditorController = std::make_unique<GlslEditorController>(
       std::make_unique<GlslEditorView>(*interface, "glsl_editor_win", "Code"),
-      std::make_shared<GlslEditorModel>(true, std::chrono::milliseconds{1000}, false, "test code boi"));
+      std::make_shared<GlslEditorModel>(true, std::chrono::milliseconds{1000}, false, ""));
 
   outputController =
       std::make_unique<OutputController>(std::make_unique<OutputView>(*interface, "output_win", "Output"),

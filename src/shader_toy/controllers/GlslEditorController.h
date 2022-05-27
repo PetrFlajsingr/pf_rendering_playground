@@ -21,6 +21,7 @@ class GlslEditorController : public Controller<GlslEditorView, GlslEditorModel> 
   void addErrorMarker(const ui::ig::TextEditorMarker &marker);
 
  private:
+  bool ignoreNextEditorUpdate = false;
 };
 
 }  // namespace pf

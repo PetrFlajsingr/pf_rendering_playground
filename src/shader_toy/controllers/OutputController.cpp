@@ -30,8 +30,8 @@ OutputController::OutputController(std::unique_ptr<OutputView> uiView, std::shar
 
   if (*model->texture != nullptr) { view->image->setTextureId(getImTextureID(**model->texture)); }
   model->texture.addValueListener([this](auto newTexture) {
-    if (*model->texture != nullptr) {
-      view->image->setTextureId(getImTextureID(**model->texture));
+    if (newTexture != nullptr) {
+      view->image->setTextureId(getImTextureID(*newTexture));
     } else {
       view->image->setTextureId(0);
     }

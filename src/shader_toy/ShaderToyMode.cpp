@@ -33,7 +33,10 @@ void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei
 
 namespace pf::shader_toy {
 
-ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{std::move(resourcesPath)} {}
+ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{std::move(resourcesPath)} {
+ // glEnable              ( GL_DEBUG_OUTPUT );
+  glDebugMessageCallback(debugOpengl, nullptr);
+}
 
 std::string ShaderToyMode::getName() const { return "ShaderToy"; }
 
@@ -56,7 +59,7 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   getLogger().sinks().emplace_back(ui->logWindowController->createSpdlogSink());
 
   const auto updateTextureSize = [this](auto resolution) {
-    const TextureSize textureSize{TextureWidth{resolution.first}, TextureHeight{resolution.second}, TextureDepth{1u}};
+    const TextureSize textureSize{TextureWidth{resolution.first}, TextureHeight{resolution.second}, TextureDepth{0u}};
     initializeTexture(textureSize);
   };
 
@@ -64,10 +67,12 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
 
   ui->glslEditorController->getModel()->autoCompile.addValueListener(
       [this](auto autoCompile) { autoCompileShader = autoCompile; });
+  autoCompileShader = *ui->glslEditorController->getModel()->autoCompile;
   ui->glslEditorController->getModel()->timePaused.addValueListener(
       [this](auto timePaused) { timeCounterPaused = timePaused; });
+  timeCounterPaused = *ui->glslEditorController->getModel()->timePaused;
   ui->glslEditorController->getModel()->compilationRequested.addEventListener([this] {
-    // TODO
+    compileShader(*ui->glslEditorController->getModel()->code);
   });
   ui->glslEditorController->getModel()->restartRequested.addEventListener([this] {
     getLogger().info("Restarting time");
@@ -204,7 +209,8 @@ void ShaderToyMode::initializeTexture(TextureSize textureSize) {
   outputTexture =
       std::make_shared<OpenGlTexture>(TextureTarget::_2D, TextureFormat::RGBA32F, TextureLevel{0}, textureSize);
   if (const auto err = outputTexture->create(); err.has_value()) {
-    // can't happen for now
+    // FIXME
+    VERIFY(false, "Texture creation failure handling not implemented");
   }
   getLogger().debug("Texture created: {}", *outputTexture);
   outputTexture->setParam(TextureMinificationFilter::Linear);
@@ -229,7 +235,7 @@ void ShaderToyMode::checkShaderStatus() {
   }
 }
 
-void ShaderToyMode::compileShader([[maybe_unused]] const std::string &shaderCode) {
+void ShaderToyMode::compileShader(const std::string &shaderCode) {
   *ui->glslEditorController->getModel()->compiling.modify() = true;
   getLogger().trace("Compiling shader");
   compileShader_impl(shaderCode);
@@ -267,6 +273,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
 
   std::ranges::for_each(ui->imageAssetsController->getModel()->getTextures(),
                         [&](const std::shared_ptr<TextureAssetModel> &tex) {
+                          if (*tex->texture == nullptr) { return; }
                           const auto texFormat = (*tex->texture)->getFormat();
                           std::string formatStr;
                           switch (texFormat) {

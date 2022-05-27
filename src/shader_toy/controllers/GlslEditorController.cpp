@@ -29,9 +29,18 @@ GlslEditorController::GlslEditorController(std::unique_ptr<GlslEditorView> uiVie
       [this](auto period) { view->autoCompilePeriodDrag->setValue(static_cast<float>(period.count()) / 1000.f); });
 
   view->editor->setText(*model->code);
-  view->editor->addTextListener([this](auto code) { *model->code.modify() = code; });
-  view->editor->addTextListener([this](auto code) { *model->code.modify() = code; });
-  model->code.addValueListener([this](auto code) { view->editor->setText(*model->code); });
+  view->editor->addTextListener([this](auto code) {
+    ignoreNextEditorUpdate = true;
+    *model->code.modify() = code;
+  });
+  model->code.addValueListener([this](auto code) {
+    // FIXME: this is idiotic, but it avoids the editor resetting
+    if (ignoreNextEditorUpdate) {
+      ignoreNextEditorUpdate = false;
+      return;
+    }
+    view->editor->setText(code);
+  });
 
   // TODO react to model->compiling with some UI cue
 }
