@@ -54,7 +54,8 @@ GlslEditorView::GlslEditorView(gui::ImGuiInterface &interface, std::string_view 
   * float timeDelta - time since last frame in seconds
   * int frameNum - current frame number
   * MOUSE_STATE mouseState - current state of mouse (one of MOUSE_STATE_NONE, MOUSE_STATE_LEFT_DOWN, MOUSE_STATE_RIGHT_DOWN)
-  * vec3 mousePos - current mouse position (xy)
+  * vec3 mousePos - current mouse position in pixel coordinates (xy)
+  * vec3 mousePosNormalized - current mouse position in [0.f, 1.f] range (xy)
 )md";
 
   auto &tooltipLayout = tooltip.createChild<gui::VerticalLayout>("info_ttip_layout", gui::Size{400, 500});

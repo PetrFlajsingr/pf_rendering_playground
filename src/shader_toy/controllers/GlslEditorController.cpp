@@ -30,7 +30,21 @@ GlslEditorController::GlslEditorController(std::unique_ptr<GlslEditorView> uiVie
 
   view->editor->setText(*model->code);
   view->editor->addTextListener([this](auto code) { *model->code.modify() = code; });
+  view->editor->addTextListener([this](auto code) { *model->code.modify() = code; });
   model->code.addValueListener([this](auto code) { view->editor->setText(*model->code); });
+
+  // TODO react to model->compiling with some UI cue
+}
+void GlslEditorController::clearWarningMarkers() { view->editor->clearWarningMarkers(); }
+
+void GlslEditorController::clearErrorMarkers() { view->editor->clearErrorMarkers(); }
+
+void GlslEditorController::addWarningMarker(const ui::ig::TextEditorMarker &marker) {
+  view->editor->addWarningMarker(marker);
+}
+
+void GlslEditorController::addErrorMarker(const ui::ig::TextEditorMarker &marker) {
+  view->editor->addErrorMarker(marker);
 }
 
 }  // namespace pf

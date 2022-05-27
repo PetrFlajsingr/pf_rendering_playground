@@ -36,6 +36,15 @@ OutputController::OutputController(std::unique_ptr<OutputView> uiView, std::shar
       view->image->setTextureId(0);
     }
   });
+
+  view->image->addMousePositionListener([this](auto pos) {
+    if (*model->texture == nullptr) { return; }
+
+    auto result = NormalizedPosition{pos.x / static_cast<float>(view->image->getSize().width),
+                                     pos.y / static_cast<float>(view->image->getSize().height)};
+    *model->mousePositionOnImageUV.modify() = result;
+  });
+  view->image->addHoverListener([this](auto hovered) { *model->textureHovered.modify() = hovered; });
 }
 
 void OutputController::setFps(float currentFps, float averageFps) {

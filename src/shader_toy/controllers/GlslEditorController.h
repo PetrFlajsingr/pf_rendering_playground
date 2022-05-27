@@ -14,8 +14,13 @@ class GlslEditorController : public Controller<GlslEditorView, GlslEditorModel> 
  public:
   GlslEditorController(std::unique_ptr<GlslEditorView> uiView, std::shared_ptr<GlslEditorModel> mod);
 
+  // TODO: change this to just WarningInfo and ErrorInfo or add compilation result to model?
+  void clearWarningMarkers();
+  void clearErrorMarkers();
+  void addWarningMarker(const ui::ig::TextEditorMarker &marker);
+  void addErrorMarker(const ui::ig::TextEditorMarker &marker);
+
  private:
 };
 
 }  // namespace pf
-

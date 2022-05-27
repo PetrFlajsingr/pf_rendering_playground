@@ -5,11 +5,11 @@
 #pragma once
 
 #include "glm/ext/vector_uint2.hpp"
+#include "gpu/Program.h"
+#include "gpu/Texture.h"
 #include "modes/Mode.h"
 #include "ui/UI.h"
 #include <future>
-#include "gpu/Texture.h"
-#include "gpu/Program.h"
 #include <glm/glm.hpp>
 #include <utils/FPSCounter.h>
 
@@ -75,6 +75,7 @@ class ShaderToyMode : public Mode {
   std::function<std::size_t(std::size_t)> shaderLineMapping;
 
   FPSCounter fpsCounter;
+  float fpsForUI{};
 
   bool autoCompileShader = false;
   bool isShaderChanged = true;

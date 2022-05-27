@@ -3,8 +3,31 @@
 //
 
 #include "OutputModel.h"
+#include <assert.hpp>
 
 namespace pf {
+
+NormalizedPosition::NormalizedPosition() : x_(0), y_(0) {}
+
+NormalizedPosition::NormalizedPosition(float xVal, float yVal) : x_(xVal), y_(yVal) {
+  DEBUG_ASSERT(0.f <= x_ && x_ <= 1.f);
+  DEBUG_ASSERT(0.f <= y_ && y_ <= 1.f);
+}
+
+float NormalizedPosition::x() const { return x_; }
+
+float NormalizedPosition::y() const { return y_; }
+
+void NormalizedPosition::x(float val) {
+  DEBUG_ASSERT(0.f <= val && val <= 1.f);
+  x_ = val;
+}
+
+void NormalizedPosition::y(float val) {
+  DEBUG_ASSERT(0.f <= val && val <= 1.f);
+  y_ = val;
+}
+
 OutputModel::OutputModel(std::pair<std::uint32_t, std::uint32_t> res, std::shared_ptr<Texture> tex)
     : resolution{res}, texture{std::move(tex)} {}
 

@@ -18,8 +18,6 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
 
   dockingArea = &interface->createOrGetBackgroundDockingArea();
 
-  outputWindow = std::make_unique<OutputWindow>(*interface);
-
   // TODO: textInputWindow->editor->setText(initShaderCode);
 
   logWindowController = std::make_unique<LogWindowController>(
@@ -54,7 +52,7 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
         gui::Size{gui::Width{static_cast<float>(windowSize.width)}, gui::Height{static_cast<float>(windowSize.height)}};
     auto &dockBuilder = interface->createDockBuilder(dockingArea->getDockSpace());
     dockBuilder.setSize(dockAreaSize);
-    dockBuilder.setWindow(*outputWindow->window);
+    //dockBuilder.setWindow(*outputWindow->window);
 
     auto &editorDockBuilder = dockBuilder.split(gui::HorizontalDirection::Right);
     editorDockBuilder.setSplitRatio(0.4f);
@@ -71,14 +69,12 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
 void UI::show() {
   // TODO: add new views/controllers here
   dockingArea->setVisibility(gui::Visibility::Visible);
-  outputWindow->window->setVisibility(gui::Visibility::Visible);
   logWindowController->show();
 }
 
 void UI::hide() {
   // TODO: add new views/controllers here
   dockingArea->setVisibility(gui::Visibility::Invisible);
-  outputWindow->window->setVisibility(gui::Visibility::Invisible);
   logWindowController->hide();
 }
 

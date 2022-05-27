@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "OutputWindow.h"
 #include <pf_glfw/Window.h>
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/LogPanel.h>
@@ -28,7 +27,6 @@ struct UI {
 
   // clang-format off
   ui::ig::BackgroundDockingArea *dockingArea;
-  std::unique_ptr<OutputWindow> outputWindow;
 
   std::unique_ptr<LogWindowController> logWindowController;
   std::unique_ptr<ShaderVariablesController> shaderVariablesController;

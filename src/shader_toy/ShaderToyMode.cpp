@@ -11,6 +11,7 @@
 #include <future>
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Include/glslang_c_interface.h>
+#include <pf_common/Visitor.h>
 #include <pf_imgui/elements/Image.h>
 #include <pf_mainloop/MainLoop.h>
 #include <range/v3/range/conversion.hpp>
@@ -20,7 +21,6 @@
 #include <utils/GlslToSpirv.h>
 #include <utils/opengl_utils.h>
 #include <utils/profiling.h>
-#include <pf_common/Visitor.h>
 
 #include "log/UISink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
@@ -55,25 +55,26 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
 
   getLogger().sinks().emplace_back(ui->logWindowController->createSpdlogSink());
 
-  const auto updateTextureSizeFromUI = [this](auto) {
-    const TextureSize textureSize{
-        TextureWidth{static_cast<std::uint32_t>(ui->outputWindow->widthCombobox->getValue())},
-        TextureHeight{static_cast<std::uint32_t>(ui->outputWindow->heightCombobox->getValue())}, TextureDepth{0u}};
+  const auto updateTextureSize = [this](auto resolution) {
+    const TextureSize textureSize{TextureWidth{resolution.first}, TextureHeight{resolution.second}, TextureDepth{1u}};
     initializeTexture(textureSize);
   };
 
-  ui->outputWindow->widthCombobox->addValueListener(updateTextureSizeFromUI);
-  ui->outputWindow->heightCombobox->addValueListener(updateTextureSizeFromUI, true);
+  ui->outputController->getModel()->resolution.addValueListener(updateTextureSize);
 
-  // TODO: ui->textInputWindow->compileButton->addClickListener([&] { compileShader(ui->textInputWindow->editor->getText()); });
-  // TODO: ui->textInputWindow->restartButton->addClickListener([&] {
-  // TODO:   getLogger().info("Restarting time");
-  // TODO:   totalTime = std::chrono::nanoseconds{0};
-  // TODO: });
-  // TODO: ui->textInputWindow->timePausedCheckbox->bind(timeCounterPaused);
-  // TODO:
-  // TODO: autoCompileShader = ui->textInputWindow->autoCompileCheckbox->getValue();
-  // TODO: ui->textInputWindow->autoCompileCheckbox->bind(autoCompileShader);
+  ui->glslEditorController->getModel()->autoCompile.addValueListener(
+      [this](auto autoCompile) { autoCompileShader = autoCompile; });
+  ui->glslEditorController->getModel()->timePaused.addValueListener(
+      [this](auto timePaused) { timeCounterPaused = timePaused; });
+  ui->glslEditorController->getModel()->compilationRequested.addEventListener([this] {
+    // TODO
+  });
+  ui->glslEditorController->getModel()->restartRequested.addEventListener([this] {
+    getLogger().info("Restarting time");
+    totalTime = std::chrono::nanoseconds{0};
+  });
+  ui->glslEditorController->getModel()->copyCodeToClipboardRequested.addEventListener(
+      [this, window] { window->setClipboardContents(*ui->glslEditorController->getModel()->code); });
 
   const auto markShaderChanged = [this](auto...) {
     isShaderChanged = true;
@@ -121,19 +122,24 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
         }
       });
 
-  // TODO: ui->textInputWindow->editor->addTextListener(markShaderChanged);
-  // TODO:
-  // TODO: ui->textInputWindow->codeToClipboardButton->addClickListener(
-  // TODO:     [this] { ImGui::SetClipboardText(currentShaderSrc.c_str()); });
+  ui->glslEditorController->getModel()->code.addValueListener(markShaderChanged);
+  if (const auto iter = config.find("editor"); iter != config.end()) {
+    if (const auto editorTbl = iter->second.as_table(); editorTbl != nullptr) {
+      ui->glslEditorController->getModel()->setFromToml(*editorTbl);
+    }
+  }
+  if (const auto iter = config.find("output"); iter != config.end()) {
+    if (const auto outputTbl = iter->second.as_table(); outputTbl != nullptr) {
+      ui->outputController->getModel()->setFromToml(*outputTbl);
+    }
+  }
 
-  ui->outputWindow->image->addMousePositionListener([&](auto pos) {
-    const auto size = ui->outputWindow->image->getSize();
-    const auto nX = pos.x / static_cast<float>(size.width);
-    const auto nY = pos.y / static_cast<float>(size.height);
-    const auto result = glm::vec2{getTextureSize()} * glm::vec2{nX, nY};
-    mousePos.x = result.x;
-    mousePos.y = result.y;
+  ui->outputController->getModel()->mousePositionOnImageUV.addValueListener([this](auto uvPos) {
+    mousePos.x = uvPos.x();
+    mousePos.y = uvPos.y();
   });
+
+  updateTextureSize(*ui->outputController->getModel()->resolution);
 
   ui->hide();
 }
@@ -204,7 +210,7 @@ void ShaderToyMode::initializeTexture(TextureSize textureSize) {
   outputTexture->setParam(TextureMinificationFilter::Linear);
   outputTexture->setParam(TextureMagnificationFilter::Linear);
 
-  ui->outputWindow->image->setTextureId(getImTextureID(*outputTexture));
+  *ui->outputController->getModel()->texture.modify() = outputTexture;
 }
 
 glm::uvec2 ShaderToyMode::getTextureSize() const {
@@ -212,21 +218,21 @@ glm::uvec2 ShaderToyMode::getTextureSize() const {
 }
 
 void ShaderToyMode::checkShaderStatus() {
-  // TODO: if (autoCompileShader && isShaderChanged
-  // TODO:     && (std::chrono::steady_clock::now() - lastShaderChangeTime) > std::chrono::milliseconds{
-  // TODO:            static_cast<int>(ui->textInputWindow->autoCompileFrequencyDrag->getValue() * 1000.f)}) {
-  // TODO:   if (previousShaderCompilationDone) {
-  // TODO:     getLogger().trace("Auto recompiling shader");
-  // TODO:     compileShader(ui->textInputWindow->editor->getText());
-  // TODO:     isShaderChanged = false;
-  // TODO:   }
-  // TODO: }
+  if (autoCompileShader && isShaderChanged
+      && (std::chrono::steady_clock::now() - lastShaderChangeTime)
+          > *ui->glslEditorController->getModel()->autoCompilePeriod) {
+    if (previousShaderCompilationDone) {
+      getLogger().trace("Auto recompiling shader");
+      compileShader(*ui->glslEditorController->getModel()->code);
+      isShaderChanged = false;
+    }
+  }
 }
 
 void ShaderToyMode::compileShader([[maybe_unused]] const std::string &shaderCode) {
-  // TODO: ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Visible);
-  // TODO: getLogger().trace("Compiling shader");
-  // TODO: compileShader_impl(shaderCode);
+  *ui->glslEditorController->getModel()->compiling.modify() = true;
+  getLogger().trace("Compiling shader");
+  compileShader_impl(shaderCode);
 }
 
 // TODO: clean this up
@@ -239,13 +245,14 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
       .addEnum<MouseState>()
       .addUniform<MouseState>("mouseState")
       .addUniform<glm::vec3>("mousePos")
+      .addUniform<glm::vec3>("mousePosNormalized")
       .addImage2D("rgba32f", "outImage")
       .setLocalGroupSize(COMPUTE_LOCAL_GROUP_SIZE);
   // clang-format on
 
   std::ranges::for_each(ui->shaderVariablesController->getModel()->getVariables(),
                         [&](const std::shared_ptr<ShaderVariableModel> &variable) {
-                          std::string_view typeName = "";
+                          std::string_view typeName{};
                           std::visit(
                               [&]<typename T>(T) {
                                 if constexpr (std::same_as<T, ui::ig::Color>) {
@@ -286,12 +293,12 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
     getLogger().debug("Compilation took {}",
                       std::chrono::duration_cast<std::chrono::milliseconds>(compilationDuration));
     pf::MainLoop::Get()->enqueue([spirvResult = std::move(spirvResult), source = std::move(source), this]() mutable {
-      // TODO: auto onDone = RAII{[this] {
-      // TODO:   previousShaderCompilationDone = true;
-      // TODO:   ui->textInputWindow->compilationSpinner->setVisibility(ui::ig::Visibility::Invisible);
-      // TODO: }};
-      // TODO: ui->textInputWindow->editor->clearWarningMarkers();
-      // TODO: ui->textInputWindow->editor->clearErrorMarkers();
+      auto onDone = RAII{[this] {
+        previousShaderCompilationDone = true;
+        *ui->glslEditorController->getModel()->compiling.modify() = false;
+      }};
+      ui->glslEditorController->clearWarningMarkers();
+      ui->glslEditorController->clearErrorMarkers();
       if (spirvResult.has_value()) {
         auto shader = std::make_shared<OpenGlShader>();
         const auto shaderCreateResult = shader->create(spirvResult.value(), "main");
@@ -319,14 +326,14 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
         for (SpirvErrorRecord rec : errors) {
           using enum SpirvErrorRecord::Type;
           if (!rec.line.has_value()) { continue; }
-          // TODO: const auto errMessage = fmt::format("{}: {}", rec.error, rec.errorDesc);
-          // TODO: const auto marker =
-          // TODO:     ui::ig::TextEditorMarker{static_cast<uint32_t>(shaderLineMapping(rec.line.value())), errMessage};
-          // TODO: getLogger().error("{}", errMessage);
-          // TODO: switch (rec.type) {
-          // TODO:   case Warning: ui->textInputWindow->editor->addWarningMarker(marker); break;
-          // TODO:   case Error: ui->textInputWindow->editor->addErrorMarker(marker); break;
-          // TODO: }
+          const auto errMessage = fmt::format("{}: {}", rec.error, rec.errorDesc);
+          const auto marker =
+              ui::ig::TextEditorMarker{static_cast<uint32_t>(shaderLineMapping(rec.line.value())), errMessage};
+          getLogger().error("{}", errMessage);
+          switch (rec.type) {
+            case Warning: ui->glslEditorController->addWarningMarker(marker); break;
+            case Error: ui->glslEditorController->addErrorMarker(marker); break;
+          }
         }
       }
     });
@@ -334,7 +341,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
 }
 
 MouseState ShaderToyMode::getMouseState() const {
-  if (ui->outputWindow->image->isHovered()) {
+  if (*ui->outputController->getModel()->textureHovered) {
     if (glfwWindow->getLastMouseButtonState(pf::glfw::MouseButton::Left) == pf::glfw::ButtonState::Down) {
       return MouseState::LeftDown;
     } else if (glfwWindow->getLastMouseButtonState(pf::glfw::MouseButton::Right) == pf::glfw::ButtonState::Down) {
@@ -350,6 +357,10 @@ void ShaderToyMode::setUniforms(float timeFloat, float timeDeltaFloat, MouseStat
   ignoredResult = mainProgram->setUniform("frameNum", frameCounter);
   ignoredResult = mainProgram->setUniform("mouseState", static_cast<int>(mouseState));
   ignoredResult = mainProgram->setUniform("mousePos", glm::vec3{mousePos, 0.f});
+  ignoredResult =
+      mainProgram->setUniform("mousePosNormalized",
+                              glm::vec3{mousePos.x * static_cast<float>(outputTexture->getSize().width.get()),
+                                        mousePos.y * static_cast<float>(outputTexture->getSize().height.get()), 0.f});
 
   std::ranges::for_each(ui->shaderVariablesController->getModel()->getVariables(), [&](const auto &variable) {
     std::visit(
@@ -381,10 +392,10 @@ void ShaderToyMode::setBindings() {
 }
 
 void ShaderToyMode::updateUI() {
-  ui->outputWindow->fpsAveragePlot->addValue(fpsCounter.averageFPS());
+  ui->outputController->setFps(fpsForUI, fpsCounter.averageFPS());
   if (std::chrono::steady_clock::now() - lastFPSVisualUpdate > FPSVisualUpdateFrequency) {
     lastFPSVisualUpdate = std::chrono::steady_clock::now();
-    ui->outputWindow->fpsText->setText("FPS: {}", fpsCounter.averageFPS());
+    fpsForUI = fpsCounter.averageFPS();
   }
 }
 
@@ -393,6 +404,10 @@ void ShaderToyMode::updateConfig() {
   config.insert_or_assign("shader_variables", std::move(shaderVarsToml));
   auto imagesToml = ui->imageAssetsController->getModel()->toToml();
   config.insert_or_assign("images", std::move(imagesToml));
+  auto glslEditorToml = ui->glslEditorController->getModel()->toToml();
+  config.insert_or_assign("editor", std::move(glslEditorToml));
+  auto outputToml = ui->outputController->getModel()->toToml();
+  config.insert_or_assign("output", std::move(outputToml));
 }
 
 }  // namespace pf::shader_toy
