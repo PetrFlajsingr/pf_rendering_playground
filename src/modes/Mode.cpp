@@ -5,6 +5,7 @@
 #include "Mode.h"
 
 #include "spdlog/spdlog.h"
+#include <assert.hpp>
 #include <utility>
 
 namespace pf {
@@ -19,9 +20,13 @@ ModeState Mode::getState() const { return state; }
 void Mode::initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                       const std::shared_ptr<glfw::Window> &window, toml::table modeConfig,
                       std::shared_ptr<ThreadPool> workerThreads) {
+  VERIFY(imguiInterface != nullptr);
+  VERIFY(window != nullptr);
+  VERIFY(workerThreads != nullptr);
   config = std::move(modeConfig);
 
   auto sinks = createLoggerSinks();
+  VERIFY(std::ranges::all_of(sinks, [](const auto sink) { return sink != nullptr; }));
   logger = std::make_shared<spdlog::logger>(getName(), sinks.begin(), sinks.end());
   spdlog::register_logger(logger);
   logger->set_level(spdlog::level::trace);
@@ -57,8 +62,6 @@ void Mode::deinitialize() {
 
 spdlog::logger &Mode::getLogger() const { return *logger; }
 
-const std::shared_ptr<spdlog::logger> &Mode::getLoggerShared() {
-  return logger;
-}
+const std::shared_ptr<spdlog::logger> &Mode::getLoggerShared() { return logger; }
 
 }  // namespace pf

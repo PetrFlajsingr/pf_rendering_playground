@@ -13,7 +13,7 @@
 #include <vector>
 
 namespace pf::shader_toy {
-
+// TODO: rewrite this :)
 struct UniformInfo {
   std::string type;
   std::string varName;

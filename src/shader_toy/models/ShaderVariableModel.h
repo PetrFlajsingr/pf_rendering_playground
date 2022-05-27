@@ -15,7 +15,7 @@
 #include <range/v3/view/transform.hpp>
 
 namespace pf {
-// TODO: change this so it can't be changed later (value type)
+// TODO: change this so it can't be changed later (value type) - maybe wrap it in asserts somehow
 class ShaderVariableModel : public SavableModel {
  public:
   ShaderVariableModel(std::string_view varName, std::variant<PF_GLSL_TYPES, ui::ig::Color> val);

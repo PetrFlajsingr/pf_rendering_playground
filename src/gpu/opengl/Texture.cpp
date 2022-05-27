@@ -3,6 +3,7 @@
 //
 
 #include "Texture.h"
+#include <assert.hpp>
 
 namespace pf {
 
@@ -123,7 +124,7 @@ constexpr GLint OpenGlTexture::FormatToOpenGLConstant(TextureFormat format) {
     case Depth24_Stencil8: return GL_DEPTH24_STENCIL8;
     case Depth32F_Stencil8: return GL_DEPTH32F_STENCIL8;
   }
-  assert(false && "this can't happen");
+  VERIFY(false, "Missing implementation for enum in switch");
   return {};
 }
 
@@ -138,7 +139,7 @@ constexpr GLenum OpenGlTexture::TargetToOpenGLConstant(TextureTarget target) {
     case Buffer: return GL_TEXTURE_BUFFER;
     case _2DMultisample: return GL_TEXTURE_2D_MULTISAMPLE;
   }
-  assert(false && "this can't happen");
+  VERIFY(false, "Missing implementation for enum in switch");
   return {};
 }
 
@@ -151,7 +152,7 @@ constexpr GLenum OpenGlTexture::MinifyingFilterToGlConstant(TextureMinificationF
     case NearestMipmapLinear: return GL_NEAREST_MIPMAP_LINEAR;
     case LinearMipmapLinear: return GL_LINEAR_MIPMAP_LINEAR;
   }
-  assert(false && "this can't happen");
+  VERIFY(false, "Missing implementation for enum in switch");
   return {};
 }
 
@@ -161,7 +162,7 @@ constexpr GLenum OpenGlTexture::MagnifyingFilterToGlConstant(TextureMagnificatio
     case Nearest: return GL_NEAREST;
     case Linear: return GL_LINEAR;
   }
-  assert(false && "this can't happen");
+  VERIFY(false, "Missing implementation for enum in switch");
   return {};
 }
 
@@ -172,7 +173,7 @@ constexpr GLenum OpenGlTexture::ImageTextureUnitAccessToGlConstant(ImageTextureU
     case ReadWrite: return GL_READ_WRITE;
     case WriteOnly: return GL_WRITE_ONLY;
   }
-  assert(false && "this can't happen");
+  VERIFY(false, "Missing implementation for enum in switch");
   return {};
 }
 

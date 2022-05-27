@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <cassert>
 #include <functional>
 #include <glad/glad.h>
 #include <optional>

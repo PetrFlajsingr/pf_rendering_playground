@@ -7,6 +7,7 @@
 #include "shader_toy/ui/dialogs/GlslLVariableInputDialog.h"
 #include "shader_toy/utils.h"
 #include "spdlog/spdlog.h"
+#include <assert.hpp>
 
 namespace pf {
 
@@ -20,6 +21,7 @@ ShaderVariablesController::ShaderVariablesController(std::unique_ptr<ShaderVaria
                                                      std::shared_ptr<ShaderVariablesModel> mod,
                                                      std::shared_ptr<gui::ImGuiInterface> imguiInterface)
     : Controller(std::move(uiView), std::move(mod)), interface(std::move(imguiInterface)) {
+  VERIFY(interface != nullptr);
   view->addButton->addClickListener(std::bind_front(&ShaderVariablesController::showAddVariableDialog, this));
   // TODO: initial setup from passed model
 

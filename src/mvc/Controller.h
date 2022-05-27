@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "View.h"
 #include "Model.h"
+#include "View.h"
 #include "reactive.h"
 #include <assert.hpp>
 
-namespace pf{
+namespace pf {
 
 template<std::derived_from<UIViewBase> UIView, std::derived_from<Model> Model>
 class Controller {
@@ -25,15 +25,13 @@ class Controller {
   [[nodiscard]] const UIView &getView() const { return *view; }
 
  protected:
-  template<typename ...Args>
+  template<typename... Args>
   using Event = ClassEvent<Controller, Args...>;
 
-  void notifyEvent(auto &event) {
-    event.notify();
-  }
+  void notifyEvent(auto &event) { event.notify(); }
 
   std::unique_ptr<UIView> view;
   std::shared_ptr<Model> model;
 };
 
-}
+}  // namespace pf

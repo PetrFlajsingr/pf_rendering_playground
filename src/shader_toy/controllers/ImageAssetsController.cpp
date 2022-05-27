@@ -10,6 +10,7 @@
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/Spinner.h>
 #include <pf_mainloop/MainLoop.h>
+#include <assert.hpp>
 
 namespace pf {
 namespace gui = ui::ig;
@@ -17,9 +18,11 @@ namespace gui = ui::ig;
 ImageAssetsController::ImageAssetsController(std::unique_ptr<ImageAssetsView> uiView,
                                              std::shared_ptr<UserImageAssetsModel> mod,
                                              std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface,
-                                             std::shared_ptr<ImageLoader> imageLoader)
+                                             std::shared_ptr<ImageLoader> imgLoader)
     : Controller(std::move(uiView), std::move(mod)), interface(std::move(imguiInterface)),
-      imageLoader(std::move(imageLoader)) {
+      imageLoader(std::move(imgLoader)) {
+  VERIFY(interface != nullptr);
+  VERIFY(imageLoader != nullptr);
   view->addImageButton->addClickListener(std::bind_front(&ImageAssetsController::showAddImageDialog, this));
 
   view->searchInputText->addValueListener(std::bind_front(&ImageAssetsController::filterImagesByName, this));

@@ -34,7 +34,7 @@ void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei
 namespace pf::shader_toy {
 
 ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{std::move(resourcesPath)} {
- // glEnable              ( GL_DEBUG_OUTPUT );
+  // glEnable              ( GL_DEBUG_OUTPUT );
   glDebugMessageCallback(debugOpengl, nullptr);
 }
 
@@ -71,9 +71,8 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   ui->glslEditorController->getModel()->timePaused.addValueListener(
       [this](auto timePaused) { timeCounterPaused = timePaused; });
   timeCounterPaused = *ui->glslEditorController->getModel()->timePaused;
-  ui->glslEditorController->getModel()->compilationRequested.addEventListener([this] {
-    compileShader(*ui->glslEditorController->getModel()->code);
-  });
+  ui->glslEditorController->getModel()->compilationRequested.addEventListener(
+      [this] { compileShader(*ui->glslEditorController->getModel()->code); });
   ui->glslEditorController->getModel()->restartRequested.addEventListener([this] {
     getLogger().info("Restarting time");
     totalTime = std::chrono::nanoseconds{0};
@@ -363,11 +362,11 @@ void ShaderToyMode::setUniforms(float timeFloat, float timeDeltaFloat, MouseStat
   ignoredResult = mainProgram->setUniform("timeDelta", timeDeltaFloat);
   ignoredResult = mainProgram->setUniform("frameNum", frameCounter);
   ignoredResult = mainProgram->setUniform("mouseState", static_cast<int>(mouseState));
-  ignoredResult = mainProgram->setUniform("mousePos", glm::vec3{mousePos, 0.f});
   ignoredResult =
-      mainProgram->setUniform("mousePosNormalized",
+      mainProgram->setUniform("mousePos",
                               glm::vec3{mousePos.x * static_cast<float>(outputTexture->getSize().width.get()),
                                         mousePos.y * static_cast<float>(outputTexture->getSize().height.get()), 0.f});
+  ignoredResult = mainProgram->setUniform("mousePosNormalized", glm::vec3{mousePos, 0.f});
 
   std::ranges::for_each(ui->shaderVariablesController->getModel()->getVariables(), [&](const auto &variable) {
     std::visit(

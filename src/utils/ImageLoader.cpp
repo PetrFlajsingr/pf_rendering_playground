@@ -18,7 +18,9 @@
 #include <range/v3/view/transform.hpp>
 
 namespace pf {
-ImageLoader::ImageLoader(std::shared_ptr<ThreadPool> threadPool) : threadPool(std::move(threadPool)) {}
+ImageLoader::ImageLoader(std::shared_ptr<ThreadPool> threadPool) : threadPool(std::move(threadPool)) {
+  VERIFY(this->threadPool != nullptr);
+}
 
 void ImageLoader::loadImageAsync(const std::filesystem::path &imagePath,
                                  std::function<void(tl::expected<ImageData, std::string>)> onLoadDone) {
@@ -106,9 +108,7 @@ tl::expected<ImageData, std::string> ImageLoader::convertImageChannels(ImageData
               | ranges::views::cache1 | ranges::views::join;
           auto init = std::chrono::steady_clock::now();
           auto iter = rgbaView.begin();
-          for (std::size_t i = 0; i < result.size(); ++i) {
-            result[i] = *iter++;
-          }
+          for (std::size_t i = 0; i < result.size(); ++i) { result[i] = *iter++; }
           auto end = std::chrono::steady_clock::now();
           fmt::print("Views init took {}\n", (init - start));
           fmt::print("Copy loop took {}\n", (end - init));

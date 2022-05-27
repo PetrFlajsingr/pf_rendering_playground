@@ -3,6 +3,7 @@
 //
 
 #include "Shader.h"
+#include <assert.hpp>
 
 namespace pf {
 
@@ -34,7 +35,7 @@ constexpr GLenum OpenGlShader::ShaderTypeToOpenGlConstant(ShaderType shaderType)
     case Geometry: return GL_COMPUTE_SHADER;
     case Fragment: return GL_FRAGMENT_SHADER;
   }
-  assert(false && "can't reach here for now");
+  VERIFY(false, "This should be unreachable, since all shader types should be covered");
   return {};
 }
 

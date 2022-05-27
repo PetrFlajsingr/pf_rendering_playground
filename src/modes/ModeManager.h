@@ -15,7 +15,7 @@ class ModeManager {
  public:
   using Error = std::string;
 
-  ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window,
+  ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> glfwWindow,
               toml::table config, std::size_t workerThreadCount);
   ~ModeManager();
 
@@ -42,7 +42,7 @@ class ModeManager {
 
   [[nodiscard]] std::optional<ModeRecord *> findModeByName(const std::string &name);
 
-  std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface;
+  std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface;
   std::shared_ptr<glfw::Window> window;
   toml::table config;
 

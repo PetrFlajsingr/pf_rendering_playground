@@ -6,6 +6,7 @@
 
 #include "pf_imgui/dialogs/Window.h"
 #include "pf_imgui/interface/Layout.h"
+#include <assert.hpp>
 
 namespace pf {
 
@@ -17,13 +18,12 @@ UIViewBase::~UIViewBase() = default;
 
 class UIViewWindow : public UIViewBase {
  public:
-  explicit inline UIViewWindow(ui::ig::Window *window) : window(window) {}
+  explicit inline UIViewWindow(ui::ig::Window *window) : window(window) { VERIFY(window != nullptr); }
   [[nodiscard]] inline ui::ig::Window &getWindow() { return *window; }
   [[nodiscard]] inline const ui::ig::Window &getWindow() const { return *window; }
 
  protected:
   ui::ig::Window *window;
 };
-
 
 }  // namespace pf

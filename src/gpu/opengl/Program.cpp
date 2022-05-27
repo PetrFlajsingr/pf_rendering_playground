@@ -5,6 +5,7 @@
 #include "Program.h"
 #include "spdlog/spdlog.h"
 #include "utils/opengl_utils.h"
+#include <assert.hpp>
 
 namespace pf {
 
@@ -65,7 +66,7 @@ std::vector<UniformInfo> OpenGlProgram::extractUniforms() {
       result.emplace_back(UniformLocation{static_cast<std::uint32_t>(location)}, shaderValueType.value(),
                           std::move(name), length);
     } else {
-      spdlog::error("Error while extracting uniform infos: 'Type not supported'");
+      DEBUG_ASSERT(false, "Came across unsupported type in shader program");
     }
   }
   return result;
@@ -95,7 +96,7 @@ std::vector<AttributeInfo> OpenGlProgram::extractAttributes() {
       result.emplace_back(AttributeLocation{static_cast<std::uint32_t>(location)}, shaderValueType.value(),
                           std::move(name), length);
     } else {
-      spdlog::error("Error while extracting attribute infos: 'Type not supported'");
+      DEBUG_ASSERT(false, "Came across unsupported type in shader program");
     }
   }
   return result;

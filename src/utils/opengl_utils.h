@@ -8,6 +8,7 @@
 #include "glsl_typenames.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <assert.hpp>
 
 namespace pf {
 
@@ -156,7 +157,7 @@ inline std::variant<PF_SHADER_VALUE_TYPES> getOGLuniform(GLuint programHandle, G
 #undef GET_UNIFORM_VALUE
 #undef GET_UNIFORM_VALUE_GLM
 #undef GET_UNIFORM_VALUE_GLM_MAT
-  assert(false && "This can't happen");
+  VERIFY(false, "Missing implementation for enum switch");
   return {};
 }
 
