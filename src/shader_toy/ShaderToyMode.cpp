@@ -84,9 +84,13 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
     isShaderChanged = true;
     lastShaderChangeTime = std::chrono::steady_clock::now();
   };
+  const auto markShaderChangedOrRecompile = [this, markShaderChanged](auto...) {
+    markShaderChanged();
+    if (!autoCompileShader) { compileShader(*ui->glslEditorController->getModel()->code); }
+  };
 
   ui->shaderVariablesController->getModel()->variableAddedEvent.addEventListener(markShaderChanged);
-  ui->shaderVariablesController->getModel()->variableRemovedEvent.addEventListener(markShaderChanged);
+  ui->shaderVariablesController->getModel()->variableRemovedEvent.addEventListener(markShaderChangedOrRecompile);
   if (const auto iter = config.find("shader_variables"); iter != config.end()) {
     if (const auto varsTbl = iter->second.as_table(); varsTbl != nullptr) {
       ui->shaderVariablesController->getModel()->setFromToml(*varsTbl);
@@ -94,7 +98,7 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   }
 
   ui->imageAssetsController->getModel()->imageAddedEvent.addEventListener(markShaderChanged);
-  ui->imageAssetsController->getModel()->imageRemovedEvent.addEventListener(markShaderChanged);
+  ui->imageAssetsController->getModel()->imageRemovedEvent.addEventListener(markShaderChangedOrRecompile);
   if (const auto iter = config.find("images"); iter != config.end()) {
     if (const auto imagesTbl = iter->second.as_table(); imagesTbl != nullptr) {
       ui->imageAssetsController->getModel()->setFromToml(*imagesTbl);
