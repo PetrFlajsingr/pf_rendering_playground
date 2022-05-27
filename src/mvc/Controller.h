@@ -7,6 +7,7 @@
 #include "View.h"
 #include "Model.h"
 #include "reactive.h"
+#include <assert.hpp>
 
 namespace pf{
 
@@ -14,7 +15,10 @@ template<std::derived_from<UIViewBase> UIView, std::derived_from<Model> Model>
 class Controller {
  public:
   Controller(std::unique_ptr<UIView> uiView, std::shared_ptr<Model> mod)
-      : view(std::move(uiView)), model(std::move(mod)) {}
+      : view(std::move(uiView)), model(std::move(mod)) {
+    VERIFY(view != nullptr);
+    VERIFY(model != nullptr);
+  }
   [[nodiscard]] const std::shared_ptr<Model> &getModel() { return model; }
   [[nodiscard]] std::shared_ptr<const Model> getModel() const { return model; }
   [[nodiscard]] UIView &getView() { return *view; }

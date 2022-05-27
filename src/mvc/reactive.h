@@ -32,6 +32,34 @@ class DefaultChangeDetector {
   T initialValue;
 };
 
+// FIXME: temporary concept, move to pf_common
+template<typename T>
+concept PointerLike = std::pointer_traits<T>::element_type
+    && requires(T t) {
+         { *t } -> std::convertible_to<typename std::pointer_traits<T>::element_type>;
+         { t.operator->() } -> std::same_as<std::add_pointer<typename std::pointer_traits<T>::element_type>>;
+       };
+
+template<PointerLike T>
+  requires(
+      std::equality_comparable<
+          T> && std::equality_comparable_with<T, std::nullptr_t> && std::equality_comparable<typename std::pointer_traits<T>::element_type>)
+class PointerAndValueChangeDetector {
+ public:
+  explicit PointerAndValueChangeDetector(T value) : initialValue(std::move(value)) {}
+
+  [[nodiscard]] bool hasValueChanged(const T &newValue) {
+    if (initialValue != newValue) { return true; }
+    if (initialValue != nullptr && newValue != nullptr) {
+      if (*initialValue != *newValue) { return true; }
+    }
+    return false;
+  }
+
+ private:
+  T initialValue;
+};
+
 template<direct_specialization_of<std::vector> T>
 class VectorLengthChangeDetector {
  public:
