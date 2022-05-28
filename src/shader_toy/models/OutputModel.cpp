@@ -49,5 +49,11 @@ void OutputModel::setFromToml(const toml::table &src) {
   }
   *resolution.modify() = newResolution;
 }
+std::string OutputModel::getDebugString() const {
+  return fmt::format("resolution: '{}x{}', texture: '{}', mouse UV pos: '{}x{}', texture hovered: '{}'",
+                     resolution->first, resolution->second,
+                     *texture == nullptr ? std::string{"nullptr"} : (*texture)->getDebugString(),
+                     mousePositionOnImageUV->x(), mousePositionOnImageUV->y(), *textureHovered);
+}
 
 }  // namespace pf

@@ -7,5 +7,8 @@
 #include "mvc/Model.h"
 
 namespace pf {
-class LogModel : public Model {};
+class LogModel : public Model {
+ public:
+  inline std::string getDebugString() const override { return {}; }
+};
 }  // namespace pf

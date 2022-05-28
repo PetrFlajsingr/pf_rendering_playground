@@ -3,6 +3,7 @@
 //
 
 #include "GlslEditorModel.h"
+#include <fmt/chrono.h>
 
 namespace pf {
 
@@ -36,6 +37,13 @@ void GlslEditorModel::setFromToml(const toml::table &src) {
   if (const auto iter = src.find("code"); iter != src.end()) {
     if (const auto codeVal = iter->second.as_string(); codeVal != nullptr) { *code.modify() = codeVal->get(); }
   }
+}
+
+std::string GlslEditorModel::getDebugString() const {
+  return fmt::format("auto compile: '{}', auto compile period: '{}', "
+                     "time paused: '{}', code length: '{}', compiling: '{}'",
+                     *autoCompile, *autoCompilePeriod, *timePaused, code->size(),
+                     *compiling);
 }
 
 }  // namespace pf

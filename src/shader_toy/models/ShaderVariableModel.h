@@ -24,6 +24,8 @@ class ShaderVariableModel : public SavableModel {
 
   [[nodiscard]] toml::table toToml() const override;
   void setFromToml(const toml::table &src) override;
+
+  [[nodiscard]] std::string getDebugString() const override;
 };
 
 class ShaderVariablesModel : public SavableModel {
@@ -52,6 +54,8 @@ class ShaderVariablesModel : public SavableModel {
 
   [[nodiscard]] toml::table toToml() const override;
   void setFromToml(const toml::table &src) override;
+
+  [[nodiscard]] std::string getDebugString() const override;
 
  private:
   ShaderVariableModels variables;

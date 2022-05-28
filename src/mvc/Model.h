@@ -4,11 +4,15 @@
 
 #pragma once
 
+#include "fmt/core.h"
 #include <toml++/toml.h>
 
 namespace pf {
 
-class Model {};
+class Model {
+ public:
+  [[nodiscard]] virtual std::string getDebugString() const = 0;
+};
 
 class SavableModel : public Model {
  public:
@@ -17,3 +21,10 @@ class SavableModel : public Model {
 };
 
 }  // namespace pf
+
+template<std::derived_from<pf::Model> TModel>
+struct fmt::formatter<TModel> : fmt::formatter<std::string> {
+  auto format(const TModel &object, fmt::format_context &ctx) {
+    return fmt::format_to(ctx.out(), "{}", object.getDebugString());
+  }
+};

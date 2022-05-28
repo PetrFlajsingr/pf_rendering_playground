@@ -19,6 +19,10 @@ void TextureAssetModel::setFromToml(const toml::table &src) {
     if (const auto pathStr = iter->second.as_string(); pathStr != nullptr) { *imagePath.modify() = pathStr->get(); }
   }
 }
+std::string TextureAssetModel::getDebugString() const {
+  return fmt::format("name: '{}', image path: '{}', texture: '{}'", *name, imagePath->string(),
+                     *texture == nullptr ? std::string{"nullptr"} : (*texture)->getDebugString());
+}
 
 const UserImageAssetsModel::TextureModels &UserImageAssetsModel::getTextures() const { return textures; }
 
@@ -66,4 +70,9 @@ void UserImageAssetsModel::setFromToml(const toml::table &src) {
     }
   }
 }
+
+std::string UserImageAssetsModel::getDebugString() const {
+  return fmt::format("textures count: '{}'", textures.size());
+}
+
 }  // namespace pf

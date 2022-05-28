@@ -34,6 +34,8 @@ class GlslEditorModel : public SavableModel {
 
   [[nodiscard]] toml::table toToml() const override;
   void setFromToml(const toml::table &src) override;
+
+  [[nodiscard]] std::string getDebugString() const override;
 };
 
 }  // namespace pf

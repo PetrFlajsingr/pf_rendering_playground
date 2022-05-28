@@ -35,8 +35,11 @@ class OutputModel : public SavableModel {
   Observable<std::shared_ptr<Texture>> texture;
   Observable<NormalizedPosition> mousePositionOnImageUV{};
   Observable<bool> textureHovered{};
+
   [[nodiscard]] toml::table toToml() const override;
   void setFromToml(const toml::table &src) override;
+
+  [[nodiscard]] std::string getDebugString() const override;
 };
 
 }  // namespace pf

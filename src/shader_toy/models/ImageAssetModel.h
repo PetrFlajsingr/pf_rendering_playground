@@ -23,6 +23,8 @@ class TextureAssetModel : public SavableModel {
 
   [[nodiscard]] toml::table toToml() const override;
   void setFromToml(const toml::table &src) override;
+
+  [[nodiscard]] std::string getDebugString() const override;
 };
 
 class UserImageAssetsModel : public SavableModel {
@@ -47,6 +49,8 @@ class UserImageAssetsModel : public SavableModel {
 
   [[nodiscard]] toml::table toToml() const override;
   void setFromToml(const toml::table &src) override;
+
+  [[nodiscard]] std::string getDebugString() const override;
 
  private:
   TextureModels textures;

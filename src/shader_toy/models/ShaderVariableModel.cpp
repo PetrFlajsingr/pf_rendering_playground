@@ -85,6 +85,10 @@ void ShaderVariableModel::setFromToml(const toml::table &src) {
     }
   }
 }
+std::string ShaderVariableModel::getDebugString() const {
+  // TODO: util function to convert variant of glsl types to string
+  return fmt::format("name: '{}', value: '{}'", *name, "<NOT IMPLEMENTED>");
+}
 
 const ShaderVariablesModel::ShaderVariableModels &ShaderVariablesModel::getVariables() const { return variables; }
 
@@ -126,6 +130,10 @@ void ShaderVariablesModel::setFromToml(const toml::table &src) {
       });
     }
   }
+}
+
+std::string ShaderVariablesModel::getDebugString() const {
+  return fmt::format("variables count: '{}'", variables.size());
 }
 
 }  // namespace pf
