@@ -89,6 +89,7 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
     if (!autoCompileShader) { compileShader(*ui->glslEditorController->getModel()->code); }
   };
 
+  // TODO: set disallowed names in images
   ui->shaderVariablesController->getModel()->variableAddedEvent.addEventListener(markShaderChanged);
   ui->shaderVariablesController->getModel()->variableRemovedEvent.addEventListener(markShaderChangedOrRecompile);
   if (const auto iter = config.find("shader_variables"); iter != config.end()) {
@@ -97,6 +98,7 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
     }
   }
 
+  // TODO: set disallowed names in variables
   ui->imageAssetsController->getModel()->imageAddedEvent.addEventListener(markShaderChanged);
   ui->imageAssetsController->getModel()->imageRemovedEvent.addEventListener(markShaderChangedOrRecompile);
   if (const auto iter = config.find("images"); iter != config.end()) {

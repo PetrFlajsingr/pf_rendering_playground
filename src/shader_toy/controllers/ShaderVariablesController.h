@@ -7,6 +7,7 @@
 #include "mvc/Controller.h"
 #include "../views/ShaderVariablesWindowView.h"
 #include "../models/ShaderVariableModel.h"
+#include <unordered_set>
 
 namespace pf {
 
@@ -18,15 +19,13 @@ class ShaderVariablesController : public Controller<ShaderVariablesWindowView, S
   void filterVariablesByName(std::string_view searchStr);
 
   void showAddVariableDialog();
-  // TODO: this is unused for now, gotta add image names
-  void clearDisallowedNames();
-  void addDisallowedName(std::string name);
+
+  std::unordered_set<std::string> disallowedNames;
 
  private:
   void createUIForShaderVariableModel(const std::shared_ptr<ShaderVariableModel> &varModel);
 
   std::shared_ptr<ui::ig::ImGuiInterface> interface;
-  std::vector<std::string> disallowedNames;
 
   std::unordered_map<std::shared_ptr<ShaderVariableModel>, std::vector<Subscription>> subscriptions;
 };

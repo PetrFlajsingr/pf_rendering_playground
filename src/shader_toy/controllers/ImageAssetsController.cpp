@@ -7,10 +7,10 @@
 #include "pf_imgui/dialogs/FileDialog.h"
 #include "shader_toy/utils.h"
 #include "spdlog/spdlog.h"
+#include <assert.hpp>
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/Spinner.h>
 #include <pf_mainloop/MainLoop.h>
-#include <assert.hpp>
 
 namespace pf {
 namespace gui = ui::ig;
@@ -50,10 +50,6 @@ void ImageAssetsController::filterImagesByName(std::string_view searchStr) {
   });
 }
 
-void ImageAssetsController::clearDisallowedNames() { disallowedNames.clear(); }
-
-void ImageAssetsController::addDisallowedName(std::string name) { disallowedNames.emplace_back(std::move(name)); }
-
 void ImageAssetsController::showAddImageDialog() {
   const auto varNameValidator = [this](std::string_view varName) -> std::optional<std::string> {
     if (!isValidGlslIdentifier(varName)) { return "Invalid variable name"; }
@@ -64,9 +60,7 @@ void ImageAssetsController::showAddImageDialog() {
         return "Name is already in use";
       }
 
-      if (std::ranges::find(disallowedNames, std::string{varName}) != disallowedNames.end()) {
-        return "Name is already in use";
-      }
+      if (disallowedNames.contains(std::string{varName})) { return "Name is already in use"; }
     }
     return std::nullopt;
   };
@@ -77,6 +71,7 @@ void ImageAssetsController::showAddImageDialog() {
       .label("Select an image")
       .extension({{"jpg", "png", "bmp"}, "Image file", ui::ig::Color::Red})
       .onSelect([&, varNameValidator](const std::vector<std::filesystem::path> &selected) {
+        VERIFY(!selected.empty());
         const auto &imgFile = selected[0];
 
         auto &waitDlg = interface->getDialogManager().createDialog("img_wait_dlg", "Loading image");

@@ -48,24 +48,24 @@ inline auto getGlslTypeNames() {
 
 constexpr auto getTypeForGlslName(std::string_view typeName, auto &&visitor) {
   if (typeName == "bool") { visitor.template operator()<bool>(); }
-  if (typeName == "float") { visitor.template operator()<float>(); }
-  if (typeName == "uint") { visitor.template operator()<unsigned int>(); }
-  if (typeName == "int") { visitor.template operator()<int>(); }
-  if (typeName == "vec2") { visitor.template operator()<glm::vec2>(); }
-  if (typeName == "vec3") { visitor.template operator()<glm::vec3>(); }
-  if (typeName == "vec4") { visitor.template operator()<glm::vec4>(); }
-  if (typeName == "ivec2") { visitor.template operator()<glm::ivec2>(); }
-  if (typeName == "ivec3") { visitor.template operator()<glm::ivec3>(); }
-  if (typeName == "ivec4") { visitor.template operator()<glm::ivec4>(); }
-  if (typeName == "bvec2") { visitor.template operator()<glm::bvec2>(); }
-  if (typeName == "bvec3") { visitor.template operator()<glm::bvec3>(); }
-  if (typeName == "bvec4") { visitor.template operator()<glm::bvec4>(); }
-  if (typeName == "uvec2") { visitor.template operator()<glm::uvec2>(); }
-  if (typeName == "uvec3") { visitor.template operator()<glm::uvec3>(); }
-  if (typeName == "uvec4") { visitor.template operator()<glm::uvec4>(); }
-  if (typeName == "mat2") { visitor.template operator()<glm::mat2>(); }
-  if (typeName == "mat3") { visitor.template operator()<glm::mat3>(); }
-  if (typeName == "mat4") { visitor.template operator()<glm::mat4>(); }
+  else if (typeName == "float") { visitor.template operator()<float>(); }
+  else if (typeName == "uint") { visitor.template operator()<unsigned int>(); }
+  else if (typeName == "int") { visitor.template operator()<int>(); }
+  else if (typeName == "vec2") { visitor.template operator()<glm::vec2>(); }
+  else if (typeName == "vec3") { visitor.template operator()<glm::vec3>(); }
+  else if (typeName == "vec4") { visitor.template operator()<glm::vec4>(); }
+  else if (typeName == "ivec2") { visitor.template operator()<glm::ivec2>(); }
+  else if (typeName == "ivec3") { visitor.template operator()<glm::ivec3>(); }
+  else if (typeName == "ivec4") { visitor.template operator()<glm::ivec4>(); }
+  else if (typeName == "bvec2") { visitor.template operator()<glm::bvec2>(); }
+  else if (typeName == "bvec3") { visitor.template operator()<glm::bvec3>(); }
+  else if (typeName == "bvec4") { visitor.template operator()<glm::bvec4>(); }
+  else if (typeName == "uvec2") { visitor.template operator()<glm::uvec2>(); }
+  else if (typeName == "uvec3") { visitor.template operator()<glm::uvec3>(); }
+  else if (typeName == "uvec4") { visitor.template operator()<glm::uvec4>(); }
+  else if (typeName == "mat2") { visitor.template operator()<glm::mat2>(); }
+  else if (typeName == "mat3") { visitor.template operator()<glm::mat3>(); }
+  else if (typeName == "mat4") { visitor.template operator()<glm::mat4>(); }
 }
 
 

@@ -8,6 +8,7 @@
 #include "../views/ImageAssetsView.h"
 #include "mvc/Controller.h"
 #include "utils/ImageLoader.h"
+#include <unordered_set>
 
 namespace pf {
 // TODO: rename everything related
@@ -19,16 +20,14 @@ class ImageAssetsController : public Controller<ImageAssetsView, UserImageAssets
 
 
   void filterImagesByName(std::string_view searchStr);
-  // TODO: this is unused for now, gotta add variable names
-  void clearDisallowedNames();
-  void addDisallowedName(std::string name);
+
+  std::unordered_set<std::string> disallowedNames;
 
   void showAddImageDialog();
 
  private:
   void createUIForImageModel(const std::shared_ptr<TextureAssetModel> &imgModel);
 
-  std::vector<std::string> disallowedNames;
   std::shared_ptr<ui::ig::ImGuiInterface> interface;
   std::shared_ptr<ImageLoader> imageLoader;
 

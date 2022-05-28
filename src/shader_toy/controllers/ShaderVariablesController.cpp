@@ -23,7 +23,6 @@ ShaderVariablesController::ShaderVariablesController(std::unique_ptr<ShaderVaria
     : Controller(std::move(uiView), std::move(mod)), interface(std::move(imguiInterface)) {
   VERIFY(interface != nullptr);
   view->addButton->addClickListener(std::bind_front(&ShaderVariablesController::showAddVariableDialog, this));
-  // TODO: initial setup from passed model
 
   view->searchTextInput->addValueListener(std::bind_front(&ShaderVariablesController::filterVariablesByName, this));
 
@@ -67,9 +66,7 @@ void ShaderVariablesController::showAddVariableDialog() {
         return "Name is already in use";
       }
 
-      if (std::ranges::find(disallowedNames, std::string{varName}) != disallowedNames.end()) {
-        return "Name is already in use";
-      }
+      if (disallowedNames.contains(std::string{varName})) { return "Name is already in use"; }
     }
     return std::nullopt;
   };
@@ -95,8 +92,7 @@ void ShaderVariablesController::showAddVariableDialog() {
         } else {
           getTypeForGlslName(typeName, [&]<typename T>() {
             if constexpr (isUnsupportedType.operator()<T>()) {
-              assert(false
-                     && "This should never happen");  // this needs to be here due to template instantiation errors
+              DEBUG_ASSERT(false, "This code should be unreachable"); // this needs to be here due to template instantiation errors
             } else if constexpr (std::same_as<T, bool>) {
               model->addVariable(varName, false);
             } else {
@@ -107,10 +103,6 @@ void ShaderVariablesController::showAddVariableDialog() {
       })
       .show();
 }
-
-void ShaderVariablesController::clearDisallowedNames() { disallowedNames.clear(); }
-
-void ShaderVariablesController::addDisallowedName(std::string name) { disallowedNames.emplace_back(std::move(name)); }
 
 void ShaderVariablesController::createUIForShaderVariableModel(const std::shared_ptr<ShaderVariableModel> &varModel) {
   std::visit(
@@ -129,7 +121,7 @@ void ShaderVariablesController::createUIForShaderVariableModel(const std::shared
           subscriptions.emplace(varModel, std::move(subscription));
         };
         if constexpr (isUnsupportedType.operator()<T>()) {
-
+          DEBUG_ASSERT(false, "This code should be unreachable"); // this needs to be here due to template instantiation errors
         } else if constexpr (std::same_as<T, gui::Color>) {
           auto &colorInput = view->addColorInput(*varModel->name, value);
           registerListeners(colorInput);

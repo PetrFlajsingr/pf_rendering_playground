@@ -46,7 +46,8 @@ tl::expected<ImageData, std::string> ImageLoader::convertImageChannels(ImageData
                                   + 0.114 * static_cast<float>(b));
   };
   std::vector<std::byte> res;
-  res.reserve(data.info.size.width.get() * data.info.size.height.get() * requiredChannels.get());
+  const auto resultByteCount = data.info.size.width.get() * data.info.size.height.get() * requiredChannels.get();
+  res.reserve(resultByteCount);
   switch (requiredChannels.get()) {
     case 1: {
       if (data.info.channels.get() == 3) {
@@ -120,6 +121,7 @@ tl::expected<ImageData, std::string> ImageLoader::convertImageChannels(ImageData
     default: return tl::make_unexpected(fmt::format("Unsupported channel count '{}'", requiredChannels.get()));
   }
   data.data = std::move(res);
+  DEBUG_ASSERT(data.data.size() == resultByteCount);
   return data;
 }
 
