@@ -9,7 +9,7 @@ namespace pf {
 
 GlslEditorModel::GlslEditorModel(bool autoCompile, std::chrono::milliseconds autoCompilePeriod, bool timePaused,
                                  std::string code)
-    : autoCompile(autoCompile), autoCompilePeriod(autoCompilePeriod), timePaused(timePaused), code(code) {}
+    : autoCompile(autoCompile), autoCompilePeriod(autoCompilePeriod), timePaused(timePaused), code(std::move(code)) {}
 
 toml::table GlslEditorModel::toToml() const {
   return toml::table{{"autoCompile", *autoCompile},

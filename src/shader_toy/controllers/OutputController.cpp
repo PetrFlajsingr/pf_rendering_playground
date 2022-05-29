@@ -33,7 +33,7 @@ OutputController::OutputController(std::unique_ptr<OutputView> uiView, std::shar
     if (newTexture != nullptr) {
       view->image->setTextureId(getImTextureID(*newTexture));
     } else {
-      view->image->setTextureId(0);
+      view->image->setTextureId(static_cast<ImTextureID>(0));
     }
   });
 

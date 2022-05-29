@@ -188,7 +188,7 @@ void OpenGlProgram::setUniformImpl(UniformLocation location, std::variant<PF_SHA
 void OpenGlProgram::dispatchImpl(std::uint32_t x, std::uint32_t y, std::uint32_t z) { glDispatchCompute(x, y, z); }
 
 std::variant<PF_SHADER_VALUE_TYPES> OpenGlProgram::getUniformValueImpl(const UniformInfo &info) {
-  return getOGLuniform(*handle, info.location.get(), info.type);
+  return getOGLuniform(*handle, static_cast<GLint>(info.location.get()), info.type);
 }
 
 }  // namespace pf
