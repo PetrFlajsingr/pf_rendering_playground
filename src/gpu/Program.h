@@ -56,7 +56,7 @@ class Program : public GpuObject {
 
   explicit Program(RangeOf<std::shared_ptr<Shader>> auto &&programShaders)
       : shaders(std::ranges::begin(programShaders), std::ranges::end(programShaders)) {}
-  explicit Program(std::shared_ptr<Shader> shader) : shaders{shader} {}
+  explicit Program(std::shared_ptr<Shader> shader) : shaders{std::move(shader)} {}
 
   [[nodiscard]] GpuOperationResult<ProgramError> create();
 
