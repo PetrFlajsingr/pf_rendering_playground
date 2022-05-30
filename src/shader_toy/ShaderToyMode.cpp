@@ -87,6 +87,7 @@ void ShaderToyMode::deactivate_impl() {
 }
 
 void ShaderToyMode::deinitialize_impl() {
+  // TODO: remove UI from ImGuiInterface here - via view's destructor?
   mainController = nullptr;
   TimeMeasure workerThreadWaitMeasure;
   getLogger().info("Waiting for worker threads");
