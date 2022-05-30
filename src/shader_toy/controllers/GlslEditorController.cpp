@@ -6,6 +6,8 @@
 
 namespace pf {
 
+namespace gui = ui::ig;
+
 GlslEditorController::GlslEditorController(std::unique_ptr<GlslEditorView> uiView, std::shared_ptr<GlslEditorModel> mod)
     : Controller(std::move(uiView), std::move(mod)) {
   view->compileButton->addClickListener([this] { model->compilationRequested.notify(); });
@@ -44,6 +46,7 @@ GlslEditorController::GlslEditorController(std::unique_ptr<GlslEditorView> uiVie
 
   // TODO react to model->compiling with some UI cue
 }
+
 void GlslEditorController::clearWarningMarkers() { view->editor->clearWarningMarkers(); }
 
 void GlslEditorController::clearErrorMarkers() { view->editor->clearErrorMarkers(); }
@@ -55,5 +58,9 @@ void GlslEditorController::addWarningMarker(const ui::ig::TextEditorMarker &mark
 void GlslEditorController::addErrorMarker(const ui::ig::TextEditorMarker &marker) {
   view->editor->addErrorMarker(marker);
 }
+
+void GlslEditorController::show() { view->getWindow().setVisibility(gui::Visibility::Visible); }
+
+void GlslEditorController::hide() { view->getWindow().setVisibility(gui::Visibility::Invisible); }
 
 }  // namespace pf

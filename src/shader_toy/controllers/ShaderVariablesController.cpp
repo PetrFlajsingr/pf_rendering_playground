@@ -136,4 +136,8 @@ void ShaderVariablesController::createUIForShaderVariableModel(const std::shared
       *varModel->value);
 }
 
+void ShaderVariablesController::show() { view->getWindow().setVisibility(gui::Visibility::Visible); }
+
+void ShaderVariablesController::hide() { view->getWindow().setVisibility(gui::Visibility::Invisible); }
+
 }  // namespace pf

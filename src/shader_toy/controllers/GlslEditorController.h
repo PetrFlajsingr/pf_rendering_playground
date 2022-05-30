@@ -20,6 +20,9 @@ class GlslEditorController : public Controller<GlslEditorView, GlslEditorModel> 
   void addWarningMarker(const ui::ig::TextEditorMarker &marker);
   void addErrorMarker(const ui::ig::TextEditorMarker &marker);
 
+  void show();
+  void hide();
+
  private:
   bool ignoreNextEditorUpdate = false;
 };

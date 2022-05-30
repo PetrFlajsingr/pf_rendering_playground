@@ -125,4 +125,8 @@ void ImageAssetsController::createUIForImageModel(const std::shared_ptr<TextureA
   subscriptions.emplace(imgModel, std::move(modelsSubscriptions));
 }
 
+void ImageAssetsController::show() { view->getWindow().setVisibility(gui::Visibility::Visible); }
+
+void ImageAssetsController::hide() { view->getWindow().setVisibility(gui::Visibility::Invisible); }
+
 }  // namespace pf

@@ -67,15 +67,21 @@ UI::UI(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, glfw::Window &window
 }
 
 void UI::show() {
-  // TODO: add new views/controllers here
   dockingArea->setVisibility(gui::Visibility::Visible);
   logWindowController->show();
+  shaderVariablesController->show();
+  imageAssetsController->show();
+  glslEditorController->show();
+  outputController->show();
 }
 
 void UI::hide() {
-  // TODO: add new views/controllers here
   dockingArea->setVisibility(gui::Visibility::Invisible);
   logWindowController->hide();
+  shaderVariablesController->hide();
+  imageAssetsController->hide();
+  glslEditorController->hide();
+  outputController->hide();
 }
 
 }  // namespace pf::shader_toy

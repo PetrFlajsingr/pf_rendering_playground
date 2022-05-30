@@ -17,6 +17,9 @@ class OutputController : public Controller<OutputView, OutputModel> {
   OutputController(std::unique_ptr<OutputView> uiView, std::shared_ptr<OutputModel> mod);
 
   void setFps(float currentFps, float averageFps);
+
+  void show();
+  void hide();
 };
 
 }  // namespace pf

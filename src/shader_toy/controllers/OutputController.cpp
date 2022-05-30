@@ -8,6 +8,8 @@
 
 namespace pf {
 
+namespace gui = ui::ig;
+
 OutputController::OutputController(std::unique_ptr<OutputView> uiView, std::shared_ptr<OutputModel> mod)
     : Controller<OutputView, OutputModel>(std::move(uiView), std::move(mod)) {
   DEBUG_ASSERT(isIn(model->resolution->first, IMAGE_SIZES));
@@ -53,5 +55,9 @@ void OutputController::setFps(float currentFps, float averageFps) {
   view->fpsText->setText("FPS: {}", currentFps);
   view->fpsAveragePlot->addValue(averageFps);
 }
+
+void OutputController::show() { view->getWindow().setVisibility(gui::Visibility::Visible); }
+
+void OutputController::hide() { view->getWindow().setVisibility(gui::Visibility::Invisible); }
 
 }  // namespace pf
