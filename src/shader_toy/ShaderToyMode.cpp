@@ -34,7 +34,7 @@ void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei
 namespace pf::shader_toy {
 
 ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{std::move(resourcesPath)} {
-  glEnable              ( GL_DEBUG_OUTPUT );
+  glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(debugOpengl, nullptr);
 }
 
@@ -79,11 +79,14 @@ void ShaderToyMode::activate_impl() {
   mainController->show();
   imGuiInterface->setStateFromConfig();
   // TODO: load data from config
+  initializeTexture(TextureSize{TextureWidth{models.output->resolution->first},
+                                TextureHeight{models.output->resolution->second}, TextureDepth{0u}});
 }
 
 void ShaderToyMode::deactivate_impl() {
   imGuiInterface->updateConfig();
   mainController->hide();
+  outputTexture = nullptr;
 }
 
 void ShaderToyMode::deinitialize_impl() {
@@ -99,6 +102,7 @@ void ShaderToyMode::deinitialize_impl() {
 void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   checkShaderStatus();
   if (mainProgram == nullptr) { return; }
+  DEBUG_ASSERT(outputTexture != nullptr);
 
   const auto mouseState = getMouseState();
 
