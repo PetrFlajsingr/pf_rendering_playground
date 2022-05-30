@@ -4,14 +4,14 @@
 
 #pragma once
 
+#include "range/v3/range/conversion.hpp"
+#include "range/v3/view/filter.hpp"
+#include "range/v3/view/split.hpp"
+#include "range/v3/view/transform.hpp"
+#include "tl/expected.hpp"
+#include "utils/algorithms.h"
 #include <charconv>
 #include <optional>
-#include <range/v3/range/conversion.hpp>
-#include <range/v3/view/filter.hpp>
-#include <range/v3/view/split.hpp>
-#include <range/v3/view/transform.hpp>
-#include <tl/expected.hpp>
-#include <utils/algorithms.h>
 #include <vector>
 
 namespace pf {

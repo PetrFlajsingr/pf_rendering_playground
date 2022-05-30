@@ -8,6 +8,7 @@
 #include "gpu/opengl/Shader.h"
 #include "gpu/opengl/Texture.h"
 #include "gpu/utils.h"
+#include "utils/glsl/GlslToSpirv.h"
 #include <future>
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Include/glslang_c_interface.h>
@@ -18,7 +19,6 @@
 #include <range/v3/view/split.hpp>
 #include <range/v3/view/trim.hpp>
 #include <utility>
-#include <utils/GlslToSpirv.h>
 #include <utils/opengl_utils.h>
 #include <utils/profiling.h>
 

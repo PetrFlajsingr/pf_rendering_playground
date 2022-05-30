@@ -4,15 +4,15 @@
 
 #pragma once
 
-#include "mvc/reactive.h"
 #include "mvc/Model.h"
-#include "utils/glsl_typenames.h"
-#include <pf_imgui/Color.h>
-#include <string>
-#include <optional>
-#include <variant>
+#include "mvc/reactive.h"
+#include "utils/glsl/glsl_typenames.h"
 #include <algorithm>
+#include <optional>
+#include <pf_imgui/Color.h>
 #include <range/v3/view/transform.hpp>
+#include <string>
+#include <variant>
 
 namespace pf {
 // TODO: change this so it can't be changed later (value type) - maybe wrap it in asserts somehow

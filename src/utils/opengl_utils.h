@@ -5,10 +5,10 @@
 #pragma once
 
 #include "glm/gtc/type_ptr.hpp"
-#include "glsl_typenames.h"
+#include "utils/glsl/glsl_typenames.h"
+#include <assert.hpp>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <assert.hpp>
 
 namespace pf {
 

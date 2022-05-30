@@ -4,12 +4,12 @@
 
 #pragma once
 
+#include "utils/glsl/glsl_typenames.h"
 #include <functional>
 #include <glm/glm.hpp>
 #include <pf_common/concepts/OneOf.h>
 #include <pf_common/enums.h>
 #include <string>
-#include <utils/glsl_typenames.h>
 #include <vector>
 
 namespace pf::shader_toy {

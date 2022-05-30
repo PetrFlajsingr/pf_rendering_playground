@@ -14,7 +14,7 @@
 #include "pf_imgui/elements/Separator.h"
 #include "pf_imgui/layouts/HorizontalLayout.h"
 #include "pf_imgui/layouts/VerticalLayout.h"
-#include "utils/glsl_typenames.h"
+#include "utils/glsl/glsl_typenames.h"
 #include <pf_common/specializations.h>
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/interface/Element.h>
