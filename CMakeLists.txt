@@ -75,16 +75,14 @@ add_executable(${PROJECT_NAME}
         src/shader_toy/ShaderToyMode.h
         src/modes/ModeManager.cpp
         src/modes/ModeManager.h
-        src/shader_toy/ui/UI.cpp
-        src/shader_toy/ui/UI.h
         src/log/UISink.h
         src/utils/FPSCounter.cpp
         src/shader_toy/ShaderBuilder.cpp
         src/shader_toy/ShaderBuilder.h
         src/utils/glsl/glsl_typenames.h
         src/modes/Mode.cpp src/shader_toy/utils.h
-        src/shader_toy/ui/dialogs/GlslLVariableInputDialog.cpp
-        src/shader_toy/ui/dialogs/GlslLVariableInputDialog.h
+        src/shader_toy/dialogs/GlslLVariableInputDialog.cpp
+        src/shader_toy/dialogs/GlslLVariableInputDialog.h
         src/utils/glsl/GlslToSpirv.cpp
         src/utils/glsl/GlslToSpirv.h
         src/utils/algorithms.h
@@ -143,7 +141,7 @@ add_executable(${PROJECT_NAME}
         src/shader_toy/models/OutputModel.cpp
         src/shader_toy/models/OutputModel.h
         src/shader_toy/controllers/OutputController.cpp
-        src/shader_toy/controllers/OutputController.h src/utils/glsl/DirStackFileIncluder.cpp src/utils/glsl/DirStackFileIncluder.h src/utils/glsl/DefaultBuiltinResource.h)
+        src/shader_toy/controllers/OutputController.h src/utils/glsl/DirStackFileIncluder.cpp src/utils/glsl/DirStackFileIncluder.h src/utils/glsl/DefaultBuiltinResource.h src/shader_toy/controllers/MainController.cpp src/shader_toy/controllers/MainController.h src/shader_toy/models/MainModel.h src/shader_toy/views/MainView.cpp src/shader_toy/views/MainView.h)
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOGDI)
 target_link_libraries(${PROJECT_NAME} glad

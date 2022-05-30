@@ -4,7 +4,7 @@
 
 #include "ShaderVariablesController.h"
 #include "pf_mainloop/MainLoop.h"
-#include "shader_toy/ui/dialogs/GlslLVariableInputDialog.h"
+#include "shader_toy/dialogs/GlslLVariableInputDialog.h"
 #include "shader_toy/utils.h"
 #include "spdlog/spdlog.h"
 #include <assert.hpp>

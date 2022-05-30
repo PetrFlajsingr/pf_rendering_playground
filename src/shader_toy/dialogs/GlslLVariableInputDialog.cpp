@@ -3,8 +3,8 @@
 //
 
 #include "GlslLVariableInputDialog.h"
-#include <pf_imgui/elements/Combobox.h>
-#include <pf_imgui/interface/decorators/WidthDecorator.h>
+#include "pf_imgui/elements/Combobox.h"
+#include "pf_imgui/interface/decorators/WidthDecorator.h"
 
 namespace gui = pf::ui::ig;
 namespace pf::shader_toy {

@@ -10,6 +10,7 @@
 
 namespace pf {
 
+// TODO: font
 class GlslEditorController : public Controller<GlslEditorView, GlslEditorModel> {
  public:
   GlslEditorController(std::unique_ptr<GlslEditorView> uiView, std::shared_ptr<GlslEditorModel> mod);

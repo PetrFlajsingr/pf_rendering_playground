@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <pf_common/concepts/ranges.h>
-#include <pf_imgui/ImGuiInterface.h>
+#include "pf_common/concepts/ranges.h"
+#include "pf_imgui/ImGuiInterface.h"
 
 namespace pf::shader_toy {
 

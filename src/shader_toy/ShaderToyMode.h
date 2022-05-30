@@ -4,11 +4,11 @@
 
 #pragma once
 
+#include "controllers/MainController.h"
 #include "glm/ext/vector_uint2.hpp"
 #include "gpu/Program.h"
 #include "gpu/Texture.h"
 #include "modes/Mode.h"
-#include "ui/UI.h"
 #include <future>
 #include <glm/glm.hpp>
 #include <utils/FPSCounter.h>
@@ -36,6 +36,11 @@ class ShaderToyMode : public Mode {
   void updateConfig() override;
 
  private:
+  void createModels();
+  void loadModelsFromConfig();
+
+  void createControllers();
+
   void resetCounters();
 
   void initializeTexture(TextureSize textureSize);
@@ -57,8 +62,6 @@ class ShaderToyMode : public Mode {
     std::filesystem::path resourcesPath;
   } configData;
 
-  std::unique_ptr<UI> ui = nullptr;
-
   std::int32_t frameCounter = 0;
   std::chrono::nanoseconds totalTime{0};
   bool timeCounterPaused = false;
@@ -71,6 +74,7 @@ class ShaderToyMode : public Mode {
   std::shared_ptr<glfw::Window> glfwWindow = nullptr;
   glm::vec2 mousePos{};
   std::shared_ptr<ImageLoader> imageLoader;
+  std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface = nullptr;
 
   std::function<std::size_t(std::size_t)> shaderLineMapping;
 
@@ -85,6 +89,15 @@ class ShaderToyMode : public Mode {
   std::vector<std::future<void>> unfinishedWorkerTasks{};
 
   bool previousShaderCompilationDone = true;
+
+  struct {
+    std::shared_ptr<ShaderVariablesModel> shaderVariables;
+    std::shared_ptr<UserImageAssetsModel> imageAssets;
+    std::shared_ptr<GlslEditorModel> codeEditor;
+    std::shared_ptr<OutputModel> output;
+  } models;
+
+  std::unique_ptr<MainController> mainController{};
 
   std::chrono::steady_clock::time_point lastFPSVisualUpdate{};
   std::chrono::milliseconds FPSVisualUpdateFrequency{100};

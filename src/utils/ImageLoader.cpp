@@ -88,31 +88,12 @@ tl::expected<ImageData, std::string> ImageLoader::convertImageChannels(ImageData
           res.emplace_back(std::byte{255u});
         }
       } else {
-        {
-          auto start = std::chrono::steady_clock::now();
-          for (std::size_t i = 0; i < data.data.size(); i += 3) {
-            res.emplace_back(data.data[i]);
-            res.emplace_back(data.data[i + 1]);
-            res.emplace_back(data.data[i + 2]);
-            res.emplace_back(std::byte{255u});
-          }
-          auto end = std::chrono::steady_clock::now();
-          fmt::print("Raw loop took {}\n", (end - start));
-        }
-        {
-          auto start = std::chrono::steady_clock::now();
-          std::vector<std::byte> result;
-          result.resize(res.size());
-          auto rgbaView = data.data | ranges::views::chunk(3) | ranges::views::transform([](auto rgb) {
-                            return ranges::views::concat(rgb, ranges::views::single(std::byte{255}));
-                          })
-              | ranges::views::cache1 | ranges::views::join;
-          auto init = std::chrono::steady_clock::now();
-          auto iter = rgbaView.begin();
-          for (std::size_t i = 0; i < result.size(); ++i) { result[i] = *iter++; }
-          auto end = std::chrono::steady_clock::now();
-          fmt::print("Views init took {}\n", (init - start));
-          fmt::print("Copy loop took {}\n", (end - init));
+        auto start = std::chrono::steady_clock::now();
+        for (std::size_t i = 0; i < data.data.size(); i += 3) {
+          res.emplace_back(data.data[i]);
+          res.emplace_back(data.data[i + 1]);
+          res.emplace_back(data.data[i + 2]);
+          res.emplace_back(std::byte{255u});
         }
       }
       data.info.channels = ChannelCount{4};

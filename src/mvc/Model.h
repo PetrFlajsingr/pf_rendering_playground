@@ -22,9 +22,9 @@ class SavableModel : public Model {
 
 }  // namespace pf
 
-template<std::derived_from<pf::Model> TModel>
-struct fmt::formatter<TModel> : fmt::formatter<std::string> {
-  auto format(const TModel &object, fmt::format_context &ctx) {
-    return fmt::format_to(ctx.out(), "{}", object.getDebugString());
-  }
-};
+//template<std::derived_from<pf::Model> TModel>
+//struct fmt::formatter<TModel> : fmt::formatter<std::string> {
+//  auto format(const TModel &object, fmt::format_context &ctx) {
+//    return fmt::format_to(ctx.out(), "{}", object.getDebugString());
+//  }
+//};

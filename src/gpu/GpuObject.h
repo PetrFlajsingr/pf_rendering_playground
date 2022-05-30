@@ -112,3 +112,4 @@ struct fmt::formatter<TGPUObject> : fmt::formatter<std::string> {
     return fmt::format_to(ctx.out(), "{}", object.getDebugString());
   }
 };
+

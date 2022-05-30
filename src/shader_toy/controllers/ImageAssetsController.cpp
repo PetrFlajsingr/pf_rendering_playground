@@ -3,10 +3,9 @@
 //
 
 #include "ImageAssetsController.h"
-#include "../ui/dialogs/GlslLVariableInputDialog.h"
+#include "../dialogs/GlslLVariableInputDialog.h"
 #include "pf_imgui/dialogs/FileDialog.h"
 #include "shader_toy/utils.h"
-#include "spdlog/spdlog.h"
 #include <assert.hpp>
 #include <pf_imgui/ImGuiInterface.h>
 #include <pf_imgui/elements/Spinner.h>
