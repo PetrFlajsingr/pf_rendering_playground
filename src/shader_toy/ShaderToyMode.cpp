@@ -55,9 +55,10 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   imageLoader = std::make_shared<OpenGLStbImageLoader>(workerThreads);
 
   createModels();
-  loadModelsFromConfig();
 
   createControllers();
+
+  loadModelsFromConfig();
   if (isFirstRun) {
     mainController->resetDocking(ui::ig::Size{static_cast<float>(glfwWindow->getSize().width),
                                               static_cast<float>(glfwWindow->getSize().height)});
@@ -372,14 +373,25 @@ void ShaderToyMode::createModels() {
       [this] { glfwWindow->setClipboardContents(*models.codeEditor->code); });
 
   models.shaderVariables = std::make_shared<ShaderVariablesModel>();
-  // TODO: set disallowed names in images
-  models.shaderVariables->variableAddedEvent.addEventListener(markShaderChanged);
-  models.shaderVariables->variableRemovedEvent.addEventListener(markShaderChangedOrRecompile);
+  models.shaderVariables->variableAddedEvent.addEventListener([this, markShaderChanged](const auto &varModel) {
+    markShaderChanged();
+    mainController->imageAssetsController->disallowedNames.emplace(*varModel->name);
+  });
+  models.shaderVariables->variableRemovedEvent.addEventListener(
+      [this, markShaderChangedOrRecompile](const auto &varModel) {
+        markShaderChangedOrRecompile();
+        mainController->imageAssetsController->disallowedNames.erase(*varModel->name);
+      });
 
   models.imageAssets = std::make_shared<UserImageAssetsModel>();
-  // TODO: set disallowed names in variables
-  models.imageAssets->imageAddedEvent.addEventListener(markShaderChanged);
-  models.imageAssets->imageRemovedEvent.addEventListener(markShaderChangedOrRecompile);
+  models.imageAssets->imageAddedEvent.addEventListener([this, markShaderChanged](const auto &imgModel) {
+    markShaderChanged();
+    mainController->shaderVariablesController->disallowedNames.emplace(*imgModel->name);
+  });
+  models.imageAssets->imageRemovedEvent.addEventListener([this, markShaderChangedOrRecompile](const auto &imgModel) {
+    markShaderChangedOrRecompile();
+    mainController->shaderVariablesController->disallowedNames.erase(*imgModel->name);
+  });
 
   models.codeEditor->code.addValueListener(markShaderChanged);
 
