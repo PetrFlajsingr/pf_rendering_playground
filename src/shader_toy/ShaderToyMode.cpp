@@ -355,7 +355,8 @@ void ShaderToyMode::createModels() {
   models.output = std::make_shared<OutputModel>(std::pair{2048u, 1024u}, nullptr);
   models.output->resolution.addValueListener(updateTextureSize);
 
-  models.codeEditor = std::make_shared<GlslEditorModel>(true, std::chrono::milliseconds{1000}, false, "");
+  models.codeEditor =
+      std::make_shared<GlslEditorModel>(true, std::chrono::milliseconds{1000}, false, DEFAULT_SHADER_SOURCE);
   models.codeEditor->autoCompile.addValueListener([this](auto autoCompile) { autoCompileShader = autoCompile; });
   autoCompileShader = *models.codeEditor->autoCompile;
   models.codeEditor->timePaused.addValueListener([this](auto timePaused) { timeCounterPaused = timePaused; });
