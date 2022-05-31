@@ -63,6 +63,16 @@ GlslEditorView::GlslEditorView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInte
   tooltipLayout.createChild<gui::MarkdownText>("info_md_text", *interface, INFO_MD_TEXT);
 
   editor = &layout->createChild(gui::TextEditor::Config{.name = "text_editor"});
+
+  createTooltips();
+}
+
+void GlslEditorView::createTooltips() {
+  compileButton->setTooltip("Recompile shader");
+  timePausedCheckbox->setTooltip("Pause time and frame number counters");
+  restartButton->setTooltip("Reset time and frame number counters");
+  autoCompileCheckbox->setTooltip("Automatically recompile shader after changes");
+  autoCompilePeriodDrag->setTooltip("Automatic recompilation delay after last change");
 }
 
 }  // namespace pf

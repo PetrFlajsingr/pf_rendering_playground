@@ -40,6 +40,7 @@ class GlslEditorView : public UIViewWindow {
      ui::ig::TextEditor *editor;
   // clang-format on
  private:
+  void createTooltips();
 };
 
 }  // namespace pf
