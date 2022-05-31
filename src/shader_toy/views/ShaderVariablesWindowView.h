@@ -40,7 +40,7 @@ class ShaderVariableRecordElement : public T {
 
 class ShaderVariablesWindowView : public UIViewWindow {
  public:
-  ShaderVariablesWindowView(ui::ig::ImGuiInterface &interface, std::string_view windowName,
+  ShaderVariablesWindowView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, std::string_view windowName,
                             std::string_view windowTitle);
 
   template<OneOf<PF_GLSL_TYPES> T>

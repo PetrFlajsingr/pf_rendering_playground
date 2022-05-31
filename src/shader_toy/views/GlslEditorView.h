@@ -21,7 +21,8 @@ namespace pf {
 // TODO: hint from controller
 class GlslEditorView : public UIViewWindow {
  public:
-  GlslEditorView(ui::ig::ImGuiInterface &interface, std::string_view windowName, std::string_view windowTitle);
+  GlslEditorView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, std::string_view windowName,
+                 std::string_view windowTitle);
 
   // clang-format off
   ui::ig::VerticalLayout *layout;

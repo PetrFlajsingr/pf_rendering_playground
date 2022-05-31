@@ -10,11 +10,10 @@ namespace pf {
 
 class MainView : public UIViewBase {
  public:
-  explicit MainView(ui::ig::ImGuiInterface &imGuiInterface);
+  explicit MainView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface);
   // TODO: make it possible to create more of these in pf_imgui, so they can be switched around
   // and implement it here later as well
   ui::ig::BackgroundDockingArea *dockingArea;
-
 };
 
 }  // namespace pf

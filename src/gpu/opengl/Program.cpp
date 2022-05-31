@@ -16,6 +16,7 @@ GpuOperationResult<ProgramError> OpenGlProgram::createImpl() {
 
   std::ranges::for_each(shaders, [&](const auto &shader) {
     const auto openGlShader = shader->as<OpenGlShader>();
+    DEBUG_ASSERT(openGlShader.has_value());
     glAttachShader(programHandle, openGlShader.value()->getHandle());
   });
 

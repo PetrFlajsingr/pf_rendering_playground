@@ -7,8 +7,8 @@
 
 namespace pf {
 
-MainView::MainView(ui::ig::ImGuiInterface &imGuiInterface) {
-  dockingArea = &imGuiInterface.createOrGetBackgroundDockingArea();
+MainView::MainView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface) : UIViewBase{std::move(imguiInterface)} {
+  dockingArea = &interface->createOrGetBackgroundDockingArea();
 }
 
 }  // namespace pf

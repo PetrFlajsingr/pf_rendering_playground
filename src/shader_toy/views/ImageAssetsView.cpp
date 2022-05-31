@@ -57,9 +57,9 @@ ui::ig::Size ImageTile::calculateImageSize() const {
   return gui::Size{imageWidth, imageHeight};
 }
 
-ImageAssetsView::ImageAssetsView(ui::ig::ImGuiInterface &interface, std::string_view windowName,
+ImageAssetsView::ImageAssetsView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, std::string_view windowName,
                                  std::string_view windowTitle)
-    : UIViewWindow(&interface.createWindow(std::string{windowName}, std::string{windowTitle})), interface(interface) {
+    : UIViewWindow(std::move(imguiInterface), windowName, windowTitle) {
   window->setIsDockable(true);
   layout = &window->createChild(gui::VerticalLayout::Config{.name = "img_win_layout", .size = gui::Size::Auto()});
   controlsLayout = &layout->createChild(gui::HorizontalLayout::Config{.name = "img_controls_layout",

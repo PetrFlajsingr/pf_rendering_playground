@@ -13,7 +13,8 @@ namespace pf {
 
 class LogWindowView : public UIViewWindow {
  public:
-  LogWindowView(ui::ig::ImGuiInterface &interface, std::string_view windowName, std::string_view windowTitle);
+  LogWindowView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, std::string_view windowName,
+                std::string_view windowTitle);
 
   // clang-format off
   ui::ig::LogPanel<spdlog::level::level_enum, 512> *logPanel;

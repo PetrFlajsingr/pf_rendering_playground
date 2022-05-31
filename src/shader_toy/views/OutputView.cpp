@@ -10,8 +10,9 @@ namespace pf {
 
 namespace gui = ui::ig;
 
-OutputView::OutputView(ui::ig::ImGuiInterface &interface, std::string_view windowName, std::string_view windowTitle)
-    : UIViewWindow(&interface.createWindow(std::string{windowName}, std::string{windowTitle})) {
+OutputView::OutputView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, std::string_view windowName,
+                       std::string_view windowTitle)
+    : UIViewWindow(std::move(imguiInterface), windowName, windowTitle) {
   imageSettingsLayout = &window->createChild(
       gui::HorizontalLayout::Config{.name = "img_settings_layout", .size = gui::Size{gui::Width::Auto(), 30}});
   widthCombobox = &imageSettingsLayout->createChild(gui::WidthDecorator<gui::Combobox<int>>::Config{

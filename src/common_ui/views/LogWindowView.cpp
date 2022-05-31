@@ -9,9 +9,9 @@ namespace pf {
 namespace gui = ui::ig;
 
 // TODO: make persistent when new pf_imgui version is released
-LogWindowView::LogWindowView(ui::ig::ImGuiInterface &interface, std::string_view windowName,
+LogWindowView::LogWindowView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, std::string_view windowName,
                              std::string_view windowTitle)
-    : UIViewWindow{&interface.createWindow(std::string{windowName}, std::string{windowTitle})},
+    : UIViewWindow{std::move(imguiInterface), windowName, windowTitle},
       logPanel{&window->createChild(gui::LogPanel<spdlog::level::level_enum, 512>::Config{.name = "log_panel"})} {
   window->setIsDockable(true);
 

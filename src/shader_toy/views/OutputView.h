@@ -18,7 +18,8 @@ namespace pf {
 // TODO: handle fps through controller
 class OutputView : public UIViewWindow {
  public:
-  OutputView(ui::ig::ImGuiInterface &interface, std::string_view windowName, std::string_view windowTitle);
+  OutputView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, std::string_view windowName,
+             std::string_view windowTitle);
 
   // clang-format off
   ui::ig::HorizontalLayout *imageSettingsLayout;

@@ -27,7 +27,7 @@ ModeManager::ModeManager(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, st
   VERIFY(window != nullptr);
 
   logWindowController = std::make_unique<LogWindowController>(
-      std::make_unique<LogWindowView>(*imguiInterface, "combined_log_win", "Combined log"),
+      std::make_unique<LogWindowView>(imguiInterface, "combined_log_win", "Combined log"),
       std::make_shared<LogModel>());
 
   showMainLogWindowCheckboxItem.addValueListener(

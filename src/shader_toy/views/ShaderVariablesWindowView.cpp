@@ -8,9 +8,9 @@ namespace pf {
 
 namespace gui = ui::ig;
 
-ShaderVariablesWindowView::ShaderVariablesWindowView(ui::ig::ImGuiInterface &interface, std::string_view windowName,
-                                                     std::string_view windowTitle)
-    : UIViewWindow{&interface.createWindow(std::string{windowName}, std::string{windowTitle})} {
+ShaderVariablesWindowView::ShaderVariablesWindowView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface,
+                                                     std::string_view windowName, std::string_view windowTitle)
+    : UIViewWindow{std::move(imguiInterface), windowName, windowTitle} {
   window->setIsDockable(true);
   controlsLayout = &window->createChild(
       gui::HorizontalLayout::Config{.name = "layout", .size = gui::Size{gui::Width::Auto(), 35}, .showBorder = true});

@@ -451,20 +451,20 @@ void ShaderToyMode::loadModelsFromConfig() {
 
 void ShaderToyMode::createControllers() {
   auto outputController = std::make_unique<OutputController>(
-      std::make_unique<OutputView>(*imGuiInterface, "output_win", "Output"), models.output);
+      std::make_unique<OutputView>(imGuiInterface, "output_win", "Output"), models.output);
   auto logWindowController = std::make_unique<LogWindowController>(
-      std::make_unique<LogWindowView>(*imGuiInterface, "log_window", "Log"), std::make_shared<LogModel>());
+      std::make_unique<LogWindowView>(imGuiInterface, "log_window", "Log"), std::make_shared<LogModel>());
   auto glslEditorController = std::make_unique<GlslEditorController>(
-      std::make_unique<GlslEditorView>(*imGuiInterface, "glsl_editor_win", "Code"), models.codeEditor);
+      std::make_unique<GlslEditorView>(imGuiInterface, "glsl_editor_win", "Code"), models.codeEditor);
   auto shaderVariablesController = std::make_unique<ShaderVariablesController>(
-      std::make_unique<ShaderVariablesWindowView>(*imGuiInterface, "shader_vars_win", "Shader variables"),
+      std::make_unique<ShaderVariablesWindowView>(imGuiInterface, "shader_vars_win", "Shader variables"),
       models.shaderVariables, imGuiInterface);
   auto imageAssetsController = std::make_unique<ImageAssetsController>(
-      std::make_unique<ImageAssetsView>(*imGuiInterface, "image_assets_win", "Images"), models.imageAssets,
+      std::make_unique<ImageAssetsView>(imGuiInterface, "image_assets_win", "Images"), models.imageAssets,
       imGuiInterface, imageLoader);
 
   mainController = std::make_unique<MainController>(
-      std::make_unique<MainView>(*imGuiInterface), std::make_unique<MainModel>(), imGuiInterface,
+      std::make_unique<MainView>(imGuiInterface), std::make_unique<MainModel>(), imGuiInterface,
       ShaderToyControllers{std::move(outputController), std::move(logWindowController), std::move(glslEditorController),
                            std::move(shaderVariablesController), std::move(imageAssetsController)});
 }
