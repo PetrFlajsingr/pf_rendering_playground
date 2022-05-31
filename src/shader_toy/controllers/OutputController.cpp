@@ -52,8 +52,11 @@ OutputController::OutputController(std::unique_ptr<OutputView> uiView, std::shar
 void OutputController::setFps(float currentFps, float averageFps) {
   DEBUG_ASSERT(currentFps >= 0.f);
   DEBUG_ASSERT(averageFps >= 0.f);
-  view->fpsText->setText("FPS: {}", currentFps);
   view->fpsAveragePlot->addValue(averageFps);
+  if (std::chrono::steady_clock::now() - lastFPSVisualUpdate > FPSVisualUpdateFrequency) {
+    lastFPSVisualUpdate = std::chrono::steady_clock::now();
+    view->fpsText->setText("FPS: {}", currentFps);
+  }
 }
 
 void OutputController::show() { view->getWindow().setVisibility(gui::Visibility::Visible); }

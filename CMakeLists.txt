@@ -141,7 +141,16 @@ add_executable(${PROJECT_NAME}
         src/shader_toy/models/OutputModel.cpp
         src/shader_toy/models/OutputModel.h
         src/shader_toy/controllers/OutputController.cpp
-        src/shader_toy/controllers/OutputController.h src/utils/glsl/DirStackFileIncluder.cpp src/utils/glsl/DirStackFileIncluder.h src/utils/glsl/DefaultBuiltinResource.h src/shader_toy/controllers/MainController.cpp src/shader_toy/controllers/MainController.h src/shader_toy/models/MainModel.h src/shader_toy/views/MainView.cpp src/shader_toy/views/MainView.h)
+        src/shader_toy/controllers/OutputController.h
+        src/utils/glsl/DirStackFileIncluder.cpp
+        src/utils/glsl/DirStackFileIncluder.h
+        src/utils/glsl/DefaultBuiltinResource.h
+        src/shader_toy/controllers/MainController.cpp
+        src/shader_toy/controllers/MainController.h
+        src/shader_toy/models/MainModel.h
+        src/shader_toy/views/MainView.cpp
+        src/shader_toy/views/MainView.h
+        )
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOGDI)
 target_link_libraries(${PROJECT_NAME} glad

@@ -324,11 +324,7 @@ void ShaderToyMode::setBindings() {
 }
 
 void ShaderToyMode::updateUI() {
-  mainController->outputController->setFps(fpsForUI, fpsCounter.averageFPS());
-  if (std::chrono::steady_clock::now() - lastFPSVisualUpdate > FPSVisualUpdateFrequency) {
-    lastFPSVisualUpdate = std::chrono::steady_clock::now();
-    fpsForUI = fpsCounter.averageFPS();
-  }
+  mainController->outputController->setFps(fpsCounter.currentFPS(), fpsCounter.averageFPS());
 }
 
 void ShaderToyMode::updateConfig() {

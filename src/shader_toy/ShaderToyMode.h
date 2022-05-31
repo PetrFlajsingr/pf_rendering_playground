@@ -79,7 +79,6 @@ class ShaderToyMode : public Mode {
   std::function<std::size_t(std::size_t)> shaderLineMapping;
 
   FPSCounter fpsCounter;
-  float fpsForUI{};
 
   bool autoCompileShader = false;
   bool isShaderChanged = true;
@@ -99,8 +98,7 @@ class ShaderToyMode : public Mode {
 
   std::unique_ptr<MainController> mainController{};
 
-  std::chrono::steady_clock::time_point lastFPSVisualUpdate{};
-  std::chrono::milliseconds FPSVisualUpdateFrequency{100};
+
 
   constexpr static auto DEFAULT_SHADER_SOURCE = R"glsl(
 void main() {
