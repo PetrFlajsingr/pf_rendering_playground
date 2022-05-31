@@ -94,7 +94,7 @@ void ImageAssetsView::setTileSize(ui::ig::Size newTileSize) {
 
 void ImageAssetsView::createTooltips() {
   addImageButton->setTooltip("Load a new texture image from disk");
-  searchInputText->setTooltip("Search for a texture by name");
+  searchInputText->setTooltip("Filter textures by name");
 }
 
 }  // namespace pf
