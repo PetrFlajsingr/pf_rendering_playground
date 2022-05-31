@@ -44,4 +44,9 @@ OutputView::OutputView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, s
   fpsText = &fpsInfoLayout->createChild<gui::Text>("fps_txt", "");
 }
 
+void OutputView::createTooltips() {
+  widthCombobox->setTooltip("Output width");
+  heightCombobox->setTooltip("Output height");
+}
+
 }  // namespace pf
