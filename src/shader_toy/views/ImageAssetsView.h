@@ -68,6 +68,7 @@ class ImageAssetsView : public UIViewWindow {
  private:
   ui::ig::Size tileSize{220, 180};
 
+  void createTooltips();
 };
 
 }  // namespace pf

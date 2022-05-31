@@ -23,6 +23,8 @@ ShaderVariablesWindowView::ShaderVariablesWindowView(std::shared_ptr<ui::ig::ImG
   varsLayout = &window->createChild(
       gui::VerticalLayout::Config{.name = "vars_layout", .size = gui::Size::Auto(), .showBorder = false});
   varsLayout->setScrollable(true);
+
+  createTooltips();
 }
 
 ShaderVariableRecordElement<ui::ig::Checkbox> &ShaderVariablesWindowView::addCheckboxInput(std::string_view name,
@@ -42,6 +44,11 @@ ShaderVariablesWindowView::addColorInput(std::string_view name, ui::ig::Color in
                                                                                .value = initialValue});
   elements.emplace_back(&newColorElement);
   return newColorElement;
+}
+
+void ShaderVariablesWindowView::createTooltips() {
+  addButton->setTooltip("Add a new shader variable");
+  searchTextInput->setTooltip("Filter variables by name");
 }
 
 }  // namespace pf

@@ -62,6 +62,9 @@ class ShaderVariablesWindowView : public UIViewWindow {
   ui::ig::VerticalLayout *varsLayout;
     std::vector<ui::ig::Element*> elements;
   // clang-format on
+
+ private:
+  void createTooltips();
 };
 
 template<std::derived_from<ui::ig::Element> T>

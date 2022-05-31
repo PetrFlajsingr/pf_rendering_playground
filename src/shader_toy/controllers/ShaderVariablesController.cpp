@@ -140,4 +140,5 @@ void ShaderVariablesController::show() { view->getWindow().setVisibility(gui::Vi
 
 void ShaderVariablesController::hide() { view->getWindow().setVisibility(gui::Visibility::Invisible); }
 
+
 }  // namespace pf

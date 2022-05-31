@@ -24,6 +24,8 @@ ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr
   image = &layout.createChild<ui::ig::Image>("img", textureID, calculateImageSize());
   controlsLayout = &layout.createChild<ui::ig::HorizontalLayout>("controls_layout", ui::ig::Size::Auto());
   removeButton = &controlsLayout->createChild<ui::ig::Button>("remove_btn", "Remove");
+
+  image->setTooltip(name);
 }
 
 void ImageTile::setTexture(std::shared_ptr<Texture> newTexture) {
@@ -73,6 +75,8 @@ ImageAssetsView::ImageAssetsView(std::shared_ptr<ui::ig::ImGuiInterface> imguiIn
                                                               .layoutDirection = gui::LayoutDirection::LeftToRight,
                                                               .size = gui::Size::Auto()});
   imagesLayout->setScrollable(true);
+
+  createTooltips();
 }
 
 ImageTile &ImageAssetsView::addImageTile(std::string_view name, std::shared_ptr<Texture> texture) {
@@ -86,6 +90,11 @@ ui::ig::Size ImageAssetsView::getTileSize() const { return tileSize; }
 void ImageAssetsView::setTileSize(ui::ig::Size newTileSize) {
   tileSize = newTileSize;
   std::ranges::for_each(imageTiles, [this](auto tile) { tile->setSize(tileSize); });
+}
+
+void ImageAssetsView::createTooltips() {
+  addImageButton->setTooltip("Load a new texture image from disk");
+  searchInputText->setTooltip("Filter textures by name");
 }
 
 }  // namespace pf

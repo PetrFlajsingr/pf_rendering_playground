@@ -22,13 +22,6 @@ OutputView::OutputView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, s
       .width = 60,
       .config = {.name = "img_height_cb", .label = "Height", .preview = "Image height", .persistent = true}});
 
-  // TODO: do this in controller
-  //widthCombobox->setItems(IMAGE_SIZES);
-  //heightCombobox->setItems(IMAGE_SIZES);
-  //
-  //widthCombobox->setValue(1024);
-  //heightCombobox->setValue(1024);
-
   layout = &window->createChild(gui::StretchLayout::Config{.name = "output_layout",
                                                            .size = {gui::Width::Auto(), gui::Height::Fill(30)},
                                                            .stretch = gui::Stretch::All});
@@ -42,6 +35,13 @@ OutputView::OutputView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, s
                                                                        .type = gui::PlotType::Histogram,
                                                                        .maxHistoryCount = 500});
   fpsText = &fpsInfoLayout->createChild<gui::Text>("fps_txt", "");
+
+  createTooltips();
+}
+
+void OutputView::createTooltips() {
+  widthCombobox->setTooltip("Output width");
+  heightCombobox->setTooltip("Output height");
 }
 
 }  // namespace pf

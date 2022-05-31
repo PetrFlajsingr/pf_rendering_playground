@@ -31,6 +31,9 @@ class OutputView : public UIViewWindow {
     ui::ig::SimplePlot *fpsAveragePlot;
     ui::ig::Text *fpsText;
   // clang-format on
+
+ private:
+  void createTooltips();
 };
 
 }  // namespace pf
