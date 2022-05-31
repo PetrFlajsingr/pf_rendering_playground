@@ -6,8 +6,10 @@
 
 #include "Texture.h"
 #include "gpu/opengl/Texture.h"
+#include <filesystem>
 #include <imgui.h>
 #include <stb/stb_image.h>
+#include <assert.hpp>
 
 namespace pf {
 
@@ -15,12 +17,12 @@ namespace pf {
   if (const auto oGlTexture = texture.as<OpenGlTexture>(); oGlTexture.has_value()) {
     return reinterpret_cast<ImTextureID>(static_cast<std::intptr_t>(oGlTexture.value()->getHandle()));
   } else {
-    assert(false && "Missing implementation");
+    VERIFY(false, "Missing implementation for non OpenGL texture");
     return {};
   }
 }
 
-inline std::optional<TextureSize> getTextureFileSize(const std::filesystem::path &path) {
+[[nodiscard]] inline std::optional<TextureSize> getTextureFileSize(const std::filesystem::path &path) {
   int x;
   int y;
   int n;
@@ -31,7 +33,7 @@ inline std::optional<TextureSize> getTextureFileSize(const std::filesystem::path
   return std::nullopt;
 }
 
-inline tl::expected<std::vector<std::byte>, std::string> getTextureData(const std::filesystem::path &path) {
+[[nodiscard]] inline tl::expected<std::vector<std::byte>, std::string> getTextureData(const std::filesystem::path &path) {
   int x;
   int y;
   int n;

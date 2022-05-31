@@ -5,11 +5,9 @@
 #pragma once
 
 #include "GpuObject.h"
-#include "utils/GlslToSpirv.h"
-#include "utils/glsl_typenames.h"
+#include "utils/glsl/GlslToSpirv.h"
+#include "utils/glsl/glsl_typenames.h"
 #include <string>
-
-#include<spirv_reflect.h>
 
 namespace pf {
 

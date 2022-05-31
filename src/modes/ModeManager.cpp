@@ -5,23 +5,46 @@
 #include "ModeManager.h"
 #include "spdlog/spdlog.h"
 
+#include "log/UISink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include <utility>
 
 namespace pf {
-ModeManager::ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window,
+namespace gui = ui::ig;
+// TODO: ui controller
+ModeManager::ModeManager(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> glfwWindow,
                          toml::table config, std::size_t workerThreadCount)
-    : imGuiInterface(std::move(imGuiInterface)), window(std::move(window)), config(std::move(config)),
+    : imguiInterface(std::move(imGuiInterface)), window(std::move(glfwWindow)), config(std::move(config)),
       workerThreads(std::make_shared<ThreadPool>(workerThreadCount)),
-      subMenu(this->imGuiInterface->createOrGetMenuBar().createChild(
-          ui::ig::SubMenu::Config{.name = "modes_menu", .label = "Modes"})),
-      statusBarText(this->imGuiInterface->createOrGetStatusBar().createChild<ui::ig::Text>("mode_mgr_sb_text",
-                                                                                           "Current mode: <none>")),
+      subMenu(imguiInterface->createOrGetMenuBar().addSubmenu("modes_menu", "Modes")),
+      showMainLogWindowCheckboxItem(
+          subMenu.addCheckboxItem("show_main_log", "Show combined log window", false, gui::Persistent::Yes)),
+      subMenuSeparator(subMenu.addSeparator("sep1")),
+      statusBarText(imguiInterface->createOrGetStatusBar().createChild<gui::Text>("mode_mgr_sb_text",
+                                                                                        "Current mode: <none>")),
       logger{std::make_shared<spdlog::logger>("NodeManager", std::make_shared<spdlog::sinks::stdout_color_sink_st>())} {
+  VERIFY(imguiInterface != nullptr);
+  VERIFY(window != nullptr);
+
+  logWindowController = std::make_unique<LogWindowController>(
+      std::make_unique<LogWindowView>(imguiInterface, "combined_log_win", "Combined log"),
+      std::make_shared<LogModel>());
+
+  showMainLogWindowCheckboxItem.addValueListener(
+      [this](bool value) {
+        if (value) {
+          logWindowController->show();
+        } else {
+          logWindowController->hide();
+        }
+      },
+      true);
+
+  logger->sinks().emplace_back(logWindowController->createSpdlogSink());
 }
 
 ModeManager::~ModeManager() {
-  imGuiInterface->createOrGetMenuBar().removeChild(subMenu.getName());
+  imguiInterface->createOrGetMenuBar().removeChild(subMenu.getName());
   deactivateModes();
   deinitializeModes();
 }
@@ -35,13 +58,16 @@ toml::table ModeManager::getConfig() const {
 }
 
 std::optional<ModeManager::Error> ModeManager::addMode(std::shared_ptr<Mode> mode) {
+  if (!ASSERT(mode != nullptr)) {
+    return "Invalid value";
+  }
   if (const auto modeOpt = findModeByName(mode->getName()); modeOpt.has_value()) {
     return "Model with the same name is already in ModeManager";
   }
   auto name = mode->getName();
   logger->info("Adding mode '{}'", name);
   auto &menuItem = subMenu.createChild(
-      ui::ig::MenuButtonItem::Config{.name = mode->getName() + "_menu_item", .label = mode->getName()});
+      gui::MenuButtonItem::Config{.name = mode->getName() + "_menu_item", .label = mode->getName()});
   menuItem.addClickListener([this, mode] { activateMode(mode); });
   modes.emplace_back(std::move(name), std::move(mode), menuItem);
   return std::nullopt;
@@ -62,19 +88,22 @@ std::optional<ModeManager::Error> ModeManager::activateMode(const std::string &n
   return "Mode not managed by ModeManager";
 }
 
-std::optional<ModeManager::Error> ModeManager::activateMode(const std::shared_ptr<Mode> &mode) {
-  logger->info("Activating mode '{}'", mode->getName());
-  if (activeMode != nullptr && activeMode->mode == mode) {
-    logger->info("[NodeManager] Mode already active '{}'", mode->getName());
+std::optional<ModeManager::Error> ModeManager::activateMode(const std::shared_ptr<Mode> &modeToActivate) {
+  if (!ASSERT(modeToActivate != nullptr)) {
+    return "Invalid value";
+  }
+  logger->info("Activating mode '{}'", modeToActivate->getName());
+  if (activeMode != nullptr && activeMode->mode == modeToActivate) {
+    logger->info("[NodeManager] Mode already active '{}'", modeToActivate->getName());
     return std::nullopt;
   }
-  if (const auto iter = std::ranges::find(modes, mode, &ModeRecord::mode); iter != modes.end()) {
+  if (const auto iter = std::ranges::find(modes, modeToActivate, &ModeRecord::mode); iter != modes.end()) {
     const auto mode = &*iter;
     activateMode_impl(mode);
     logger->info("Mode '{}' activated", mode->name);
     return std::nullopt;
   }
-  logger->error("Mode '{}' not managed by ModeManager", mode->getName());
+  logger->error("Mode '{}' not managed by ModeManager", modeToActivate->getName());
   return "Mode not managed by ModeManager";
 }
 
@@ -106,13 +135,15 @@ std::optional<ModeManager::ModeRecord *> ModeManager::findModeByName(const std::
 }
 
 void ModeManager::activateMode_impl(ModeManager::ModeRecord *mode) {
+  DEBUG_ASSERT(mode != nullptr);
   deactivateModes();
   if (mode->mode->getState() != ModeState::Initialised) {
     auto modeConfig = toml::table{};
     if (const auto iter = config.find(mode->name); iter != config.end()) {
       if (auto configTable = iter->second.as_table(); configTable != nullptr) { modeConfig = *configTable; }
     }
-    mode->mode->initialize(imGuiInterface, window, modeConfig, workerThreads);
+    mode->mode->initialize(imguiInterface, window, modeConfig, workerThreads);
+    mode->mode->logger->sinks().emplace_back(logWindowController->createSpdlogSink());
   }
   if (mode->mode->getState() != ModeState::Active) { mode->mode->activate(); }
 

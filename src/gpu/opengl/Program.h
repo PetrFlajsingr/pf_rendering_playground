@@ -33,7 +33,7 @@ class OpenGlProgram : public Program, public OpenGlHandleOwner {
 
   void useImpl() override;
   void setUniformImpl(UniformLocation location, std::variant<PF_SHADER_VALUE_TYPES> value) override;
-  std::variant<PF_SHADER_VALUE_TYPES> getUniformValueImpl(const UniformInfo &info) override;
+  [[nodiscard]] std::variant<PF_SHADER_VALUE_TYPES> getUniformValueImpl(const UniformInfo &info) override;
   void dispatchImpl(std::uint32_t x, std::uint32_t y, std::uint32_t z) override;
 
   // TODO: add missing

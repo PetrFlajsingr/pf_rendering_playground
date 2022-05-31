@@ -8,11 +8,11 @@
 #include <concepts>
 #include <fmt/format.h>
 #include <optional>
-#include <type_traits>
 #include <pf_common/enums.h>
 #include <string_view>
-#include <utility>
 #include <tl/expected.hpp>
+#include <type_traits>
+#include <utility>
 
 namespace pf {
 
@@ -22,9 +22,14 @@ enum class GpuApi {
 
 template<Enum E>
 struct GpuError {
-  GpuError(const E code, std::string message) : code(code), message(std::move(message)) {}
-  const E code;
-  const std::string message;
+ public:
+  GpuError(const E code, std::string message) : code_(code), message_(std::move(message)) {}
+  [[nodiscard]] E code() const { return code_; }
+  [[nodiscard]] std::string_view message() const { return message_; }
+
+ private:
+  E code_;
+  std::string message_;
 };
 
 template<Enum E>
@@ -42,6 +47,7 @@ using ExpectedGpuOperationResult = tl::expected<Expected, GpuError<E>>;
   [[nodiscard]] inline GpuApi getObjectApi() const final { return GetClassApi(); }                                     \
   [[nodiscard]] inline static GpuApi GetClassApi() { return x; }
 
+// TODO: i guess just create a custom RTTI for this thing
 /**
  * @warning Implement `GPUObject::Type T::GetClassType()` otherwise some functions won't work
  * @warning Implement `GpuApi T::GetClassApi()` otherwise some functions won't work
@@ -88,7 +94,6 @@ class GpuObject {
     return isSameObjectType && (getObjectApi() == T::GetClassApi());
   }
 
-
   template<std::derived_from<GpuObject> T>
   [[nodiscard]] static bool IsTypeInterfaceClass() {
     const auto hasOverridenGetObjectType = (&T::getObjectType != &GpuObject::getObjectType);
@@ -107,3 +112,4 @@ struct fmt::formatter<TGPUObject> : fmt::formatter<std::string> {
     return fmt::format_to(ctx.out(), "{}", object.getDebugString());
   }
 };
+

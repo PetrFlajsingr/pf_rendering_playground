@@ -3,14 +3,16 @@
 //
 
 #include "Shader.h"
+#include <assert.hpp>
 
 namespace pf {
 
 GpuOperationResult<ShaderError> OpenGlShader::create(const SpirvCompilationResult &spirvData,
                                                      const std::string &entryPoint) {
   return createImpl([&](GLuint shaderHandle) {
-    glShaderBinary(1, &shaderHandle, GL_SHADER_BINARY_FORMAT_SPIR_V, spirvData.spirvData.data(),
-                   spirvData.spirvData.size() * sizeof(decltype(spirvData.spirvData)::value_type));
+    const auto dataLength =
+        static_cast<GLsizei>(spirvData.spirvData.size() * sizeof(decltype(spirvData.spirvData)::value_type));
+    glShaderBinary(1, &shaderHandle, GL_SHADER_BINARY_FORMAT_SPIR_V, spirvData.spirvData.data(), dataLength);
     glSpecializeShader(shaderHandle, entryPoint.c_str(), 0, nullptr, nullptr);
   });
 }
@@ -33,9 +35,9 @@ constexpr GLenum OpenGlShader::ShaderTypeToOpenGlConstant(ShaderType shaderType)
     case Geometry: return GL_COMPUTE_SHADER;
     case Fragment: return GL_FRAGMENT_SHADER;
   }
-  assert(false && "can't reach here for now");
+  VERIFY(false, "This should be unreachable, since all shader types should be covered");
   return {};
 }
 
 void OpenGlShader::deleteOpenGlObject(GLuint objectHandle) const { glDeleteShader(objectHandle); }
-}
+}  // namespace pf

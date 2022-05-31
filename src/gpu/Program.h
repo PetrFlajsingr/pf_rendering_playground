@@ -56,7 +56,7 @@ class Program : public GpuObject {
 
   explicit Program(RangeOf<std::shared_ptr<Shader>> auto &&programShaders)
       : shaders(std::ranges::begin(programShaders), std::ranges::end(programShaders)) {}
-  explicit Program(std::shared_ptr<Shader> shader) : shaders{shader} {}
+  explicit Program(std::shared_ptr<Shader> shader) : shaders{std::move(shader)} {}
 
   [[nodiscard]] GpuOperationResult<ProgramError> create();
 
@@ -74,11 +74,11 @@ class Program : public GpuObject {
   [[nodiscard]] const std::vector<AttributeInfo> &getAttributes() const;
   [[nodiscard]] const std::vector<BufferInfo> &getBuffers() const;
 
-  GpuOperationResult<ProgramError> setUniform(const std::string &name, OneOf<PF_SHADER_VALUE_TYPES> auto value);
+  [[nodiscard]] GpuOperationResult<ProgramError> setUniform(const std::string &name, OneOf<PF_SHADER_VALUE_TYPES> auto value);
 
   void use();
 
-  GpuOperationResult<ProgramError> dispatch(std::uint32_t x, std::uint32_t y = 1, std::uint32_t z = 1);
+  [[nodiscard]] GpuOperationResult<ProgramError> dispatch(std::uint32_t x, std::uint32_t y = 1, std::uint32_t z = 1);
 
   [[nodiscard]] std::string getDebugString() const override;
 

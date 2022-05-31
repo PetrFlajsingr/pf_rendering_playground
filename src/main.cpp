@@ -10,6 +10,7 @@
 #include <magic_enum.hpp>
 #include <pf_glfw/GLFW.h>
 #include <pf_imgui/elements/Image.h>
+#include <pf_imgui/styles/dark.h>
 #include <pf_mainloop/MainLoop.h>
 #include <spdlog/spdlog.h>
 #include <toml++/toml.h>
@@ -87,6 +88,7 @@ int main(int argc, char *argv[]) {
         imguiInterface->getFontManager().fontBuilder("Roboto-Regular", fontPath).setFontSize(14.f).build();
     imguiInterface->setGlobalFont(robotoFont);
   }
+  pf::ui::ig::setDarkStyle(*imguiInterface);
 
   auto modeManagerConfig = toml::table{};
   if (const auto iter = config.find("modes"); iter != config.end()) {

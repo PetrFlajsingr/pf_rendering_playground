@@ -14,7 +14,7 @@ class TimeMeasure {
  public:
 
   [[nodiscard]] Duration getTimeElapsed() const {
-    return std::chrono::duration_cast<Duration>(startTimePoint - std::chrono::steady_clock::now());
+    return std::chrono::duration_cast<Duration>(std::chrono::steady_clock::now() - startTimePoint);
   }
  private:
   std::chrono::steady_clock::time_point startTimePoint = std::chrono::steady_clock::now();

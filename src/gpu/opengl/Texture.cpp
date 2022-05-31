@@ -3,6 +3,7 @@
 //
 
 #include "Texture.h"
+#include <assert.hpp>
 
 namespace pf {
 
@@ -19,37 +20,44 @@ GpuOperationResult<TextureError> OpenGlTexture::create() {
 
   if (levels > TextureLevel{0}) {
     if (size.height == TextureHeight{0}) {
-      glTextureStorage1D(*handle, levels.get(), rawFormat, size.width.get());
+      glTextureStorage1D(*handle, static_cast<GLsizei>(levels.get()), rawFormat,
+                         static_cast<GLsizei>(size.width.get()));
     } else if (size.depth == TextureDepth{0}) {
-      glTextureStorage2D(*handle, levels.get(), rawFormat, size.width.get(), size.height.get());
+      glTextureStorage2D(*handle, static_cast<GLsizei>(levels.get()), rawFormat, static_cast<GLsizei>(size.width.get()),
+                         static_cast<GLsizei>(size.height.get()));
     } else {
-      glTextureStorage3D(*handle, levels.get(), rawFormat, size.width.get(), size.height.get(), size.depth.get());
+      glTextureStorage3D(*handle, static_cast<GLsizei>(levels.get()), rawFormat, static_cast<GLsizei>(size.width.get()),
+                         static_cast<GLsizei>(size.height.get()), static_cast<GLsizei>(size.depth.get()));
     }
   } else {
     // TODO: pixel data format
     if (target == TextureTarget::CubeMap) {
       for (auto i = 0u; i < 6u; ++i) {
         if (size.height == TextureHeight{0}) {
-          glTextureImage1DEXT(*handle, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, rawFormat, size.width.get(), 0, GL_RGBA,
-                              GL_UNSIGNED_BYTE, nullptr);
+          glTextureImage1DEXT(*handle, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, rawFormat,
+                              static_cast<GLsizei>(size.width.get()), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
         } else if (size.depth == TextureDepth{0}) {
-          glTextureImage2DEXT(*handle, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, rawFormat, size.width.get(),
-                              size.height.get(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+          glTextureImage2DEXT(*handle, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, rawFormat,
+                              static_cast<GLsizei>(size.width.get()), static_cast<GLsizei>(size.height.get()), 0,
+                              GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
         } else {
-          glTextureImage3DEXT(*handle, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, rawFormat, size.width.get(),
-                              size.height.get(), size.depth.get(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+          glTextureImage3DEXT(*handle, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, rawFormat,
+                              static_cast<GLsizei>(size.width.get()), static_cast<GLsizei>(size.height.get()),
+                              static_cast<GLsizei>(size.depth.get()), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
         }
       }
     } else {
       // TODO: this might fail
       if (size.height == TextureHeight{0}) {
-        glTextureImage1DEXT(*handle, rawTarget, 0, rawFormat, size.width.get(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-      } else if (size.depth == TextureDepth{0}) {
-        glTextureImage2DEXT(*handle, rawTarget, 0, rawFormat, size.width.get(), size.height.get(), 0, GL_RGBA,
+        glTextureImage1DEXT(*handle, rawTarget, 0, rawFormat, static_cast<GLsizei>(size.width.get()), 0, GL_RGBA,
                             GL_UNSIGNED_BYTE, nullptr);
+      } else if (size.depth == TextureDepth{0}) {
+        glTextureImage2DEXT(*handle, rawTarget, 0, rawFormat, static_cast<GLsizei>(size.width.get()),
+                            static_cast<GLsizei>(size.height.get()), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
       } else {
-        glTextureImage3DEXT(*handle, rawTarget, 0, rawFormat, size.width.get(), size.height.get(), size.depth.get(), 0,
-                            GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTextureImage3DEXT(*handle, rawTarget, 0, rawFormat, static_cast<GLsizei>(size.width.get()),
+                            static_cast<GLsizei>(size.height.get()), static_cast<GLsizei>(size.depth.get()), 0, GL_RGBA,
+                            GL_UNSIGNED_BYTE, nullptr);
       }
     }
   }
@@ -58,11 +66,11 @@ GpuOperationResult<TextureError> OpenGlTexture::create() {
 }
 
 void OpenGlTexture::setParam(TextureMinificationFilter filter) {
-  glTextureParameteri(*handle, GL_TEXTURE_MIN_FILTER, MinifyingFilterToGlConstant(filter));
+  glTextureParameteri(*handle, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(MinifyingFilterToGlConstant(filter)));
 }
 
 void OpenGlTexture::setParam(TextureMagnificationFilter filter) {
-  glTextureParameteri(*handle, GL_TEXTURE_MAG_FILTER, MagnifyingFilterToGlConstant(filter));
+  glTextureParameteri(*handle, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(MagnifyingFilterToGlConstant(filter)));
 }
 
 constexpr GLint OpenGlTexture::FormatToOpenGLConstant(TextureFormat format) {
@@ -123,7 +131,7 @@ constexpr GLint OpenGlTexture::FormatToOpenGLConstant(TextureFormat format) {
     case Depth24_Stencil8: return GL_DEPTH24_STENCIL8;
     case Depth32F_Stencil8: return GL_DEPTH32F_STENCIL8;
   }
-  assert(false && "this can't happen");
+  VERIFY(false, "Missing implementation for enum in switch");
   return {};
 }
 
@@ -138,7 +146,7 @@ constexpr GLenum OpenGlTexture::TargetToOpenGLConstant(TextureTarget target) {
     case Buffer: return GL_TEXTURE_BUFFER;
     case _2DMultisample: return GL_TEXTURE_2D_MULTISAMPLE;
   }
-  assert(false && "this can't happen");
+  VERIFY(false, "Missing implementation for enum in switch");
   return {};
 }
 
@@ -151,7 +159,7 @@ constexpr GLenum OpenGlTexture::MinifyingFilterToGlConstant(TextureMinificationF
     case NearestMipmapLinear: return GL_NEAREST_MIPMAP_LINEAR;
     case LinearMipmapLinear: return GL_LINEAR_MIPMAP_LINEAR;
   }
-  assert(false && "this can't happen");
+  VERIFY(false, "Missing implementation for enum in switch");
   return {};
 }
 
@@ -161,7 +169,7 @@ constexpr GLenum OpenGlTexture::MagnifyingFilterToGlConstant(TextureMagnificatio
     case Nearest: return GL_NEAREST;
     case Linear: return GL_LINEAR;
   }
-  assert(false && "this can't happen");
+  VERIFY(false, "Missing implementation for enum in switch");
   return {};
 }
 
@@ -172,26 +180,47 @@ constexpr GLenum OpenGlTexture::ImageTextureUnitAccessToGlConstant(ImageTextureU
     case ReadWrite: return GL_READ_WRITE;
     case WriteOnly: return GL_WRITE_ONLY;
   }
-  assert(false && "this can't happen");
+  VERIFY(false, "Missing implementation for enum in switch");
   return {};
 }
 
 void OpenGlTexture::bindTextureUnit(Binding unit) { glBindTextureUnit(unit.get(), *handle); }
 
 void OpenGlTexture::bindImage(Binding unit, ImageTextureUnitAccess access) {
-  glBindImageTexture(unit.get(), *handle, levels.get(), GL_FALSE, 0, ImageTextureUnitAccessToGlConstant(access),
-                     FormatToOpenGLConstant(format));
+  glBindImageTexture(unit.get(), *handle, static_cast<GLint>(levels.get()), GL_FALSE, 0,
+                     ImageTextureUnitAccessToGlConstant(access), FormatToOpenGLConstant(format));
 }
 
 GpuOperationResult<TextureError> OpenGlTexture::set2DdataImpl(std::span<const std::byte> data, TextureLevel level,
                                                               TextureOffset xOffset, TextureOffset yOffset,
                                                               TextureWidth width, TextureHeight height) {
+  int glFormat{};
+  int glSubImageFormat{};
+  switch (getFormat()) {
+    case TextureFormat::RGBA8:
+      glFormat = GL_RGBA8;
+      glSubImageFormat = GL_RGBA;
+      break;
+    case TextureFormat::RGB8:
+      glFormat = GL_RGB8;
+      glSubImageFormat = GL_RGB;
+      break;
+    case TextureFormat::R8:
+      glFormat = GL_R8;
+      glSubImageFormat = GL_RED;
+      break;
+    default:
+      return GpuError{TextureError::WrongDataFormat,
+                      fmt::format("Currently unsupported format '{}' in OpenGlTexture::set2DdataImpl",
+                                  magic_enum::enum_name(getFormat()))};
+  }
   // FIXME: different types support
   // TODO: move this call somewhere where it actually should be
-  glTextureStorage2D(*handle, 1, GL_RGBA8, width.get(), height.get());
+  glTextureStorage2D(*handle, 1, glFormat, static_cast<GLsizei>(width.get()), static_cast<GLsizei>(height.get()));
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glTextureSubImage2D(*handle, level.get(), xOffset.get(), yOffset.get(), width.get(), height.get(), GL_RGBA,
-                      GL_UNSIGNED_BYTE, data.data());
+  glTextureSubImage2D(*handle, static_cast<GLint>(level.get()), static_cast<GLsizei>(xOffset.get()),
+                      static_cast<GLsizei>(yOffset.get()), static_cast<GLsizei>(width.get()),
+                      static_cast<GLsizei>(height.get()), glSubImageFormat, GL_UNSIGNED_BYTE, data.data());
   return std::nullopt;
 }
 

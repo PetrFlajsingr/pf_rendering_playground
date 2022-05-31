@@ -5,20 +5,32 @@
 #include "Mode.h"
 
 #include "spdlog/spdlog.h"
+#include <assert.hpp>
 #include <utility>
 
 namespace pf {
 
-const toml::table &Mode::getConfig() const { return config; }
+const toml::table &Mode::getConfig() {
+  updateConfig();
+  return config;
+}
 
 ModeState Mode::getState() const { return state; }
 
 void Mode::initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                       const std::shared_ptr<glfw::Window> &window, toml::table modeConfig,
                       std::shared_ptr<ThreadPool> workerThreads) {
+  VERIFY(imguiInterface != nullptr);
+  VERIFY(window != nullptr);
+  VERIFY(workerThreads != nullptr);
   config = std::move(modeConfig);
+
   auto sinks = createLoggerSinks();
+  VERIFY(std::ranges::all_of(sinks, [](const auto sink) { return sink != nullptr; }));
   logger = std::make_shared<spdlog::logger>(getName(), sinks.begin(), sinks.end());
+  spdlog::register_logger(logger);
+  logger->set_level(spdlog::level::trace);
+
   logger->info("Initializing", getName());
   initialize_impl(imguiInterface, window, std::move(workerThreads));
   state = ModeState::Initialised;
@@ -44,9 +56,12 @@ void Mode::deinitialize() {
   deinitialize_impl();
   state = ModeState::Uninitialised;
   logger->info("Deinitialized", getName());
+  spdlog::drop(logger->name());
   logger = nullptr;
 }
 
-spdlog::logger &Mode::getLogger() { return *logger; }
+spdlog::logger &Mode::getLogger() const { return *logger; }
+
+const std::shared_ptr<spdlog::logger> &Mode::getLoggerShared() { return logger; }
 
 }  // namespace pf

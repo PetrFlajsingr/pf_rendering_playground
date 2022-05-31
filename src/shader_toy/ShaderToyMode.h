@@ -4,12 +4,12 @@
 
 #pragma once
 
+#include "controllers/MainController.h"
 #include "glm/ext/vector_uint2.hpp"
-#include "modes/Mode.h"
-#include "ui/UI.h"
-#include <future>
-#include "gpu/Texture.h"
 #include "gpu/Program.h"
+#include "gpu/Texture.h"
+#include "modes/Mode.h"
+#include <future>
 #include <glm/glm.hpp>
 #include <utils/FPSCounter.h>
 
@@ -33,23 +33,34 @@ class ShaderToyMode : public Mode {
   void deinitialize_impl() override;
   void render(std::chrono::nanoseconds timeDelta) override;
 
+  void updateConfig() override;
+
  private:
+  void createModels();
+  void loadModelsFromConfig();
+
+  void createControllers();
+
   void resetCounters();
 
   void initializeTexture(TextureSize textureSize);
 
   [[nodiscard]] glm::uvec2 getTextureSize() const;
 
+  void checkShaderStatus();
   void compileShader(const std::string &shaderCode);
   void compileShader_impl(const std::string &shaderCode);
+
+  [[nodiscard]] MouseState getMouseState() const;
+
+  void setUniforms(float timeFloat, float timeDeltaFloat, MouseState mouseState);
+  void setBindings();
 
   void updateUI();
 
   struct ConfigData {
     std::filesystem::path resourcesPath;
   } configData;
-
-  std::unique_ptr<UI> ui = nullptr;
 
   std::int32_t frameCounter = 0;
   std::chrono::nanoseconds totalTime{0};
@@ -62,9 +73,8 @@ class ShaderToyMode : public Mode {
   std::string currentShaderSrc{};
   std::shared_ptr<glfw::Window> glfwWindow = nullptr;
   glm::vec2 mousePos{};
-
-  std::vector<std::shared_ptr<ValueRecord>> userDefinedUniforms;
-  std::vector<std::pair<std::string, std::shared_ptr<Texture>>> userDefinedTextures;
+  std::shared_ptr<ImageLoader> imageLoader;
+  std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface = nullptr;
 
   std::function<std::size_t(std::size_t)> shaderLineMapping;
 
@@ -79,8 +89,16 @@ class ShaderToyMode : public Mode {
 
   bool previousShaderCompilationDone = true;
 
-  std::chrono::steady_clock::time_point lastFPSVisualUpdate{};
-  std::chrono::milliseconds FPSVisualUpdateFrequency{100};
+  struct {
+    std::shared_ptr<ShaderVariablesModel> shaderVariables;
+    std::shared_ptr<UserImageAssetsModel> imageAssets;
+    std::shared_ptr<GlslEditorModel> codeEditor;
+    std::shared_ptr<OutputModel> output;
+  } models;
+
+  std::unique_ptr<MainController> mainController{};
+
+
 
   constexpr static auto DEFAULT_SHADER_SOURCE = R"glsl(
 void main() {

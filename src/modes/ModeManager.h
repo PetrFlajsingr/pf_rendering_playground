@@ -6,6 +6,8 @@
 
 #include "Mode.h"
 #include <pf_common/parallel/ThreadPool.h>
+#include <pf_imgui/elements/LogPanel.h>
+#include "common_ui/controllers/LogWindowController.h"
 
 namespace pf {
 
@@ -13,7 +15,7 @@ class ModeManager {
  public:
   using Error = std::string;
 
-  ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> window,
+  ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> glfwWindow,
               toml::table config, std::size_t workerThreadCount);
   ~ModeManager();
 
@@ -22,7 +24,7 @@ class ModeManager {
   std::optional<Error> addMode(std::shared_ptr<Mode> mode);
 
   std::optional<Error> activateMode(const std::string &name);
-  std::optional<Error> activateMode(const std::shared_ptr<Mode> &mode);
+  std::optional<Error> activateMode(const std::shared_ptr<Mode> &modeToActivate);
 
   void render(std::chrono::nanoseconds timeDelta);
 
@@ -40,7 +42,7 @@ class ModeManager {
 
   [[nodiscard]] std::optional<ModeRecord *> findModeByName(const std::string &name);
 
-  std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface;
+  std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface;
   std::shared_ptr<glfw::Window> window;
   toml::table config;
 
@@ -51,6 +53,11 @@ class ModeManager {
   std::list<ModeRecord> modes;
 
   ui::ig::SubMenu &subMenu;
+  ui::ig::MenuCheckboxItem &showMainLogWindowCheckboxItem;
+  ui::ig::MenuSeparatorItem &subMenuSeparator;
+
+  std::unique_ptr<LogWindowController> logWindowController;
+
   ui::ig::Text &statusBarText;
   std::shared_ptr<spdlog::logger> logger;
 };

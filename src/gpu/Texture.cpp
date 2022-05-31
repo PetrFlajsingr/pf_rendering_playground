@@ -23,4 +23,15 @@ TextureLevel Texture::getTextureLevels() const { return levels; }
 
 TextureSize Texture::getSize() const { return size; }
 
+std::size_t Texture::calculateExpectedDataSize(TextureWidth width, TextureHeight height) const {
+  std::size_t elementCount{};
+  // TODO: more formats
+  switch (getFormat()) {
+    case TextureFormat::RGBA8: elementCount = 4; break;
+    case TextureFormat::RGB8: elementCount = 3; break;
+    case TextureFormat::R8: elementCount = 1; break;
+  }
+  return width.get() * height.get() * elementCount;
+}
+
 }  // namespace pf

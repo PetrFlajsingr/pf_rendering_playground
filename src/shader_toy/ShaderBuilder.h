@@ -4,16 +4,16 @@
 
 #pragma once
 
+#include "utils/glsl/glsl_typenames.h"
 #include <functional>
 #include <glm/glm.hpp>
 #include <pf_common/concepts/OneOf.h>
 #include <pf_common/enums.h>
 #include <string>
-#include <utils/glsl_typenames.h>
 #include <vector>
 
 namespace pf::shader_toy {
-
+// TODO: rewrite this :)
 struct UniformInfo {
   std::string type;
   std::string varName;
@@ -52,9 +52,9 @@ class ShaderBuilder {
   [[nodiscard]] Result build(std::string userCode);
 
  private:
-  std::string uniformsAsString(const std::vector<UniformInfo> &uniforms);
-  std::string image2DsAsString(const std::vector<Image2DInfo> &uniforms);
-  std::string definesAsString(const std::vector<ShaderDefine> &defines);
+  std::string uniformsAsString(const std::vector<UniformInfo> &uniformInfos);
+  std::string image2DsAsString(const std::vector<Image2DInfo> &image2DInfos);
+  std::string definesAsString(const std::vector<ShaderDefine> &shaderDefines);
 
   std::string addTextureAccessCheck(std::string src, const std::string &textureName);
 
@@ -109,10 +109,10 @@ std::string ShaderBuilder::getEnumTypeName() const {
   auto iter1 = enumTypeName.begin();
   auto iter2 = iter1 + 1;
   for (; iter2 != enumTypeName.end(); ++iter1, ++iter2) {
-    result.push_back(::toupper(*iter1));
+    result.push_back(static_cast<char>(::toupper(*iter1)));
     if (::islower(*iter1) && ::isupper(*iter2)) { result.push_back('_'); }
   }
-  result.push_back(::toupper(*iter1));
+  result.push_back(static_cast<char>(::toupper(*iter1)));
   return result;
 }
 }  // namespace pf::shader_toy

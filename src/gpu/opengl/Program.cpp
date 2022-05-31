@@ -5,6 +5,7 @@
 #include "Program.h"
 #include "spdlog/spdlog.h"
 #include "utils/opengl_utils.h"
+#include <assert.hpp>
 
 namespace pf {
 
@@ -15,6 +16,7 @@ GpuOperationResult<ProgramError> OpenGlProgram::createImpl() {
 
   std::ranges::for_each(shaders, [&](const auto &shader) {
     const auto openGlShader = shader->as<OpenGlShader>();
+    DEBUG_ASSERT(openGlShader.has_value());
     glAttachShader(programHandle, openGlShader.value()->getHandle());
   });
 
@@ -65,7 +67,7 @@ std::vector<UniformInfo> OpenGlProgram::extractUniforms() {
       result.emplace_back(UniformLocation{static_cast<std::uint32_t>(location)}, shaderValueType.value(),
                           std::move(name), length);
     } else {
-      spdlog::error("Error while extracting uniform infos: 'Type not supported'");
+      DEBUG_ASSERT(false, "Came across unsupported type in shader program");
     }
   }
   return result;
@@ -95,7 +97,7 @@ std::vector<AttributeInfo> OpenGlProgram::extractAttributes() {
       result.emplace_back(AttributeLocation{static_cast<std::uint32_t>(location)}, shaderValueType.value(),
                           std::move(name), length);
     } else {
-      spdlog::error("Error while extracting attribute infos: 'Type not supported'");
+      DEBUG_ASSERT(false, "Came across unsupported type in shader program");
     }
   }
   return result;
@@ -118,7 +120,7 @@ std::vector<BufferInfo> OpenGlProgram::extractBuffers() {
   std::vector<BufferInfo> result{};
   GLint bufferCount;
   glGetProgramInterfaceiv(*handle, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &bufferCount);
-  for (GLuint i = 0; i < bufferCount; ++i) {
+  for (GLint i = 0; i < bufferCount; ++i) {
     std::string name = getResourceName(GL_SHADER_STORAGE_BLOCK, i);
     {
       std::size_t pos = name.find("[0]");
@@ -187,7 +189,7 @@ void OpenGlProgram::setUniformImpl(UniformLocation location, std::variant<PF_SHA
 void OpenGlProgram::dispatchImpl(std::uint32_t x, std::uint32_t y, std::uint32_t z) { glDispatchCompute(x, y, z); }
 
 std::variant<PF_SHADER_VALUE_TYPES> OpenGlProgram::getUniformValueImpl(const UniformInfo &info) {
-  return getOGLuniform(*handle, info.location.get(), info.type);
+  return getOGLuniform(*handle, static_cast<GLint>(info.location.get()), info.type);
 }
 
 }  // namespace pf
