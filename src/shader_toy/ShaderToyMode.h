@@ -99,7 +99,6 @@ class ShaderToyMode : public Mode {
   std::unique_ptr<MainController> mainController{};
 
 
-
   constexpr static auto DEFAULT_SHADER_SOURCE = R"glsl(
 void main() {
   const ivec2 texSize = imageSize(outImage);

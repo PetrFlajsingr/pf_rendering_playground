@@ -13,15 +13,16 @@ namespace pf {
 namespace gui = ui::ig;
 // TODO: ui controller
 ModeManager::ModeManager(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> glfwWindow,
-                         toml::table config, std::size_t workerThreadCount)
+                         std::shared_ptr<RenderThread> renderingThread, toml::table config,
+                         std::size_t workerThreadCount)
     : imguiInterface(std::move(imGuiInterface)), window(std::move(glfwWindow)), config(std::move(config)),
-      workerThreads(std::make_shared<ThreadPool>(workerThreadCount)),
+      workerThreads(std::make_shared<ThreadPool>(workerThreadCount)), renderThread(std::move(renderingThread)),
       subMenu(imguiInterface->createOrGetMenuBar().addSubmenu("modes_menu", "Modes")),
       showMainLogWindowCheckboxItem(
           subMenu.addCheckboxItem("show_main_log", "Show combined log window", false, gui::Persistent::Yes)),
       subMenuSeparator(subMenu.addSeparator("sep1")),
-      statusBarText(imguiInterface->createOrGetStatusBar().createChild<gui::Text>("mode_mgr_sb_text",
-                                                                                        "Current mode: <none>")),
+      statusBarText(
+          imguiInterface->createOrGetStatusBar().createChild<gui::Text>("mode_mgr_sb_text", "Current mode: <none>")),
       logger{std::make_shared<spdlog::logger>("NodeManager", std::make_shared<spdlog::sinks::stdout_color_sink_st>())} {
   VERIFY(imguiInterface != nullptr);
   VERIFY(window != nullptr);
@@ -58,9 +59,7 @@ toml::table ModeManager::getConfig() const {
 }
 
 std::optional<ModeManager::Error> ModeManager::addMode(std::shared_ptr<Mode> mode) {
-  if (!ASSERT(mode != nullptr)) {
-    return "Invalid value";
-  }
+  if (!ASSERT(mode != nullptr)) { return "Invalid value"; }
   if (const auto modeOpt = findModeByName(mode->getName()); modeOpt.has_value()) {
     return "Model with the same name is already in ModeManager";
   }
@@ -89,9 +88,7 @@ std::optional<ModeManager::Error> ModeManager::activateMode(const std::string &n
 }
 
 std::optional<ModeManager::Error> ModeManager::activateMode(const std::shared_ptr<Mode> &modeToActivate) {
-  if (!ASSERT(modeToActivate != nullptr)) {
-    return "Invalid value";
-  }
+  if (!ASSERT(modeToActivate != nullptr)) { return "Invalid value"; }
   logger->info("Activating mode '{}'", modeToActivate->getName());
   if (activeMode != nullptr && activeMode->mode == modeToActivate) {
     logger->info("[NodeManager] Mode already active '{}'", modeToActivate->getName());
@@ -107,8 +104,8 @@ std::optional<ModeManager::Error> ModeManager::activateMode(const std::shared_pt
   return "Mode not managed by ModeManager";
 }
 
-void ModeManager::render(std::chrono::nanoseconds timeDelta) {
-  if (activeMode != nullptr) { activeMode->mode->render(timeDelta); }
+void ModeManager::render([[maybe_unused]] std::chrono::nanoseconds timeDelta) {
+  //FIXME: if (activeMode != nullptr) { activeMode->mode->render(timeDelta); }
 }
 
 void ModeManager::deactivateModes() {

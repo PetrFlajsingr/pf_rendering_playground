@@ -29,7 +29,7 @@ class SimpleRenderCommand : public RenderCommand {
   std::function<void()> job;
 };
 
-RenderCommand::~RenderCommand() = default;
+inline RenderCommand::~RenderCommand() = default;
 
 class RenderThread {
  public:
