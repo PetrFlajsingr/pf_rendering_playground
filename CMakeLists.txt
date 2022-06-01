@@ -150,7 +150,7 @@ add_executable(${PROJECT_NAME}
         src/shader_toy/models/MainModel.h
         src/shader_toy/views/MainView.cpp
         src/shader_toy/views/MainView.h
-        )
+        src/gpu/RenderThread.cpp src/gpu/RenderThread.h)
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOGDI)
 target_link_libraries(${PROJECT_NAME} glad
