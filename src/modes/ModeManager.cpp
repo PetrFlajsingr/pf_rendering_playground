@@ -23,7 +23,7 @@ ModeManager::ModeManager(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, st
       subMenuSeparator(subMenu.addSeparator("sep1")),
       statusBarText(
           imguiInterface->createOrGetStatusBar().createChild<gui::Text>("mode_mgr_sb_text", "Current mode: <none>")),
-      logger{std::make_shared<spdlog::logger>("NodeManager", std::make_shared<spdlog::sinks::stdout_color_sink_st>())} {
+      logger{std::make_shared<spdlog::logger>("NodeManager", std::make_shared<spdlog::sinks::stdout_color_sink_mt>())} {
   VERIFY(imguiInterface != nullptr);
   VERIFY(window != nullptr);
 

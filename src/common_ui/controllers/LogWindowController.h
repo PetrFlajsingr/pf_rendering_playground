@@ -15,7 +15,7 @@ class LogWindowController : public Controller<LogWindowView, LogModel> {
  public:
   LogWindowController(std::unique_ptr<LogWindowView> uiView, std::shared_ptr<LogModel> mod);
 
-  [[nodiscard]] std::shared_ptr<PfImguiLogSink_st> createSpdlogSink();
+  [[nodiscard]] std::shared_ptr<PfImguiLogSink_mt> createSpdlogSink();
 
   void show();
   void hide();
