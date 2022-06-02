@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "gpu/RenderThread.h"
 #include <pf_common/parallel/ThreadPool.h>
 #include <pf_glfw/Window.h>
 #include <pf_imgui/ImGuiInterface.h>
@@ -28,11 +29,11 @@ class Mode {
  protected:
   void initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                   const std::shared_ptr<glfw::Window> &window, toml::table modeConfig,
-                  std::shared_ptr<ThreadPool> workerThreads);
+                  std::shared_ptr<ThreadPool> workerThreads, std::shared_ptr<RenderThread> renderThread);
 
   virtual void initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
-                               const std::shared_ptr<glfw::Window> &window,
-                               std::shared_ptr<ThreadPool> workerThreads) = 0;
+                               const std::shared_ptr<glfw::Window> &window, std::shared_ptr<ThreadPool> workerThreads,
+                               std::shared_ptr<RenderThread> renderThread) = 0;
 
   virtual std::vector<std::shared_ptr<spdlog::sinks::sink>> createLoggerSinks() = 0;
 

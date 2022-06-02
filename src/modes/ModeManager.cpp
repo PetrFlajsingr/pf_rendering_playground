@@ -104,8 +104,10 @@ std::optional<ModeManager::Error> ModeManager::activateMode(const std::shared_pt
   return "Mode not managed by ModeManager";
 }
 
+bool ModeManager::isModeActive() const { return activeMode != nullptr; }
+
 void ModeManager::render([[maybe_unused]] std::chrono::nanoseconds timeDelta) {
-  //FIXME: if (activeMode != nullptr) { activeMode->mode->render(timeDelta); }
+  if (activeMode != nullptr) { activeMode->mode->render(timeDelta); }
 }
 
 void ModeManager::deactivateModes() {
@@ -139,7 +141,7 @@ void ModeManager::activateMode_impl(ModeManager::ModeRecord *mode) {
     if (const auto iter = config.find(mode->name); iter != config.end()) {
       if (auto configTable = iter->second.as_table(); configTable != nullptr) { modeConfig = *configTable; }
     }
-    mode->mode->initialize(imguiInterface, window, modeConfig, workerThreads);
+    mode->mode->initialize(imguiInterface, window, modeConfig, workerThreads, renderThread);
     mode->mode->logger->sinks().emplace_back(logWindowController->createSpdlogSink());
   }
   if (mode->mode->getState() != ModeState::Active) { mode->mode->activate(); }

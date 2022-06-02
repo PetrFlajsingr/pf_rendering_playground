@@ -137,13 +137,16 @@ tl::expected<ImageData, std::string> StbImageLoader::loadImage(const std::filesy
   const auto dataSpan = std::span{reinterpret_cast<const std::byte *>(data), static_cast<std::size_t>(x * y * n)};
   auto stbFree = RAII{[&] { stbi_image_free(data); }};
   return ImageData{{TextureSize{TextureWidth{static_cast<std::uint32_t>(x)},
-                                TextureHeight{static_cast<std::uint32_t>(y)}, TextureDepth{1}},
+                                TextureHeight{static_cast<std::uint32_t>(y)}, TextureDepth{0}},
                     ChannelCount{static_cast<std::uint8_t>(n)}},
                    std::vector<std::byte>{dataSpan.begin(), dataSpan.end()}};
 }
 
-OpenGLStbImageLoader::OpenGLStbImageLoader(const std::shared_ptr<ThreadPool> &threadPool)
-    : StbImageLoader(threadPool) {}
+OpenGLStbImageLoader::OpenGLStbImageLoader(const std::shared_ptr<ThreadPool> &threadPool,
+                                           std::shared_ptr<RenderThread> renderingThread)
+    : StbImageLoader(threadPool), renderThread(std::move(renderingThread)) {
+  VERIFY(renderThread != nullptr);
+}
 
 tl::expected<std::shared_ptr<Texture>, std::string>
 OpenGLStbImageLoader::loadTexture(const std::filesystem::path &imagePath) {
@@ -161,8 +164,9 @@ void OpenGLStbImageLoader::loadTextureAsync(
   enqueue([this, imagePath, onLoadDone] {
     auto imageData = loadImage(imagePath);
     if (imageData.has_value()) {
-      MainLoop::Get()->enqueue([this, onLoadDone, imageData = std::move(imageData.value())] {
-        onLoadDone(createAndFillTexture(imageData));
+      renderThread->enqueue([this, onLoadDone, imageData = std::move(imageData.value())] {
+        auto textureCreateResult = createAndFillTexture(imageData);
+        enqueue([onLoadDone, result = std::move(textureCreateResult)] { onLoadDone(result); });
       });
     } else {
       onLoadDone(tl::make_unexpected(imageData.error()));
@@ -185,8 +189,9 @@ void OpenGLStbImageLoader::loadTextureWithChannelsAsync(
   enqueue([this, imagePath, onLoadDone, requiredChannels] {
     auto imageData = loadImageWithChannels(imagePath, requiredChannels);
     if (imageData.has_value()) {
-      MainLoop::Get()->enqueue([this, onLoadDone, imageData = std::move(imageData.value())] {
-        onLoadDone(createAndFillTexture(imageData));
+      renderThread->enqueue([this, onLoadDone, imageData = std::move(imageData.value())] {
+        auto textureCreateResult = createAndFillTexture(imageData);
+        enqueue([onLoadDone, result = std::move(textureCreateResult)] { onLoadDone(result); });
       });
     } else {
       onLoadDone(tl::make_unexpected(imageData.error()));

@@ -103,8 +103,13 @@ int main(int argc, char *argv[]) {
   pf::ModeManager modeManager{imguiInterface, window, renderThread, modeManagerConfig, 4};
 
   modeManager.addMode(std::make_shared<pf::shader_toy::ShaderToyMode>(resourcesFolder));
+  glfwMakeContextCurrent(nullptr);
+  renderThread->startFrame();
   modeManager.activateMode("ShaderToy");
+  renderThread->endFrame();
+  window->setCurrent();
   modeManager.addMode(std::make_shared<pf::DummyMode>());
+
 
   glfw.setSwapInterval(0);
   pf::MainLoop::Get()->setOnMainLoop([&](auto time) {
@@ -114,7 +119,7 @@ int main(int argc, char *argv[]) {
 
     imguiInterface->render();
     modeManager.render(time);
-    
+
     renderThread->endFrame();
 
     window->setCurrent();

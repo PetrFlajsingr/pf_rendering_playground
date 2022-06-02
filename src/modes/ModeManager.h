@@ -27,6 +27,8 @@ class ModeManager {
   std::optional<Error> activateMode(const std::string &name);
   std::optional<Error> activateMode(const std::shared_ptr<Mode> &modeToActivate);
 
+  [[nodiscard]] bool isModeActive() const;
+
   void render(std::chrono::nanoseconds timeDelta);
 
  private:
