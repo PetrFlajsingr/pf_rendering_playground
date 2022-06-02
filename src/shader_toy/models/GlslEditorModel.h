@@ -39,4 +39,3 @@ class GlslEditorModel : public SavableModel {
 };
 
 }  // namespace pf
-

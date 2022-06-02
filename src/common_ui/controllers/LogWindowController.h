@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "mvc/Controller.h"
-#include "../views/LogWindowView.h"
 #include "../models/LogModel.h"
+#include "../views/LogWindowView.h"
 #include "log/UISink.h"
+#include "mvc/Controller.h"
 
 namespace pf {
 

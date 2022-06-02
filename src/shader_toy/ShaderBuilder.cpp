@@ -32,8 +32,8 @@ std::string ShaderBuilder::uniformsAsString(const std::vector<UniformInfo> &unif
 std::string ShaderBuilder::image2DsAsString(const std::vector<Image2DInfo> &image2DInfos) {
   std::string result;
   std::ranges::for_each(image2DInfos, [&](const Image2DInfo &imageInfo) {
-    result.append(fmt::format("layout({}, binding = {}) uniform image2D {};\n", imageInfo.format,
-                              bindingCounter++, imageInfo.name));
+    result.append(fmt::format("layout({}, binding = {}) uniform image2D {};\n", imageInfo.format, bindingCounter++,
+                              imageInfo.name));
   });
   return result;
 }
@@ -93,9 +93,10 @@ layout(local_size_x={}, local_size_y={})in;
   const auto sourceWithUserCode = sourceWithoutUserCode + userCode;
   const auto startOffset = static_cast<std::size_t>(std::ranges::count(sourceWithoutUserCode, '\n') + 1);
   const auto dimensionCheckPos = sourceWithUserCode.find("_pf_generated_renderTextureSize");
-  const auto dimensionCheckLine = static_cast<std::size_t>(dimensionCheckPos != std::string::npos
-      ? std::ranges::count(sourceWithUserCode.begin(), sourceWithUserCode.begin() + dimensionCheckPos, '\n')
-      : -1);
+  const auto dimensionCheckLine = static_cast<std::size_t>(
+      dimensionCheckPos != std::string::npos
+          ? std::ranges::count(sourceWithUserCode.begin(), sourceWithUserCode.begin() + dimensionCheckPos, '\n')
+          : -1);
   const auto dimensionCheckLineCount = static_cast<std::size_t>(std::ranges::count(dimensionCheckTemplate, '\n'));
 
   Result result;

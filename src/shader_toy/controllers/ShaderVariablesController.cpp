@@ -92,7 +92,9 @@ void ShaderVariablesController::showAddVariableDialog() {
         } else {
           getTypeForGlslName(typeName, [&]<typename T>() {
             if constexpr (isUnsupportedType.operator()<T>()) {
-              DEBUG_ASSERT(false, "This code should be unreachable"); // this needs to be here due to template instantiation errors
+              DEBUG_ASSERT(
+                  false,
+                  "This code should be unreachable");  // this needs to be here due to template instantiation errors
             } else if constexpr (std::same_as<T, bool>) {
               model->addVariable(varName, false);
             } else {
@@ -121,7 +123,8 @@ void ShaderVariablesController::createUIForShaderVariableModel(const std::shared
           subscriptions.emplace(varModel, std::move(subscription));
         };
         if constexpr (isUnsupportedType.operator()<T>()) {
-          DEBUG_ASSERT(false, "This code should be unreachable"); // this needs to be here due to template instantiation errors
+          DEBUG_ASSERT(
+              false, "This code should be unreachable");  // this needs to be here due to template instantiation errors
         } else if constexpr (std::same_as<T, gui::Color>) {
           auto &colorInput = view->addColorInput(*varModel->name, value);
           registerListeners(colorInput);
@@ -139,6 +142,5 @@ void ShaderVariablesController::createUIForShaderVariableModel(const std::shared
 void ShaderVariablesController::show() { view->getWindow().setVisibility(gui::Visibility::Visible); }
 
 void ShaderVariablesController::hide() { view->getWindow().setVisibility(gui::Visibility::Invisible); }
-
 
 }  // namespace pf

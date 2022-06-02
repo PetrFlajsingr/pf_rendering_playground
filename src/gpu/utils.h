@@ -6,10 +6,10 @@
 
 #include "Texture.h"
 #include "gpu/opengl/Texture.h"
+#include <assert.hpp>
 #include <filesystem>
 #include <imgui.h>
 #include <stb/stb_image.h>
-#include <assert.hpp>
 
 namespace pf {
 
@@ -33,7 +33,8 @@ namespace pf {
   return std::nullopt;
 }
 
-[[nodiscard]] inline tl::expected<std::vector<std::byte>, std::string> getTextureData(const std::filesystem::path &path) {
+[[nodiscard]] inline tl::expected<std::vector<std::byte>, std::string>
+getTextureData(const std::filesystem::path &path) {
   int x;
   int y;
   int n;

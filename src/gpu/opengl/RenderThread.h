@@ -23,4 +23,3 @@ class OpenGlRenderThread : public RenderThread {
 };
 
 }  // namespace pf
-

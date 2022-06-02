@@ -3,6 +3,8 @@
 //
 
 #include "GlslToSpirv.h"
+#include "DefaultBuiltinResource.h"
+#include "DirStackFileIncluder.h"
 #include "glslang/Include/ResourceLimits.h"
 #include "glslang/Public/ShaderLang.h"
 #include "glslang/SPIRV/GlslangToSpv.h"
@@ -12,8 +14,6 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include "DirStackFileIncluder.h"
-#include "DefaultBuiltinResource.h"
 
 namespace pf {
 
