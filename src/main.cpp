@@ -1,5 +1,5 @@
 #include "glad/glad.h"
-#include "gpu/RenderThread.h"
+#include "gpu/opengl/RenderThread.h"
 #include "imgui/ImGuiGlfwOpenGLInterface.h"
 #include "modes/DummyMode.h"
 #include "modes/ModeManager.h"
@@ -73,12 +73,13 @@ int main(int argc, char *argv[]) {
                                    .majorOpenGLVersion = 4,
                                    .minorOpenGLVersion = 6});
   window->setCurrent();
+
   if (!gladLoadGLLoader((GLADloadproc) glfw.getLoaderFnc())) {
     spdlog::error("Error while initializing GLAD");
     return -1;
   }
 
-  auto renderThread = std::make_shared<pf::OpenGlRenderThread>();
+  auto renderThread = std::make_shared<pf::OpenGlRenderThread>(window);
 
   const auto imguiConfig = *config["imgui"].as_table();
   auto imguiInterface = std::make_shared<pf::ui::ig::ImGuiGlfwOpenGLInterface>(pf::ui::ig::ImGuiGlfwOpenGLConfig{
@@ -108,9 +109,15 @@ int main(int argc, char *argv[]) {
   glfw.setSwapInterval(0);
   pf::MainLoop::Get()->setOnMainLoop([&](auto time) {
     if (window->shouldClose()) { pf::MainLoop::Get()->stop(); }
+    glfwMakeContextCurrent(nullptr);
+    renderThread->startFrame();
+
     imguiInterface->render();
     modeManager.render(time);
-    renderThread->waitForDone();
+    
+    renderThread->endFrame();
+
+    window->setCurrent();
     window->swapBuffers();
     glfw.pollEvents();
   });

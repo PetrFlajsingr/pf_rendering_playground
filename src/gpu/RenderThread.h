@@ -5,11 +5,11 @@
 #pragma once
 
 #include <concepts>
+#include <functional>
 #include <future>
 #include <pf_common/parallel/SafeQueue.h>
 #include <thread>
 #include <vector>
-#include <functional>
 
 namespace pf {
 
@@ -41,25 +41,22 @@ class RenderThread {
   }
   void enqueue(std::unique_ptr<RenderCommand> command);
 
+  virtual void startFrame() = 0;
+  virtual void endFrame() = 0;
   // waits for last command currently in the queue to be finished
   virtual void waitForDone() = 0;
 
   void shutdown();
 
+ protected:
+  virtual void runImpl();
+  // TODO: use a more efficient queue (same goes for ThreadPool, just replace it in pf_common with concurrentqueue or something)
+  SafeQueue<std::unique_ptr<RenderCommand>> commandQueue;
+
  private:
   void run();
 
   std::thread thread;
-  // TODO: use a more efficient queue (same goes for ThreadPool, just replace it in pf_common with concurrentqueue or something)
-  SafeQueue<std::unique_ptr<RenderCommand>> commandQueue;
-};
-
-class OpenGlRenderThread : public RenderThread {
- public:
-  OpenGlRenderThread() = default;
-  ~OpenGlRenderThread() override = default;
-
-  void waitForDone() override;
 };
 
 }  // namespace pf

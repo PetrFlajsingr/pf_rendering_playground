@@ -12,13 +12,13 @@ namespace pf::ui::ig {
 ImGuiGlfwOpenGLInterface::ImGuiGlfwOpenGLInterface(ImGuiGlfwOpenGLConfig config)
     : ImGuiInterface(std::move(config.imgui)), renderThread(std::move(config.renderThread)) {
   ImGui_ImplGlfw_InitForOpenGL(config.windowHandle, true);
-  /*renderThread->enqueue([] {*/ ImGui_ImplOpenGL3_Init(); /*});*/
+  ImGui_ImplOpenGL3_Init();
   renderThread->waitForDone();
   updateFonts();
 }
 
 ImGuiGlfwOpenGLInterface::~ImGuiGlfwOpenGLInterface() {
-  /*renderThread->enqueue([] {*/ ImGui_ImplOpenGL3_Shutdown(); /*});*/
+  ImGui_ImplOpenGL3_Shutdown();
   renderThread->waitForDone();
   ImGui_ImplGlfw_Shutdown();
 }
@@ -32,7 +32,7 @@ void ImGuiGlfwOpenGLInterface::processInput() {
 }
 
 void ImGuiGlfwOpenGLInterface::newFrame_impl() {
-  /*renderThread->enqueue([] {*/ ImGui_ImplOpenGL3_NewFrame(); /*});*/
+  renderThread->enqueue([] { ImGui_ImplOpenGL3_NewFrame(); });
   renderThread->waitForDone();
   ImGui_ImplGlfw_NewFrame();
 }
@@ -50,8 +50,7 @@ void ImGuiGlfwOpenGLInterface::render() {
   RAII endFrameRAII{[&] {
     ImGui::Render();
     const auto drawData = ImGui::GetDrawData();
-    /*renderThread->enqueue([this, drawData] {*/ renderDrawData_impl(drawData); /*});*/
-    renderThread->waitForDone();
+    renderThread->enqueue([this, drawData] { renderDrawData_impl(drawData); });
     if (getIo().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
       ImGui::UpdatePlatformWindows();
       ImGui::RenderPlatformWindowsDefault();

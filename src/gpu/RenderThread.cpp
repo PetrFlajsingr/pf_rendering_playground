@@ -3,7 +3,6 @@
 //
 
 #include "RenderThread.h"
-#include <glad/glad.h>
 
 namespace pf {
 
@@ -20,7 +19,7 @@ void RenderThread::enqueue(std::unique_ptr<RenderCommand> command) { commandQueu
 
 void RenderThread::shutdown() { commandQueue.shutdown(); }
 
-void RenderThread::run() {
+void RenderThread::runImpl() {
   while (true) {
     auto command = commandQueue.dequeue();
     if (command.has_value()) {
@@ -31,15 +30,6 @@ void RenderThread::run() {
   }
 }
 
-void OpenGlRenderThread::waitForDone() {
-  auto promise = std::make_shared<std::promise<void>>();
-  auto fence = promise->get_future();
-  enqueue([promise = std::move(promise)] {
-    glFinish();
-    promise->set_value();
-  });
-
-  fence.get();
-}
+void RenderThread::run() { runImpl(); }
 
 }  // namespace pf
