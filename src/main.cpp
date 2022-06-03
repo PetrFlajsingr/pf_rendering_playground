@@ -124,9 +124,7 @@ int main(int argc, char *argv[]) {
     glfw.pollEvents();
   });
 
-  spdlog::info("Starting main loop");
   pf::MainLoop::Get()->run();
-  spdlog::info("Main loop ended");
 
   saveConfig(config, *imguiInterface, window, modeManager);
   return 0;
