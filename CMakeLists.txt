@@ -56,7 +56,7 @@ find_package(pf_glfw CONFIG REQUIRED)
 find_package(pf_mainloop CONFIG REQUIRED)
 find_package(pf_imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
-
+find_package(OpenAL CONFIG REQUIRED)
 
 find_package(glslang CONFIG REQUIRED)
 add_library(glad src/glad.c)
@@ -181,6 +181,7 @@ target_link_libraries(${PROJECT_NAME} glad
         spdlog::spdlog_header_only
         HLSL SPIRV glslang OGLCompiler
         $<$<CXX_COMPILER_ID:MSVC>:dbghelp>
+        OpenAL::OpenAL
         )
 
 target_compile_options(${PROJECT_NAME} PRIVATE ${flags})
