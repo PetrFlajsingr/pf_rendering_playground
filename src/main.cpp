@@ -4,8 +4,8 @@
 #include "modes/DummyMode.h"
 #include "modes/ModeManager.h"
 #include "shader_toy/ShaderToyMode.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
 #include "utils/files.h"
+#include "utils/logging.h"
 #include <argparse/argparse.hpp>
 #include <filesystem>
 #include <fmt/format.h>
@@ -56,7 +56,7 @@ void saveConfig(toml::table config, pf::ui::ig::ImGuiInterface &imguiInterface,
 int main(int argc, char *argv[]) {
   spdlog::default_logger()->set_level(spdlog::level::trace);
   spdlog::default_logger()->sinks().clear();
-  spdlog::default_logger()->sinks().emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_st>());
+  spdlog::default_logger()->sinks().emplace_back(pf::log::stdout_color_sink);
   auto parser = createArgParser();
   try {
     parser.parse_args(argc, argv);

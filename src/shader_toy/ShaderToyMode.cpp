@@ -8,10 +8,13 @@
 #include "gpu/opengl/Shader.h"
 #include "gpu/opengl/Texture.h"
 #include "gpu/utils.h"
+#include "log/UISink.h"
 #include "utils/glsl/GlslToSpirv.h"
+#include "utils/logging.h"
 #include <future>
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Include/glslang_c_interface.h>
+#include <gpu/utils.h>
 #include <pf_common/Visitor.h>
 #include <pf_imgui/elements/Image.h>
 #include <pf_mainloop/MainLoop.h>
@@ -21,10 +24,6 @@
 #include <utility>
 #include <utils/opengl_utils.h>
 #include <utils/profiling.h>
-
-#include "log/UISink.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include <gpu/utils.h>
 
 void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
                  const void *) {
@@ -75,7 +74,7 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
 }
 
 std::vector<std::shared_ptr<spdlog::sinks::sink>> ShaderToyMode::createLoggerSinks() {
-  return std::vector<std::shared_ptr<spdlog::sinks::sink>>{std::make_shared<spdlog::sinks::stdout_color_sink_st>()};
+  return {log::stdout_color_sink, log::createFileSink("ShaderToy.log")};
 }
 
 void ShaderToyMode::activate_impl() {

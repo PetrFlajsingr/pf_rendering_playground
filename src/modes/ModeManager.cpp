@@ -6,7 +6,7 @@
 #include "spdlog/spdlog.h"
 
 #include "log/UISink.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include "utils/logging.h"
 #include <utility>
 
 namespace pf {
@@ -23,7 +23,7 @@ ModeManager::ModeManager(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, st
       subMenuSeparator(subMenu.addSeparator("sep1")),
       statusBarText(
           imguiInterface->createOrGetStatusBar().createChild<gui::Text>("mode_mgr_sb_text", "Current mode: <none>")),
-      logger{std::make_shared<spdlog::logger>("NodeManager", std::make_shared<spdlog::sinks::stdout_color_sink_mt>())} {
+      logger{std::make_shared<spdlog::logger>("NodeManager", pf::log::stdout_color_sink)} {
   VERIFY(imguiInterface != nullptr);
   VERIFY(window != nullptr);
 
@@ -42,6 +42,7 @@ ModeManager::ModeManager(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, st
       true);
 
   logger->sinks().emplace_back(logWindowController->createSpdlogSink());
+  logger->sinks().emplace_back(log::createFileSink("ModeManager.log"));
 }
 
 ModeManager::~ModeManager() {

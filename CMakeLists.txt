@@ -77,6 +77,7 @@ set(UTILS_SRC
         src/utils/glsl/DirStackFileIncluder.cpp
         src/utils/glsl/DirStackFileIncluder.h
         src/utils/glsl/DefaultBuiltinResource.h
+        src/utils/logging.h
         )
 
 set(GPU_INTERFACE_SRC
