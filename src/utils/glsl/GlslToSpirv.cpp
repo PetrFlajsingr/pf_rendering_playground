@@ -34,7 +34,6 @@ glslComputeShaderSourceToSpirv(const std::string &glslSource) {
     {
       std::string preprocessedGlsl;
       DirStackFileIncluder Includer;
-      /* TODO: use custom callbacks if they are available in 'i->callbacks' */
       if (!shader.preprocess(&resources, DEFAULT_VERSION, EProfile::ENoProfile, false, false,
                              EShMessages::EShMsgDefault, &preprocessedGlsl, Includer)) {
         return tl::make_unexpected(SpirvCompilationError{shader.getInfoLog(), shader.getInfoDebugLog()});

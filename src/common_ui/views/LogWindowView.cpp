@@ -8,7 +8,6 @@ namespace pf {
 
 namespace gui = ui::ig;
 
-// TODO: make persistent when new pf_imgui version is released
 LogWindowView::LogWindowView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, std::string_view windowName,
                              std::string_view windowTitle)
     : UIViewWindow{std::move(imguiInterface), windowName, windowTitle},

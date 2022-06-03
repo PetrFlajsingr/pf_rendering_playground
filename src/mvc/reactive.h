@@ -11,16 +11,20 @@
 
 namespace pf {
 
-// TODO: make a special observable version for pointer like structures
-// so the undeerylying value can be monitored as well, not just the pointer value
-
+/**
+ * Object capable of detecting change of value by comparing with the old one.
+ * @tparam ValueType checked type
+ */
 template<typename T, typename ValueType>
 concept ObservableChangeDetector = std::constructible_from<T, ValueType> && requires(T t, const ValueType &newValue) {
                                                                               {
                                                                                 t.hasValueChanged(newValue)
                                                                                 } -> std::same_as<bool>;
                                                                             };
-
+/**
+ * Default ObservableChangeDetector. Uses operator!= to detect change.
+ * @tparam T checked type
+ */
 template<std::equality_comparable T>
 class DefaultChangeDetector {
  public:
@@ -33,13 +37,19 @@ class DefaultChangeDetector {
 };
 
 // FIXME: temporary concept, move to pf_common
+/**
+ * Check if a type has pointer like behavior.
+ */
 template<typename T>
 concept PointerLike = std::pointer_traits<T>::element_type
     && requires(T t) {
          { *t } -> std::convertible_to<typename std::pointer_traits<T>::element_type>;
          { t.operator->() } -> std::same_as<std::add_pointer<typename std::pointer_traits<T>::element_type>>;
        };
-
+/**
+ * ObservableChangeDetector detecting pointer difference and if they're the same the inner value is compared.
+ * @tparam T checked type
+ */
 template<PointerLike T>
   requires(
       std::equality_comparable<
@@ -60,17 +70,11 @@ class PointerAndValueChangeDetector {
   T initialValue;
 };
 
-template<direct_specialization_of<std::vector> T>
-class VectorLengthChangeDetector {
- public:
-  explicit VectorLengthChangeDetector(const T &value) : initialSize(value.size()) {}
-
-  [[nodiscard]] bool hasValueChanged(const T &newValue) { return initialSize != newValue.size(); }
-
- private:
-  typename T::size_type initialSize;
-};
-
+/**
+ * A wrapper which allows for observing changes in inner value.
+ * @tparam T stored type
+ * @tparam Detector detector of value change
+ */
 template<typename T, ObservableChangeDetector<T> Detector = DefaultChangeDetector<T>>
 class Observable {
  public:
@@ -79,7 +83,9 @@ class Observable {
   using const_reference = const T &;
   using pointer = T *;
   using const_pointer = const T *;
-
+  /**
+   * @brief Proxy for observable manipulation.
+   */
   class Transaction {
    public:
     explicit Transaction(Observable &observable) : owner(observable), detector(observable.value) {
@@ -133,6 +139,9 @@ class Observable {
   [[nodiscard]] const_pointer operator->() const { return &value; }
   [[nodiscard]] const_reference get() const { return value; }
 
+  /**
+   * Create a proxy object for manipulation of observable's value.
+   */
   [[nodiscard]] Transaction modify() { return Transaction{*this}; }
 
   [[nodiscard]] bool hasActiveTransactions() const { return activeTransactions != 0; }
@@ -146,6 +155,11 @@ class Observable {
   ui::ig::Observable_impl<Observable> destroyObservableImpl;
 };
 
+/**
+ * An event which can only be triggered by its owner.
+ * @tparam Owner owner
+ * @tparam Args event's arguments
+ */
 template<typename Owner, typename... Args>
 class ClassEvent {
   friend Owner;
@@ -160,6 +174,10 @@ class ClassEvent {
   ui::ig::Observable_impl<Args...> observableImpl;
 };
 
+/**
+ * An event which can be triggered by anyone.
+ * @tparam Args event's arguments
+ */
 template<typename... Args>
 class PublicEvent {
  public:

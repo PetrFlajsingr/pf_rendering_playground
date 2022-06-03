@@ -175,6 +175,7 @@ void OpenGLStbImageLoader::loadTextureAsync(
 }
 tl::expected<std::shared_ptr<Texture>, std::string>
 OpenGLStbImageLoader::loadTextureWithChannels(const std::filesystem::path &imagePath, ChannelCount requiredChannels) {
+  VERIFY(false, "Not implemented - currently unsafe to use, since it's not updated for render thread");
   const auto imageData = loadImageWithChannels(imagePath, requiredChannels);
   if (imageData.has_value()) {
     // FIXME: this is using gpu from caller thread

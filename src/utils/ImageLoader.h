@@ -72,7 +72,7 @@ class StbImageLoader : public ImageLoader {
 
   [[nodiscard]] tl::expected<ImageData, std::string> loadImage(const std::filesystem::path &imagePath) override;
 };
-// TODO: force format
+
 class OpenGLStbImageLoader : public StbImageLoader {
  public:
   OpenGLStbImageLoader(const std::shared_ptr<ThreadPool> &threadPool, std::shared_ptr<RenderThread> renderingThread);
