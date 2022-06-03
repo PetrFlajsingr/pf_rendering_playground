@@ -57,8 +57,9 @@ find_package(pf_mainloop CONFIG REQUIRED)
 find_package(pf_imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(OpenAL CONFIG REQUIRED)
-
+find_package(FFMPEG COMPONENTS AVCODEC REQUIRED)
 find_package(glslang CONFIG REQUIRED)
+
 add_library(glad src/glad.c)
 
 set(UTILS_SRC
@@ -182,6 +183,7 @@ target_link_libraries(${PROJECT_NAME} glad
         HLSL SPIRV glslang OGLCompiler
         $<$<CXX_COMPILER_ID:MSVC>:dbghelp>
         OpenAL::OpenAL
+        ${FFMPEG_LIBRARIES}
         )
 
 target_compile_options(${PROJECT_NAME} PRIVATE ${flags})

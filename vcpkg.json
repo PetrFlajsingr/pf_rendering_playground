@@ -37,6 +37,12 @@
     {
       "name": "openal-soft",
       "version>=": "1.21.1#5"
+    },
+    {
+      "name": "ffmpeg",
+      "version>=": "4.4.1#13",
+      "default-features": false,
+      "features": [ "avcodec" ]
     }
   ],
   "builtin-baseline": "bae8f8c7d837c631ca72daec4b14e243824135a5"
