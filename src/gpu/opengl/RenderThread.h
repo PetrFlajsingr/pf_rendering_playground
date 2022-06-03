@@ -14,8 +14,6 @@ class OpenGlRenderThread : public RenderThread {
   OpenGlRenderThread(std::shared_ptr<glfw::Window> window) : context(std::move(window)) {}
   ~OpenGlRenderThread() override = default;
 
-  void startFrame() override;
-  void endFrame() override;
   void waitForDone() override;
 
  private:

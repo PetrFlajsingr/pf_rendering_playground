@@ -17,13 +17,4 @@ void OpenGlRenderThread::waitForDone() {
   fence.get();
 }
 
-void OpenGlRenderThread::startFrame() {
-  enqueue([this] { context->setCurrent(); });
-}
-
-void OpenGlRenderThread::endFrame() {
-  enqueue([] { glfwMakeContextCurrent(nullptr); });
-  waitForDone();
-}
-
 }  // namespace pf

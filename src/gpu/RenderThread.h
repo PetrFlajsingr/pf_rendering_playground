@@ -41,8 +41,6 @@ class RenderThread {
   }
   void enqueue(std::unique_ptr<RenderCommand> command);
 
-  virtual void startFrame() = 0;
-  virtual void endFrame() = 0;
   // waits for last command currently in the queue to be finished
   virtual void waitForDone() = 0;
 

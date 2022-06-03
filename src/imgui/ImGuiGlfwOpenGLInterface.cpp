@@ -12,13 +12,13 @@ namespace pf::ui::ig {
 ImGuiGlfwOpenGLInterface::ImGuiGlfwOpenGLInterface(ImGuiGlfwOpenGLConfig config)
     : ImGuiInterface(std::move(config.imgui)), renderThread(std::move(config.renderThread)) {
   ImGui_ImplGlfw_InitForOpenGL(config.windowHandle, true);
-  ImGui_ImplOpenGL3_Init();
+  renderThread->enqueue([] { ImGui_ImplOpenGL3_Init(); });
   renderThread->waitForDone();
   updateFonts();
 }
 
 ImGuiGlfwOpenGLInterface::~ImGuiGlfwOpenGLInterface() {
-  ImGui_ImplOpenGL3_Shutdown();
+  renderThread->enqueue([] { ImGui_ImplOpenGL3_Shutdown(); });
   renderThread->waitForDone();
   ImGui_ImplGlfw_Shutdown();
 }
@@ -33,6 +33,7 @@ void ImGuiGlfwOpenGLInterface::processInput() {
 
 void ImGuiGlfwOpenGLInterface::newFrame_impl() {
   renderThread->enqueue([] { ImGui_ImplOpenGL3_NewFrame(); });
+  // gotta wait for opengl new frame call, because ImGui::NewFrame requires it
   renderThread->waitForDone();
   ImGui_ImplGlfw_NewFrame();
 }

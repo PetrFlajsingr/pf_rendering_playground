@@ -33,10 +33,7 @@ void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei
 
 namespace pf::shader_toy {
 
-ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{std::move(resourcesPath)} {
-  glEnable(GL_DEBUG_OUTPUT);
-  glDebugMessageCallback(debugOpengl, nullptr);
-}
+ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{std::move(resourcesPath)} {}
 
 std::string ShaderToyMode::getName() const { return "ShaderToy"; }
 
@@ -52,6 +49,11 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   workerThreads = threadPool;
   renderingThread = renderThread;
   imGuiInterface = imguiInterface;
+
+  renderingThread->enqueue([] {
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(debugOpengl, nullptr);
+  });
 
   imageLoader = std::make_shared<OpenGLStbImageLoader>(workerThreads, renderingThread);
 
@@ -233,7 +235,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
     const auto compilationDuration = std::chrono::steady_clock::now() - compilationStartTime;
     getLogger().debug("Compilation took {}",
                       std::chrono::duration_cast<std::chrono::milliseconds>(compilationDuration));
-    pf::MainLoop::Get()->enqueue([spirvResult = std::move(spirvResult), source, this]() mutable {
+    MainLoop::Get()->enqueue([spirvResult = std::move(spirvResult), source, this]() mutable {
       auto onDone = RAII{[this] {
         previousShaderCompilationDone = true;
         *models.codeEditor->compiling.modify() = false;
@@ -253,7 +255,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
             const auto programCreateResult = newProgram->create();
             if (programCreateResult.has_value()) {
               getLogger().error("Program creation failed:");
-              getLogger().error("{}", programCreateResult.value().message());
+              getLogger().error("{}", programCreateResult->message());
               delete newProgram;
             } else {
               // TODO: use forwarding reference in pf_imgui's SafeQueue
@@ -262,7 +264,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
 
                 totalTime = std::chrono::nanoseconds{0};
                 frameCounter = 0;
-                currentShaderSrc = std::move(source);
+                currentShaderSrc = source;
                 getLogger().info("Compiling program success");
               });
             }

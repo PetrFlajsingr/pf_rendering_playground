@@ -80,6 +80,9 @@ int main(int argc, char *argv[]) {
   }
 
   auto renderThread = std::make_shared<pf::OpenGlRenderThread>(window);
+  // setting opengl api context ownership to rendering thread
+  glfwMakeContextCurrent(nullptr);
+  renderThread->enqueue([&window] { window->setCurrent(); });
 
   const auto imguiConfig = *config["imgui"].as_table();
   auto imguiInterface = std::make_shared<pf::ui::ig::ImGuiGlfwOpenGLInterface>(pf::ui::ig::ImGuiGlfwOpenGLConfig{
@@ -103,27 +106,21 @@ int main(int argc, char *argv[]) {
   pf::ModeManager modeManager{imguiInterface, window, renderThread, modeManagerConfig, 4};
 
   modeManager.addMode(std::make_shared<pf::shader_toy::ShaderToyMode>(resourcesFolder));
-  glfwMakeContextCurrent(nullptr);
-  renderThread->startFrame();
   modeManager.activateMode("ShaderToy");
-  renderThread->endFrame();
-  window->setCurrent();
   modeManager.addMode(std::make_shared<pf::DummyMode>());
 
+  renderThread->enqueue([&glfw] { glfw.setSwapInterval(0); });
 
-  glfw.setSwapInterval(0);
   pf::MainLoop::Get()->setOnMainLoop([&](auto time) {
     if (window->shouldClose()) { pf::MainLoop::Get()->stop(); }
-    glfwMakeContextCurrent(nullptr);
-    renderThread->startFrame();
 
+    // gotta render imgui first, since we need to wait for render thread in there
     imguiInterface->render();
     modeManager.render(time);
 
-    renderThread->endFrame();
+    renderThread->enqueue([&window] { window->swapBuffers(); });
+    renderThread->waitForDone();
 
-    window->setCurrent();
-    window->swapBuffers();
     glfw.pollEvents();
   });
 
