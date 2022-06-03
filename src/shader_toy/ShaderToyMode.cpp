@@ -245,23 +245,20 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
       if (spirvResult.has_value()) {
         renderingThread->enqueue([=, this] {
           auto shader = std::make_shared<OpenGlShader>();
-          //const auto shaderCreateResult = shader->create(spirvResult.value(), "main");
+          //FIXME const auto shaderCreateResult = shader->create(spirvResult.value(), "main");
           const auto shaderCreateResult = shader->create(source);
           if (shaderCreateResult.has_value()) {
             getLogger().error("Shader creation failed:");
             getLogger().error("{}", shaderCreateResult.value().message());
           } else {
-            // FIXME: this is fugly, but i can't pass it into mainloop's enqueue because of copy construction
-            auto newProgram = new OpenGlProgram(std::move(shader));
+            auto newProgram = std::make_unique<OpenGlProgram>(std::move(shader));
             const auto programCreateResult = newProgram->create();
             if (programCreateResult.has_value()) {
               getLogger().error("Program creation failed:");
               getLogger().error("{}", programCreateResult->message());
-              delete newProgram;
             } else {
-              // TODO: use forwarding reference in pf_imgui's SafeQueue
-              MainLoop::Get()->enqueue([this, source, newProgram]() mutable {
-                mainProgram = std::unique_ptr<OpenGlProgram>(newProgram);
+              MainLoop::Get()->enqueue([this, source, programPtr = newProgram.release()]() mutable {
+                mainProgram = std::unique_ptr<OpenGlProgram>(programPtr);
 
                 totalTime = std::chrono::nanoseconds{0};
                 frameCounter = 0;
