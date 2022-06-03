@@ -245,7 +245,8 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
       if (spirvResult.has_value()) {
         renderingThread->enqueue([=, this] {
           auto shader = std::make_shared<OpenGlShader>();
-          const auto shaderCreateResult = shader->create(spirvResult.value(), "main");
+          //const auto shaderCreateResult = shader->create(spirvResult.value(), "main");
+          const auto shaderCreateResult = shader->create(source);
           if (shaderCreateResult.has_value()) {
             getLogger().error("Shader creation failed:");
             getLogger().error("{}", shaderCreateResult.value().message());
