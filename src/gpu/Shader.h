@@ -11,23 +11,25 @@
 
 namespace pf {
 
-
-enum class ShaderError {
-  Compilation
-};
+enum class ShaderError { Compilation };
 
 enum class ShaderType {
   // TODO: add more
-  Compute, Vertex, TesselationControl, TesselationEvaluation, Geometry, Fragment
+  Compute,
+  Vertex,
+  TesselationControl,
+  TesselationEvaluation,
+  Geometry,
+  Fragment
 };
-
 
 // TODO: consider using spirv reflection for info extraction
 class Shader : public GpuObject {
  public:
   PF_GPU_OBJECT_TYPE(GpuObject::Type::Shader)
 
-  [[nodiscard]] virtual GpuOperationResult<ShaderError> create(const SpirvCompilationResult &spirvData, const std::string &entryPoint) = 0;
+  [[nodiscard]] virtual GpuOperationResult<ShaderError> create(const SpirvCompilationResult &spirvData,
+                                                               const std::string &entryPoint) = 0;
   [[nodiscard]] virtual GpuOperationResult<ShaderError> create(const std::string &source) = 0;
 
   [[nodiscard]] ShaderType getShaderType() const;
@@ -38,4 +40,4 @@ class Shader : public GpuObject {
   ShaderType shaderType;
 };
 
-}
+}  // namespace pf

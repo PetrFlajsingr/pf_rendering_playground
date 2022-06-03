@@ -42,8 +42,7 @@ void GlslEditorModel::setFromToml(const toml::table &src) {
 std::string GlslEditorModel::getDebugString() const {
   return fmt::format("auto compile: '{}', auto compile period: '{}', "
                      "time paused: '{}', code length: '{}', compiling: '{}'",
-                     *autoCompile, *autoCompilePeriod, *timePaused, code->size(),
-                     *compiling);
+                     *autoCompile, *autoCompilePeriod, *timePaused, code->size(), *compiling);
 }
 
 }  // namespace pf

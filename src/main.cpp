@@ -1,9 +1,11 @@
 #include "glad/glad.h"
+#include "gpu/opengl/RenderThread.h"
 #include "imgui/ImGuiGlfwOpenGLInterface.h"
 #include "modes/DummyMode.h"
 #include "modes/ModeManager.h"
 #include "shader_toy/ShaderToyMode.h"
 #include "utils/files.h"
+#include "utils/logging.h"
 #include <argparse/argparse.hpp>
 #include <filesystem>
 #include <fmt/format.h>
@@ -53,6 +55,8 @@ void saveConfig(toml::table config, pf::ui::ig::ImGuiInterface &imguiInterface,
 
 int main(int argc, char *argv[]) {
   spdlog::default_logger()->set_level(spdlog::level::trace);
+  spdlog::default_logger()->sinks().clear();
+  spdlog::default_logger()->sinks().emplace_back(pf::log::stdout_color_sink);
   auto parser = createArgParser();
   try {
     parser.parse_args(argc, argv);
@@ -72,15 +76,22 @@ int main(int argc, char *argv[]) {
                                    .majorOpenGLVersion = 4,
                                    .minorOpenGLVersion = 6});
   window->setCurrent();
+
   if (!gladLoadGLLoader((GLADloadproc) glfw.getLoaderFnc())) {
     spdlog::error("Error while initializing GLAD");
     return -1;
   }
 
+  auto renderThread = std::make_shared<pf::OpenGlRenderThread>(window);
+  // setting opengl api context ownership to rendering thread
+  glfwMakeContextCurrent(nullptr);
+  renderThread->enqueue([&window] { window->setCurrent(); });
+
   const auto imguiConfig = *config["imgui"].as_table();
   auto imguiInterface = std::make_shared<pf::ui::ig::ImGuiGlfwOpenGLInterface>(pf::ui::ig::ImGuiGlfwOpenGLConfig{
       .imgui{.flags = pf::ui::ig::ImGuiConfigFlags::DockingEnable, .config = imguiConfig},
-      .windowHandle = window->getHandle()});
+      .windowHandle = window->getHandle(),
+      .renderThread = renderThread});
 
   const auto fontPath = resourcesFolder / "fonts" / "Roboto-Regular.ttf";
   if (std::filesystem::exists(fontPath)) {
@@ -95,24 +106,28 @@ int main(int argc, char *argv[]) {
     if (auto configTable = iter->second.as_table(); configTable != nullptr) { modeManagerConfig = *configTable; }
   }
 
-  pf::ModeManager modeManager{imguiInterface, window, modeManagerConfig, 4};
+  pf::ModeManager modeManager{imguiInterface, window, renderThread, modeManagerConfig, 4};
 
   modeManager.addMode(std::make_shared<pf::shader_toy::ShaderToyMode>(resourcesFolder));
   modeManager.activateMode("ShaderToy");
   modeManager.addMode(std::make_shared<pf::DummyMode>());
 
-  glfw.setSwapInterval(0);
+  renderThread->enqueue([&glfw] { glfw.setSwapInterval(0); });
+
   pf::MainLoop::Get()->setOnMainLoop([&](auto time) {
     if (window->shouldClose()) { pf::MainLoop::Get()->stop(); }
+
+    // gotta render imgui first, since we need to wait for render thread in there
     imguiInterface->render();
     modeManager.render(time);
-    window->swapBuffers();
+
+    renderThread->enqueue([&window] { window->swapBuffers(); });
+    renderThread->waitForDone();
+
     glfw.pollEvents();
   });
 
-  spdlog::info("Starting main loop");
   pf::MainLoop::Get()->run();
-  spdlog::info("Main loop ended");
 
   saveConfig(config, *imguiInterface, window, modeManager);
   return 0;

@@ -74,7 +74,8 @@ class Program : public GpuObject {
   [[nodiscard]] const std::vector<AttributeInfo> &getAttributes() const;
   [[nodiscard]] const std::vector<BufferInfo> &getBuffers() const;
 
-  [[nodiscard]] GpuOperationResult<ProgramError> setUniform(const std::string &name, OneOf<PF_SHADER_VALUE_TYPES> auto value);
+  [[nodiscard]] GpuOperationResult<ProgramError> setUniform(const std::string &name,
+                                                            OneOf<PF_SHADER_VALUE_TYPES> auto value);
 
   void use();
 

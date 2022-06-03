@@ -9,11 +9,17 @@
 
 namespace pf {
 
+/**
+ * MVC model base class.
+ */
 class Model {
  public:
   [[nodiscard]] virtual std::string getDebugString() const = 0;
 };
 
+/**
+ * MVC model base class which can be serialized to TOML.
+ */
 class SavableModel : public Model {
  public:
   [[nodiscard]] virtual toml::table toToml() const = 0;

@@ -11,6 +11,11 @@
 
 namespace pf {
 
+/**
+ * MVC controller base class.
+ * @tparam UIView type of view
+ * @tparam Model type of model
+ */
 template<std::derived_from<UIViewBase> UIView, std::derived_from<Model> Model>
 class Controller {
  public:

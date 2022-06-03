@@ -46,7 +46,8 @@ class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
 
 class ImageAssetsView : public UIViewWindow {
  public:
-  ImageAssetsView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, std::string_view windowName, std::string_view windowTitle);
+  ImageAssetsView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, std::string_view windowName,
+                  std::string_view windowTitle);
 
   ImageTile &addImageTile(std::string_view name, std::shared_ptr<Texture> texture);
 

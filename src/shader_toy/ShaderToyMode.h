@@ -26,7 +26,8 @@ class ShaderToyMode : public Mode {
 
  protected:
   void initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
-                       const std::shared_ptr<glfw::Window> &window, std::shared_ptr<ThreadPool> threadPool) override;
+                       const std::shared_ptr<glfw::Window> &window, std::shared_ptr<ThreadPool> threadPool,
+                       std::shared_ptr<RenderThread> renderThread) override;
   std::vector<std::shared_ptr<spdlog::sinks::sink>> createLoggerSinks() override;
   void activate_impl() override;
   void deactivate_impl() override;
@@ -85,6 +86,7 @@ class ShaderToyMode : public Mode {
   std::chrono::time_point<std::chrono::steady_clock> lastShaderChangeTime = std::chrono::steady_clock::now();
 
   std::shared_ptr<ThreadPool> workerThreads = nullptr;
+  std::shared_ptr<RenderThread> renderingThread = nullptr;
   std::vector<std::future<void>> unfinishedWorkerTasks{};
 
   bool previousShaderCompilationDone = true;
@@ -97,8 +99,6 @@ class ShaderToyMode : public Mode {
   } models;
 
   std::unique_ptr<MainController> mainController{};
-
-
 
   constexpr static auto DEFAULT_SHADER_SOURCE = R"glsl(
 void main() {

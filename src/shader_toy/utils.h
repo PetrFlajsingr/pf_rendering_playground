@@ -19,4 +19,3 @@ inline bool isValidGlslIdentifier(std::string_view identifier) {
 }
 
 }  // namespace pf
-

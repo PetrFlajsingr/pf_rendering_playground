@@ -7,12 +7,14 @@
 
 #include <GLFW/glfw3.h>
 #include <pf_imgui/ImGuiInterface.h>
+#include "gpu/RenderThread.h"
 
 namespace pf::ui::ig {
 
 struct ImGuiGlfwOpenGLConfig {
   ImGuiConfig imgui;
   GLFWwindow *windowHandle;
+  std::shared_ptr<RenderThread> renderThread;
 };
 
 class ImGuiGlfwOpenGLInterface final : public ImGuiInterface {
@@ -24,9 +26,14 @@ class ImGuiGlfwOpenGLInterface final : public ImGuiInterface {
 
   void processInput() override;
 
+  void render();
+
  protected:
   void newFrame_impl() override;
   void renderDrawData_impl(ImDrawData *drawData) override;
+
+ private:
+  std::shared_ptr<RenderThread> renderThread;
 };
 
 }  // namespace pf::ui::ig

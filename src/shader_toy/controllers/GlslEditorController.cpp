@@ -44,7 +44,10 @@ GlslEditorController::GlslEditorController(std::unique_ptr<GlslEditorView> uiVie
     view->editor->setText(code);
   });
 
-  // TODO react to model->compiling with some UI cue
+  if (*model->compiling) { view->compilationSpinner->setVisibility(gui::Visibility::Visible); }
+  model->compiling.addValueListener([this](auto compiling) {
+    view->compilationSpinner->setVisibility(compiling ? gui::Visibility::Visible : gui::Visibility::Invisible);
+  });
 }
 
 void GlslEditorController::clearWarningMarkers() { view->editor->clearWarningMarkers(); }

@@ -3,6 +3,8 @@
 //
 
 #include "GlslToSpirv.h"
+#include "DefaultBuiltinResource.h"
+#include "DirStackFileIncluder.h"
 #include "glslang/Include/ResourceLimits.h"
 #include "glslang/Public/ShaderLang.h"
 #include "glslang/SPIRV/GlslangToSpv.h"
@@ -12,8 +14,6 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-#include "DirStackFileIncluder.h"
-#include "DefaultBuiltinResource.h"
 
 namespace pf {
 
@@ -34,7 +34,6 @@ glslComputeShaderSourceToSpirv(const std::string &glslSource) {
     {
       std::string preprocessedGlsl;
       DirStackFileIncluder Includer;
-      /* TODO: use custom callbacks if they are available in 'i->callbacks' */
       if (!shader.preprocess(&resources, DEFAULT_VERSION, EProfile::ENoProfile, false, false,
                              EShMessages::EShMsgDefault, &preprocessedGlsl, Includer)) {
         return tl::make_unexpected(SpirvCompilationError{shader.getInfoLog(), shader.getInfoDebugLog()});

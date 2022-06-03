@@ -2,12 +2,11 @@
 // Created by Petr on 23/05/2022.
 //
 
-#ifndef PF_RENDERING_PLAYGROUND_IMAGELOADER_H
-#define PF_RENDERING_PLAYGROUND_IMAGELOADER_H
+#pragma once
 
+#include "gpu/RenderThread.h"
 #include "gpu/Texture.h"
 #include "pf_common/parallel/ThreadPool.h"
-#include "pf_mainloop/MainLoop.h"
 #include <filesystem>
 #include <tl/expected.hpp>
 
@@ -73,10 +72,10 @@ class StbImageLoader : public ImageLoader {
 
   [[nodiscard]] tl::expected<ImageData, std::string> loadImage(const std::filesystem::path &imagePath) override;
 };
-// TODO: force format
+
 class OpenGLStbImageLoader : public StbImageLoader {
  public:
-  explicit OpenGLStbImageLoader(const std::shared_ptr<ThreadPool> &threadPool);
+  OpenGLStbImageLoader(const std::shared_ptr<ThreadPool> &threadPool, std::shared_ptr<RenderThread> renderingThread);
 
   [[nodiscard]] tl::expected<std::shared_ptr<Texture>, std::string>
   loadTexture(const std::filesystem::path &imagePath) override;
@@ -91,8 +90,8 @@ class OpenGLStbImageLoader : public StbImageLoader {
 
  private:
   tl::expected<std::shared_ptr<Texture>, std::string> createAndFillTexture(const ImageData &data);
+
+  std::shared_ptr<RenderThread> renderThread;
 };
 
 }  // namespace pf
-
-#endif  //PF_RENDERING_PLAYGROUND_IMAGELOADER_H

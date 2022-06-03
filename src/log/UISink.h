@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/base_sink.h>
 #include <pf_imgui/elements/LogPanel.h>
+#include <spdlog/sinks/base_sink.h>
+#include <spdlog/spdlog.h>
 
 template<typename Mutex>
 class PfImguiLogSink : public spdlog::sinks::base_sink<Mutex> {
@@ -40,5 +40,3 @@ class PfImguiLogSink : public spdlog::sinks::base_sink<Mutex> {
 };
 using PfImguiLogSink_mt = PfImguiLogSink<std::mutex>;
 using PfImguiLogSink_st = PfImguiLogSink<spdlog::details::null_mutex>;
-
-

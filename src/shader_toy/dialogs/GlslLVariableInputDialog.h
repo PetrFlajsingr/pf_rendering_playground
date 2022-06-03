@@ -76,4 +76,3 @@ class GlslVariableNameInputDialogBuilder {
 };
 
 }  // namespace pf::shader_toy
-

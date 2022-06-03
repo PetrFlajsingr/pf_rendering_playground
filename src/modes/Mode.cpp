@@ -19,10 +19,11 @@ ModeState Mode::getState() const { return state; }
 
 void Mode::initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                       const std::shared_ptr<glfw::Window> &window, toml::table modeConfig,
-                      std::shared_ptr<ThreadPool> workerThreads) {
+                      std::shared_ptr<ThreadPool> workerThreads, std::shared_ptr<RenderThread> renderThread) {
   VERIFY(imguiInterface != nullptr);
   VERIFY(window != nullptr);
   VERIFY(workerThreads != nullptr);
+  VERIFY(renderThread != nullptr);
   config = std::move(modeConfig);
 
   auto sinks = createLoggerSinks();
@@ -32,7 +33,7 @@ void Mode::initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterf
   logger->set_level(spdlog::level::trace);
 
   logger->info("Initializing", getName());
-  initialize_impl(imguiInterface, window, std::move(workerThreads));
+  initialize_impl(imguiInterface, window, std::move(workerThreads), std::move(renderThread));
   state = ModeState::Initialised;
   logger->info("Initialized", getName());
 }

@@ -8,10 +8,13 @@
 #include "gpu/opengl/Shader.h"
 #include "gpu/opengl/Texture.h"
 #include "gpu/utils.h"
+#include "log/UISink.h"
 #include "utils/glsl/GlslToSpirv.h"
+#include "utils/logging.h"
 #include <future>
 #include <glslang/Include/ResourceLimits.h>
 #include <glslang/Include/glslang_c_interface.h>
+#include <gpu/utils.h>
 #include <pf_common/Visitor.h>
 #include <pf_imgui/elements/Image.h>
 #include <pf_mainloop/MainLoop.h>
@@ -22,10 +25,6 @@
 #include <utils/opengl_utils.h>
 #include <utils/profiling.h>
 
-#include "log/UISink.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include <gpu/utils.h>
-
 void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
                  const void *) {
   spdlog::error("{} {}, {}, {}, {}", source, type, id, severity, std::string_view{message, message + length});
@@ -33,16 +32,13 @@ void debugOpengl(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei
 
 namespace pf::shader_toy {
 
-ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{std::move(resourcesPath)} {
-  glEnable(GL_DEBUG_OUTPUT);
-  glDebugMessageCallback(debugOpengl, nullptr);
-}
+ShaderToyMode::ShaderToyMode(std::filesystem::path resourcesPath) : configData{std::move(resourcesPath)} {}
 
 std::string ShaderToyMode::getName() const { return "ShaderToy"; }
 
 void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
-                                    const std::shared_ptr<glfw::Window> &window,
-                                    std::shared_ptr<ThreadPool> threadPool) {
+                                    const std::shared_ptr<glfw::Window> &window, std::shared_ptr<ThreadPool> threadPool,
+                                    std::shared_ptr<RenderThread> renderThread) {
   auto isFirstRun = true;
   if (const auto iter = config.find("initialized"); iter != config.end()) {
     isFirstRun = !iter->second.value_or(false);
@@ -50,9 +46,15 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   config.insert_or_assign("initialized", true);
   glfwWindow = window;
   workerThreads = threadPool;
+  renderingThread = renderThread;
   imGuiInterface = imguiInterface;
 
-  imageLoader = std::make_shared<OpenGLStbImageLoader>(workerThreads);
+  renderingThread->enqueue([] {
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(debugOpengl, nullptr);
+  });
+
+  imageLoader = std::make_shared<OpenGLStbImageLoader>(workerThreads, renderingThread);
 
   createModels();
 
@@ -72,7 +74,7 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
 }
 
 std::vector<std::shared_ptr<spdlog::sinks::sink>> ShaderToyMode::createLoggerSinks() {
-  return std::vector<std::shared_ptr<spdlog::sinks::sink>>{std::make_shared<spdlog::sinks::stdout_color_sink_st>()};
+  return {log::stdout_color_sink, log::createFileSink("ShaderToy.log")};
 }
 
 void ShaderToyMode::activate_impl() {
@@ -87,17 +89,17 @@ void ShaderToyMode::activate_impl() {
 void ShaderToyMode::deactivate_impl() {
   imGuiInterface->updateConfig();
   mainController->hide();
-  outputTexture = nullptr;
+  outputTexture.reset();
 }
 
 void ShaderToyMode::deinitialize_impl() {
-  // TODO: remove UI from ImGuiInterface here - via view's destructor?
-  mainController = nullptr;
+  mainController.reset();
   TimeMeasure workerThreadWaitMeasure;
   getLogger().info("Waiting for worker threads");
   std::ranges::for_each(unfinishedWorkerTasks, &std::future<void>::wait);
-  workerThreads = nullptr;
+  workerThreads.reset();
   getLogger().debug("Took {}", workerThreadWaitMeasure.getTimeElapsed());
+  renderingThread.reset();
 }
 
 void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
@@ -110,15 +112,18 @@ void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
   const auto timeFloat = static_cast<float>(totalTime.count()) / 1'000'000'000.0f;
   const auto timeDeltaFloat = static_cast<float>(timeDelta.count()) / 1'000'000'000.0f;
 
-  setUniforms(timeFloat, timeDeltaFloat, mouseState);
-  setBindings();
-
-  mainProgram->use();
-
   const auto textureSize = getTextureSize();
-  const auto dispatchResult =
-      mainProgram->dispatch(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y);
-  if (dispatchResult.has_value()) { getLogger().error("Program dispatch failed: '{}'", dispatchResult->message()); }
+  renderingThread->enqueue([=, this] {
+    setUniforms(timeFloat, timeDeltaFloat, mouseState);
+    setBindings();
+
+    mainProgram->use();
+
+    const auto dispatchResult =
+        mainProgram->dispatch(textureSize.x / COMPUTE_LOCAL_GROUP_SIZE.x, textureSize.y / COMPUTE_LOCAL_GROUP_SIZE.y);
+    if (dispatchResult.has_value()) { getLogger().error("Program dispatch failed: '{}'", dispatchResult->message()); }
+  });
+
   fpsCounter.onFrame();
   updateUI();
   if (!timeCounterPaused) { totalTime += timeDelta; }
@@ -133,17 +138,22 @@ void ShaderToyMode::resetCounters() {
 
 void ShaderToyMode::initializeTexture(TextureSize textureSize) {
   getLogger().info("Updating texture size to {}x{}", textureSize.width.get(), textureSize.height.get());
-  outputTexture =
-      std::make_shared<OpenGlTexture>(TextureTarget::_2D, TextureFormat::RGBA32F, TextureLevel{0}, textureSize);
-  if (const auto err = outputTexture->create(); err.has_value()) {
-    // FIXME
-    VERIFY(false, "Texture creation failure handling not implemented");
-  }
-  getLogger().debug("Texture created: {}", *outputTexture);
-  outputTexture->setParam(TextureMinificationFilter::Linear);
-  outputTexture->setParam(TextureMagnificationFilter::Linear);
+  renderingThread->enqueue([=, this] {
+    auto newTexture =
+        std::make_shared<OpenGlTexture>(TextureTarget::_2D, TextureFormat::RGBA32F, TextureLevel{0}, textureSize);
+    if (const auto err = newTexture->create(); err.has_value()) {
+      // FIXME
+      VERIFY(false, "Texture creation failure handling not implemented");
+    }
+    getLogger().debug("Texture created: {}", *newTexture);
+    newTexture->setParam(TextureMinificationFilter::Linear);
+    newTexture->setParam(TextureMagnificationFilter::Linear);
 
-  *models.output->texture.modify() = outputTexture;
+    MainLoop::Get()->enqueue([this, newTexture] {
+      outputTexture = newTexture;
+      *models.output->texture.modify() = outputTexture;
+    });
+  });
 }
 
 glm::uvec2 ShaderToyMode::getTextureSize() const {
@@ -224,7 +234,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
     const auto compilationDuration = std::chrono::steady_clock::now() - compilationStartTime;
     getLogger().debug("Compilation took {}",
                       std::chrono::duration_cast<std::chrono::milliseconds>(compilationDuration));
-    pf::MainLoop::Get()->enqueue([spirvResult = std::move(spirvResult), source = std::move(source), this]() mutable {
+    MainLoop::Get()->enqueue([spirvResult = std::move(spirvResult), source, this]() mutable {
       auto onDone = RAII{[this] {
         previousShaderCompilationDone = true;
         *models.codeEditor->compiling.modify() = false;
@@ -232,26 +242,31 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
       mainController->glslEditorController->clearWarningMarkers();
       mainController->glslEditorController->clearErrorMarkers();
       if (spirvResult.has_value()) {
-        auto shader = std::make_shared<OpenGlShader>();
-        const auto shaderCreateResult = shader->create(spirvResult.value(), "main");
-        if (shaderCreateResult.has_value()) {
-          getLogger().error("Shader creation failed:");
-          getLogger().error("{}", shaderCreateResult.value().message());
-        } else {
-          auto newProgram = std::make_unique<OpenGlProgram>(std::move(shader));
-          const auto programCreateResult = newProgram->create();
-          if (programCreateResult.has_value()) {
-            getLogger().error("Program creation failed:");
-            getLogger().error("{}", programCreateResult.value().message());
+        renderingThread->enqueue([=, this] {
+          auto shader = std::make_shared<OpenGlShader>();
+          //FIXME const auto shaderCreateResult = shader->create(spirvResult.value(), "main");
+          const auto shaderCreateResult = shader->create(source);
+          if (shaderCreateResult.has_value()) {
+            getLogger().error("Shader creation failed:");
+            getLogger().error("{}", shaderCreateResult.value().message());
           } else {
-            mainProgram = std::move(newProgram);
+            auto newProgram = std::make_unique<OpenGlProgram>(std::move(shader));
+            const auto programCreateResult = newProgram->create();
+            if (programCreateResult.has_value()) {
+              getLogger().error("Program creation failed:");
+              getLogger().error("{}", programCreateResult->message());
+            } else {
+              MainLoop::Get()->enqueue([this, source, programPtr = newProgram.release()]() mutable {
+                mainProgram = std::unique_ptr<OpenGlProgram>(programPtr);
 
-            totalTime = std::chrono::nanoseconds{0};
-            frameCounter = 0;
-            currentShaderSrc = std::move(source);
-            getLogger().info("Compiling program success");
+                totalTime = std::chrono::nanoseconds{0};
+                frameCounter = 0;
+                currentShaderSrc = source;
+                getLogger().info("Compiling program success");
+              });
+            }
           }
-        }
+        });
       } else {
         getLogger().info("Compiling shader failed");
         auto errors = spirvResult.error().getInfoRecords();

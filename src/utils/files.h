@@ -18,4 +18,3 @@ namespace pf {
 [[nodiscard]] std::optional<std::string> readFile(const std::filesystem::path &path);
 
 }  // namespace pf
-

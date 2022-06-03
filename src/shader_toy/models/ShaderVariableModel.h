@@ -30,13 +30,12 @@ class ShaderVariableModel : public SavableModel {
 
 class ShaderVariablesModel : public SavableModel {
   using ShaderVariableModels = std::vector<std::shared_ptr<ShaderVariableModel>>;
-  template<typename ...Args>
+  template<typename... Args>
   using Event = ClassEvent<ShaderVariablesModel, Args...>;
   using VariableAddedEvent = Event<std::shared_ptr<ShaderVariableModel>>;
   using VariableRemovedEvent = Event<std::shared_ptr<ShaderVariableModel>>;
 
  public:
-
   [[nodiscard]] const ShaderVariableModels &getVariables() const;
 
   VariableAddedEvent variableAddedEvent;

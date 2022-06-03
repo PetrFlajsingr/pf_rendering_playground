@@ -5,9 +5,10 @@
 #pragma once
 
 #include "Mode.h"
+#include "common_ui/controllers/LogWindowController.h"
+#include "gpu/RenderThread.h"
 #include <pf_common/parallel/ThreadPool.h>
 #include <pf_imgui/elements/LogPanel.h>
-#include "common_ui/controllers/LogWindowController.h"
 
 namespace pf {
 
@@ -16,7 +17,7 @@ class ModeManager {
   using Error = std::string;
 
   ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> glfwWindow,
-              toml::table config, std::size_t workerThreadCount);
+              std::shared_ptr<RenderThread> renderingThread, toml::table config, std::size_t workerThreadCount);
   ~ModeManager();
 
   [[nodiscard]] toml::table getConfig() const;
@@ -25,6 +26,8 @@ class ModeManager {
 
   std::optional<Error> activateMode(const std::string &name);
   std::optional<Error> activateMode(const std::shared_ptr<Mode> &modeToActivate);
+
+  [[nodiscard]] bool isModeActive() const;
 
   void render(std::chrono::nanoseconds timeDelta);
 
@@ -46,8 +49,8 @@ class ModeManager {
   std::shared_ptr<glfw::Window> window;
   toml::table config;
 
-
   std::shared_ptr<ThreadPool> workerThreads;
+  std::shared_ptr<RenderThread> renderThread;
 
   ModeRecord *activeMode = nullptr;
   std::list<ModeRecord> modes;
@@ -63,4 +66,3 @@ class ModeManager {
 };
 
 }  // namespace pf
-
