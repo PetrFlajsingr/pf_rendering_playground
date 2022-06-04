@@ -42,7 +42,7 @@
       "name": "ffmpeg",
       "version>=": "4.4.1#13",
       "default-features": false,
-      "features": [ "avcodec" ]
+      "features": [ "avcodec", "avformat", "swresample" ]
     }
   ],
   "builtin-baseline": "bae8f8c7d837c631ca72daec4b14e243824135a5"

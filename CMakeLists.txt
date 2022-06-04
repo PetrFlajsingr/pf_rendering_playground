@@ -57,7 +57,7 @@ find_package(pf_mainloop CONFIG REQUIRED)
 find_package(pf_imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(OpenAL CONFIG REQUIRED)
-find_package(FFMPEG COMPONENTS AVCODEC REQUIRED)
+find_package(FFMPEG COMPONENTS AVUTIL AVCODEC AVFORMAT SWRESAMPLE REQUIRED)
 find_package(glslang CONFIG REQUIRED)
 
 add_library(glad src/glad.c)
@@ -79,7 +79,7 @@ set(UTILS_SRC
         src/utils/glsl/DirStackFileIncluder.h
         src/utils/glsl/DefaultBuiltinResource.h
         src/utils/logging.h
-        )
+        src/utils/AudioLoader.cpp src/utils/AudioLoader.h)
 
 set(GPU_INTERFACE_SRC
         src/gpu/Texture.cpp
