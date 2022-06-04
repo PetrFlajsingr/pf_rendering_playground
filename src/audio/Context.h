@@ -22,6 +22,7 @@ enum class DistanceModel {
 
 class Source;
 class Listener;
+class Buffer;
 // TODO: attributes
 class Context : std::enable_shared_from_this<Context> {
   friend class Device;
@@ -36,6 +37,7 @@ class Context : std::enable_shared_from_this<Context> {
   [[nodiscard]] std::shared_ptr<const Listener> getListener() const;
 
   [[nodiscard]] tl::expected<std::shared_ptr<Source>, OpenALError> createSource();
+  [[nodiscard]] tl::expected<std::shared_ptr<Buffer>, OpenALError> createBuffer();
 
   void setDopplerFactor(float factor);
   [[nodiscard]] float getDopplerFactor() const;

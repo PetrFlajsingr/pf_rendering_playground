@@ -6,6 +6,7 @@
 #include "Device.h"
 #include "Listener.h"
 #include "Source.h"
+#include "Buffer.h"
 
 namespace pf::audio {
 
@@ -46,6 +47,14 @@ tl::expected<std::shared_ptr<Source>, OpenALError> Context::createSource() {
   ALuint handle;
   alGenSources(1, &handle);
   return std::shared_ptr<Source>(new Source{handle, shared_from_this()});
+}
+
+tl::expected<std::shared_ptr<Buffer>, OpenALError> Context::createBuffer() {
+  DEBUG_ASSERT(!owner.expired(), "Context's device is destroyed");
+  DEBUG_ASSERT(isCurrent(), "Context is not current");
+  ALuint handle;
+  alGenBuffers(1, &handle);
+  return std::shared_ptr<Buffer>(new Buffer{handle, shared_from_this()});
 }
 
 void Context::setDopplerFactor(float factor) {
@@ -98,4 +107,5 @@ RAII Context::suspendScoped() {
   suspend();
   return RAII{[this] { resume(); }};
 }
+
 }  // namespace pf::audio
