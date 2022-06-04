@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <AL/alc.h>
 #include "common.h"
 #include "tl/expected.hpp"
+#include <AL/alc.h>
 #include <NamedType/named_type.hpp>
 
 namespace pf::audio {
@@ -33,4 +33,4 @@ class Device : std::enable_shared_from_this<Device> {
 
 // TODO: capture device
 
-}  // namespace pf
+}  // namespace pf::audio

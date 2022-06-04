@@ -4,9 +4,9 @@
 
 #pragma once
 #include <AL/al.h>
+#include <assert.hpp>
 #include <optional>
 #include <string>
-#include <assert.hpp>
 
 namespace pf::audio {
 

@@ -7,7 +7,10 @@
 
 namespace pf::audio {
 
-Source::~Source() { alDeleteSources(1, &source); }
+Source::~Source() {
+  alDeleteSources(1, &source);
+  DEBUG_ASSERT(!owner.expired(), "Source has to be destroyed before Context");
+}
 Source::Source(ALuint handle, const std::shared_ptr<Context> &parent) : source(handle), owner(parent) {}
 
 void Source::play() {
@@ -177,4 +180,4 @@ float Source::getSourceF(ALenum param) const {
   alGetSourcef(source, param, &result);
   return result;
 }
-}  // namespace pf
+}  // namespace pf::audio

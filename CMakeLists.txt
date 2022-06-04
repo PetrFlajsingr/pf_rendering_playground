@@ -79,7 +79,8 @@ set(UTILS_SRC
         src/utils/glsl/DirStackFileIncluder.h
         src/utils/glsl/DefaultBuiltinResource.h
         src/utils/logging.h
-        src/utils/AudioLoader.cpp src/utils/AudioLoader.h)
+        src/utils/AudioLoader.cpp
+        src/utils/AudioLoader.h)
 
 set(GPU_INTERFACE_SRC
         src/gpu/Texture.cpp
@@ -118,6 +119,8 @@ set(AUDIO_SRC
         src/audio/Listener.h
         src/audio/Source.cpp
         src/audio/Source.h
+        src/audio/Buffer.cpp
+        src/audio/Buffer.h
         )
 
 set(SHADERTOY_SRC

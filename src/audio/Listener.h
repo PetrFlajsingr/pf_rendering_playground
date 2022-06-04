@@ -12,8 +12,8 @@ namespace pf::audio {
 
 class Listener : std::enable_shared_from_this<Listener> {
   friend class Context;
- public:
 
+ public:
   void setGain(float gain);
   [[nodiscard]] float getGain() const;
 
@@ -32,5 +32,4 @@ class Listener : std::enable_shared_from_this<Listener> {
   std::weak_ptr<Context> owner;
 };
 
-}  // namespace pf
-
+}  // namespace pf::audio

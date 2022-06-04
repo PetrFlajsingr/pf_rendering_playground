@@ -25,6 +25,7 @@ class Listener;
 // TODO: attributes
 class Context : std::enable_shared_from_this<Context> {
   friend class Device;
+
  public:
   ~Context();
 
@@ -49,13 +50,11 @@ class Context : std::enable_shared_from_this<Context> {
   void resume();
   [[nodiscard]] RAII suspendScoped();
 
-
  private:
-  Context(ALCcontext *handle, const std::shared_ptr<Device>& parent);
+  Context(ALCcontext *handle, const std::shared_ptr<Device> &parent);
   ALCcontext *context;
   std::weak_ptr<Device> owner;
   std::shared_ptr<Listener> listener;
 };
 
-}  // namespace pf
-
+}  // namespace pf::audio

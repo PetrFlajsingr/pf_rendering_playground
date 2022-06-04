@@ -4,16 +4,17 @@
 
 #pragma once
 
-#include <AL/al.h>
-#include "glm/vec3.hpp"
-#include <memory>
 #include "common.h"
+#include "glm/vec3.hpp"
+#include <AL/al.h>
+#include <memory>
 
 namespace pf::audio {
 
 // TODO: stopped at alSourceQueueBuffers
 class Source : std::enable_shared_from_this<Source> {
   friend class Context;
+
  public:
   ~Source();
 
@@ -69,5 +70,4 @@ class Source : std::enable_shared_from_this<Source> {
   std::weak_ptr<Context> owner;
 };
 
-}  // namespace pf
-
+}  // namespace pf::audio

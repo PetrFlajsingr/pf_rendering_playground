@@ -50,4 +50,4 @@ tl::expected<std::shared_ptr<Context>, OpenALError> Device::createContext() {
   return std::shared_ptr<Context>(new Context{handle, shared_from_this()});
 }
 
-}  // namespace pf
+}  // namespace pf::audio
