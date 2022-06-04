@@ -32,6 +32,7 @@ class Buffer {
 
  private:
   Buffer(ALuint handle, const std::shared_ptr<Context> &parent);
+  void checkOwnerAsserts() const;
   ALuint buffer;
   std::weak_ptr<Context> owner;
 };
