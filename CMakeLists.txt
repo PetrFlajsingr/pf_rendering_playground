@@ -108,6 +108,18 @@ set(OPENGL_INTERFACE_SRC
         src/gpu/opengl/RenderThread.h
         )
 
+set(AUDIO_SRC
+        src/audio/Device.cpp
+        src/audio/Device.h
+        src/audio/common.h
+        src/audio/Context.cpp
+        src/audio/Context.h
+        src/audio/Listener.cpp
+        src/audio/Listener.h
+        src/audio/Source.cpp
+        src/audio/Source.h
+        )
+
 set(SHADERTOY_SRC
         src/shader_toy/ShaderToyMode.cpp
         src/shader_toy/ShaderToyMode.h
@@ -173,6 +185,7 @@ add_executable(${PROJECT_NAME}
         ${GPU_INTERFACE_SRC}
         ${OPENGL_INTERFACE_SRC}
         ${SHADERTOY_SRC}
+        ${AUDIO_SRC}
         )
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOGDI)
