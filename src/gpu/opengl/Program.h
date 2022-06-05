@@ -22,16 +22,16 @@ class OpenGlProgram : public Program, public OpenGlHandleOwner {
                 })) {}
   explicit OpenGlProgram(std::shared_ptr<Shader> shader);
 
+  void use() override;
  protected:
+
   [[nodiscard]] GpuOperationResult<ProgramError> createImpl() override;
 
   [[nodiscard]] ProgramInfos extractProgramInfos() override;
-
   [[nodiscard]] std::vector<UniformInfo> extractUniforms();
   [[nodiscard]] std::vector<AttributeInfo> extractAttributes();
-  [[nodiscard]] std::vector<BufferInfo> extractBuffers();
 
-  void useImpl() override;
+  [[nodiscard]] std::vector<BufferInfo> extractBuffers();
   void setUniformImpl(UniformLocation location, std::variant<PF_SHADER_VALUE_TYPES> value) override;
   [[nodiscard]] std::variant<PF_SHADER_VALUE_TYPES> getUniformValueImpl(const UniformInfo &info) override;
   void dispatchImpl(std::uint32_t x, std::uint32_t y, std::uint32_t z) override;

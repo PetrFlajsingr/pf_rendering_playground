@@ -97,7 +97,7 @@ std::vector<AttributeInfo> OpenGlProgram::extractAttributes() {
       result.emplace_back(AttributeLocation{static_cast<std::uint32_t>(location)}, shaderValueType.value(),
                           std::move(name), length);
     } else {
-      DEBUG_ASSERT(false, "Came across unsupported type in shader program");
+      DEBUG_ASSERT(false, "Came across an unsupported type in shader program");
     }
   }
   return result;
@@ -180,15 +180,23 @@ constexpr std::optional<ShaderValueType> OpenGlProgram::ShaderValueTypeFromGlCon
 
 void OpenGlProgram::deleteOpenGlObject(GLuint objectHandle) const { glDeleteProgram(objectHandle); }
 
-void OpenGlProgram::useImpl() { glUseProgram(*handle); }
+void OpenGlProgram::use() {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
+  glUseProgram(*handle);
+}
 
 void OpenGlProgram::setUniformImpl(UniformLocation location, std::variant<PF_SHADER_VALUE_TYPES> value) {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
   std::visit([&](auto value) { setOGLUniform(*handle, location.get(), value); }, value);
 }
 
-void OpenGlProgram::dispatchImpl(std::uint32_t x, std::uint32_t y, std::uint32_t z) { glDispatchCompute(x, y, z); }
+void OpenGlProgram::dispatchImpl(std::uint32_t x, std::uint32_t y, std::uint32_t z) {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
+  glDispatchCompute(x, y, z);
+}
 
 std::variant<PF_SHADER_VALUE_TYPES> OpenGlProgram::getUniformValueImpl(const UniformInfo &info) {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
   return getOGLuniform(*handle, static_cast<GLint>(info.location.get()), info.type);
 }
 

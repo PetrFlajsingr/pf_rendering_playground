@@ -77,7 +77,7 @@ class Program : public GpuObject {
   [[nodiscard]] GpuOperationResult<ProgramError> setUniform(const std::string &name,
                                                             OneOf<PF_SHADER_VALUE_TYPES> auto value);
 
-  void use();
+  virtual void use() = 0;
 
   [[nodiscard]] GpuOperationResult<ProgramError> dispatch(std::uint32_t x, std::uint32_t y = 1, std::uint32_t z = 1);
 
@@ -92,7 +92,6 @@ class Program : public GpuObject {
 
   [[nodiscard]] virtual GpuOperationResult<ProgramError> createImpl() = 0;
   [[nodiscard]] virtual ProgramInfos extractProgramInfos() = 0;
-  virtual void useImpl() = 0;
   virtual void setUniformImpl(UniformLocation location, std::variant<PF_SHADER_VALUE_TYPES> value) = 0;
   [[nodiscard]] virtual std::variant<PF_SHADER_VALUE_TYPES> getUniformValueImpl(const UniformInfo &info) = 0;
   virtual void dispatchImpl(std::uint32_t x, std::uint32_t y, std::uint32_t z) = 0;

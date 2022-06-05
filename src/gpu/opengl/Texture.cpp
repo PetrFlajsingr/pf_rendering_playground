@@ -66,10 +66,12 @@ GpuOperationResult<TextureError> OpenGlTexture::create() {
 }
 
 void OpenGlTexture::setParam(TextureMinificationFilter filter) {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
   glTextureParameteri(*handle, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(MinifyingFilterToGlConstant(filter)));
 }
 
 void OpenGlTexture::setParam(TextureMagnificationFilter filter) {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
   glTextureParameteri(*handle, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(MagnifyingFilterToGlConstant(filter)));
 }
 
@@ -184,9 +186,13 @@ constexpr GLenum OpenGlTexture::ImageTextureUnitAccessToGlConstant(ImageTextureU
   return {};
 }
 
-void OpenGlTexture::bindTextureUnit(Binding unit) { glBindTextureUnit(unit.get(), *handle); }
+void OpenGlTexture::bindTextureUnit(Binding unit) {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
+  glBindTextureUnit(unit.get(), *handle);
+}
 
 void OpenGlTexture::bindImage(Binding unit, ImageTextureUnitAccess access) {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
   glBindImageTexture(unit.get(), *handle, static_cast<GLint>(levels.get()), GL_FALSE, 0,
                      ImageTextureUnitAccessToGlConstant(access), FormatToOpenGLConstant(format));
 }
@@ -194,6 +200,7 @@ void OpenGlTexture::bindImage(Binding unit, ImageTextureUnitAccess access) {
 GpuOperationResult<TextureError> OpenGlTexture::set2DdataImpl(std::span<const std::byte> data, TextureLevel level,
                                                               TextureOffset xOffset, TextureOffset yOffset,
                                                               TextureWidth width, TextureHeight height) {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
   int glFormat{};
   int glSubImageFormat{};
   switch (getFormat()) {

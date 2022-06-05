@@ -3,6 +3,7 @@
 //
 
 #include "Buffer.h"
+#include "assert.hpp"
 
 namespace pf::gpu {
 
@@ -26,6 +27,7 @@ GpuOperationResult<BufferError> OpenGlBuffer::create(std::span<const std::byte> 
 }
 
 std::size_t OpenGlBuffer::getSize() const {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
   GLint64 result;
   glGetNamedBufferParameteri64v(*handle, GL_BUFFER_SIZE, &result);
   return static_cast<std::size_t>(result);
@@ -34,6 +36,7 @@ std::size_t OpenGlBuffer::getSize() const {
 void OpenGlBuffer::deleteOpenGlObject(GLuint objectHandle) const { glDeleteBuffers(1, &objectHandle); }
 
 BufferMapping OpenGlBuffer::map() {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
   auto ptr = glMapNamedBuffer(*handle, GL_READ_WRITE);
   return createMapping(ptr, [handle = *handle](Buffer &) { glUnmapNamedBuffer(handle); });
 }
@@ -45,17 +48,20 @@ void OpenGlBuffer::createHandle() {
 }
 
 GpuOperationResult<BufferError> OpenGlBuffer::setData(std::span<const std::byte> data) {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
   glNamedBufferSubData(*handle, 0, static_cast<GLsizeiptr>(data.size()), data.data());
   return std::nullopt;
 }
 
 GpuOperationResult<BufferError> OpenGlBuffer::setData(std::size_t offsetInBytes, std::span<const std::byte> data) {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
   glNamedBufferSubData(*handle, static_cast<GLintptr>(offsetInBytes), static_cast<GLsizeiptr>(data.size()),
                        data.data());
   return std::nullopt;
 }
 
 GpuOperationResult<BufferError> OpenGlBuffer::bind(BufferTarget target, Binding binding) {
+  DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
   GLuint buffer{};
   switch (target) {
     case BufferTarget::AtomicCounter: buffer = GL_ATOMIC_COUNTER_BUFFER; break;
