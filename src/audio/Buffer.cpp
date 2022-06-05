@@ -9,6 +9,8 @@ namespace pf::audio {
 
 Buffer::~Buffer() { alDeleteBuffers(1, &buffer); }
 
+ALuint Buffer::getHandle() const { return buffer; }
+
 Buffer::Buffer(ALuint handle, const std::shared_ptr<Context> &parent) : buffer(handle), owner(parent) {}
 
 std::optional<OpenALError> Buffer::setData(std::span<std::byte> data, Format format, std::size_t frequency) {

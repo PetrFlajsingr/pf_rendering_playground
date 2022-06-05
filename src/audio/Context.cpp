@@ -3,10 +3,10 @@
 //
 
 #include "Context.h"
+#include "Buffer.h"
 #include "Device.h"
 #include "Listener.h"
 #include "Source.h"
-#include "Buffer.h"
 
 namespace pf::audio {
 
@@ -14,6 +14,8 @@ Context::~Context() {
   alcDestroyContext(context);
   DEBUG_ASSERT(!owner.expired(), "Context has to be destroyed before Device");
 }
+
+ALCcontext *Context::getHandle() const { return context; }
 
 Context::Context(ALCcontext *handle, const std::shared_ptr<Device> &parent)
     : context(handle), owner(parent), listener(new Listener{shared_from_this()}) {}

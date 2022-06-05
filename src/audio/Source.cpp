@@ -33,6 +33,27 @@ void Source::rewind() {
   alSourceRewind(source);
 }
 
+void Source::setBuffer(std::shared_ptr<Buffer> buffer) {
+  checkOwnerAsserts();
+  clearBuffers();
+  appendBuffersImpl({buffer->getHandle()});
+  enqueuedBuffers.emplace_back(std::move(buffer));
+}
+
+void Source::appendBuffer(std::shared_ptr<Buffer> buffer) {
+  checkOwnerAsserts();
+  appendBuffersImpl({buffer->getHandle()});
+  enqueuedBuffers.emplace_back(std::move(buffer));
+}
+
+void Source::clearBuffers() {
+  checkOwnerAsserts();
+  clearBuffersImpl(enqueuedBuffers | ranges::views::transform(&Buffer::getHandle) | ranges::to_vector);
+  enqueuedBuffers.clear();
+}
+
+const std::vector<std::shared_ptr<Buffer>> &Source::getBuffers() const { return enqueuedBuffers; }
+
 void Source::setPitch(float pitch) {
   checkOwnerAsserts();
   alSourcef(source, AL_PITCH, pitch);
@@ -180,4 +201,13 @@ float Source::getSourceF(ALenum param) const {
   alGetSourcef(source, param, &result);
   return result;
 }
+
+void Source::appendBuffersImpl(std::vector<ALuint> buffers) {
+  alSourceQueueBuffers(source, static_cast<ALsizei>(buffers.size()), buffers.data());
+}
+
+void Source::clearBuffersImpl(std::vector<ALuint> buffers) {
+  alSourceUnqueueBuffers(source, static_cast<ALsizei>(buffers.size()), buffers.data());
+}
+
 }  // namespace pf::audio

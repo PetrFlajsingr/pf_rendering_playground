@@ -23,6 +23,8 @@ class Device : std::enable_shared_from_this<Device> {
 
   ~Device();
 
+  [[nodiscard]] ALCdevice *getHandle() const;
+
   [[nodiscard]] tl::expected<std::shared_ptr<Context>, OpenALError> createContext();
 
  private:

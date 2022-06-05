@@ -43,6 +43,8 @@ tl::expected<std::shared_ptr<Device>, OpenALError> Device::CreateImpl(const ALCc
 
 Device::~Device() { alcCloseDevice(device); }
 
+ALCdevice *Device::getHandle() const { return device; }
+
 Device::Device(ALCdevice *handle) : device(handle) {}
 
 tl::expected<std::shared_ptr<Context>, OpenALError> Device::createContext() {

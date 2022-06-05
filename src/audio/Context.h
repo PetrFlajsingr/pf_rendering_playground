@@ -29,6 +29,7 @@ class Context : std::enable_shared_from_this<Context> {
 
  public:
   ~Context();
+  [[nodiscard]] ALCcontext *getHandle() const;
 
   [[nodiscard]] std::optional<OpenALError> makeCurrent();
   [[nodiscard]] bool isCurrent() const;

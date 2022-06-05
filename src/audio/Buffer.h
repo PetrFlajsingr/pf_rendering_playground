@@ -23,6 +23,8 @@ class Buffer {
  public:
   ~Buffer();
 
+  [[nodiscard]] ALuint getHandle() const;
+
   [[nodiscard]] std::optional<OpenALError> setData(std::span<std::byte> data, Format format, std::size_t frequency);
 
   [[nodiscard]] std::size_t getFrequency() const;
