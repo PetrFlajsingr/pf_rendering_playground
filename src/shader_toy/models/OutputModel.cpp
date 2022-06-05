@@ -28,7 +28,7 @@ void NormalizedPosition::y(float val) {
   y_ = val;
 }
 
-OutputModel::OutputModel(std::pair<std::uint32_t, std::uint32_t> res, std::shared_ptr<Texture> tex)
+OutputModel::OutputModel(std::pair<std::uint32_t, std::uint32_t> res, std::shared_ptr<gpu::Texture> tex)
     : resolution{res}, texture{std::move(tex)} {}
 
 toml::table OutputModel::toToml() const {

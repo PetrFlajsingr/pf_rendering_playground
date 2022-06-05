@@ -78,7 +78,7 @@ void ImageAssetsController::showAddImageDialog() {
         waitDlg.createChild<ui::ig::Spinner>("img_wait_spinner", 20.f, 4);
         // TODO: clean this up
         const auto onLoadDone = [=, &waitDlg,
-                                 this](const tl::expected<std::shared_ptr<Texture>, std::string> &loadingResult) {
+                                 this](const tl::expected<std::shared_ptr<gpu::Texture>, std::string> &loadingResult) {
           MainLoop::Get()->enqueue([=, &waitDlg, this] {
             waitDlg.close();
             if (loadingResult.has_value()) {

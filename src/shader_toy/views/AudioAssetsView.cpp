@@ -34,16 +34,16 @@ void AudioAssetRecordElement::renderImpl() {
 
 const std::string &AudioAssetRecordElement::getFormat() const { return format; }
 
-void AudioAssetRecordElement::setFormat(const std::string &format) { AudioAssetRecordElement::format = format; }
+void AudioAssetRecordElement::setFormat(const std::string &newFormat) { format = newFormat; }
 
 bool AudioAssetRecordElement::isPlay() const { return play; }
 
-void AudioAssetRecordElement::setPlay(bool play) { AudioAssetRecordElement::play = play; }
+void AudioAssetRecordElement::setPlay(bool newPlay) { play = newPlay; }
 
 const std::chrono::seconds &AudioAssetRecordElement::getLength() const { return length; }
 
-void AudioAssetRecordElement::setLength(const std::chrono::seconds &length) {
-  AudioAssetRecordElement::length = length;
+void AudioAssetRecordElement::setLength(std::chrono::seconds newLength) {
+  length = newLength;
 }
 
 AudioAssetsView::AudioAssetsView(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,

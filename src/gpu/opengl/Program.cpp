@@ -7,7 +7,7 @@
 #include "utils/opengl_utils.h"
 #include <assert.hpp>
 
-namespace pf {
+namespace pf::gpu {
 
 OpenGlProgram::OpenGlProgram(std::shared_ptr<Shader> shader) : Program(std::move(shader)) {}
 

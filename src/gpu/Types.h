@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace pf {
+namespace pf::gpu {
 
 #define PF_SHADER_VALUE_TYPES                                                                                          \
   bool, float, unsigned int, int, glm::vec2, glm::vec3, glm::vec4, glm::ivec2, glm::ivec3, glm::ivec4, glm::bvec2,     \

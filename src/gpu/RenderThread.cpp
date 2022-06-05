@@ -4,7 +4,7 @@
 
 #include "RenderThread.h"
 
-namespace pf {
+namespace pf::gpu {
 
 void SimpleRenderCommand::execute() { job(); }
 

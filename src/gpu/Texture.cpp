@@ -4,7 +4,7 @@
 
 #include "Texture.h"
 
-namespace pf {
+namespace pf::gpu {
 
 Texture::Texture(TextureTarget target, TextureFormat format, TextureLevel levels, TextureSize size)
     : target(target), format(format), levels(levels), size(size) {}

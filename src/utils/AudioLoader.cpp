@@ -23,7 +23,7 @@ AVAudioLoader::~AVAudioLoader() = default;
 
 tl::expected<AudioData, std::string> AVAudioLoader::loadAudioFile(const std::filesystem::path &path,
                                                                   AudioPCMFormat requestedFormat,
-                                                                  std::optional<std::size_t> requestedSampleRate) {
+                                                                  std::optional<int> requestedSampleRate) {
   // get format from audio file
   const auto avFormatCtxDeleter = [](auto format) { avformat_free_context(format); };
   auto format =

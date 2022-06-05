@@ -22,9 +22,9 @@ namespace pf {
 // TODO: add texture format
 class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
  public:
-  ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<Texture> newTexture);
+  ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<gpu::Texture> newTexture);
 
-  void setTexture(std::shared_ptr<Texture> newTexture);
+  void setTexture(std::shared_ptr<gpu::Texture> newTexture);
 
   // clang-format off
    ui::ig::VerticalLayout layout;
@@ -41,7 +41,7 @@ class ImageTile : public ui::ig::Element, public ui::ig::Resizable {
  private:
   [[nodiscard]] ui::ig::Size calculateImageSize() const;
 
-  std::shared_ptr<Texture> texture;
+  std::shared_ptr<gpu::Texture> texture;
 };
 
 class ImageAssetsView : public UIViewWindow {
@@ -49,7 +49,7 @@ class ImageAssetsView : public UIViewWindow {
   ImageAssetsView(std::shared_ptr<ui::ig::ImGuiInterface> imguiInterface, std::string_view windowName,
                   std::string_view windowTitle);
 
-  ImageTile &addImageTile(std::string_view name, std::shared_ptr<Texture> texture);
+  ImageTile &addImageTile(std::string_view name, std::shared_ptr<gpu::Texture> texture);
 
   // TODO: add remove function which safely deletes froms layout and vector
 

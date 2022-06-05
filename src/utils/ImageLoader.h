@@ -15,7 +15,7 @@ namespace pf {
 using ChannelCount = fluent::NamedType<std::uint8_t, struct ChannelCountTag, fluent::Comparable>;
 
 struct ImageInfo {
-  TextureSize size;
+  gpu::TextureSize size;
   ChannelCount channels;
 };
 
@@ -40,17 +40,17 @@ class ImageLoader {
   virtual void loadImageWithChannelsAsync(const std::filesystem::path &imagePath, ChannelCount requiredChannels,
                                           std::function<void(tl::expected<ImageData, std::string>)> onLoadDone);
 
-  [[nodiscard]] virtual tl::expected<std::shared_ptr<Texture>, std::string>
+  [[nodiscard]] virtual tl::expected<std::shared_ptr<gpu::Texture>, std::string>
   loadTexture(const std::filesystem::path &imagePath) = 0;
   virtual void
   loadTextureAsync(const std::filesystem::path &imagePath,
-                   std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) = 0;
+                   std::function<void(tl::expected<std::shared_ptr<gpu::Texture>, std::string>)> onLoadDone) = 0;
 
-  [[nodiscard]] virtual tl::expected<std::shared_ptr<Texture>, std::string>
+  [[nodiscard]] virtual tl::expected<std::shared_ptr<gpu::Texture>, std::string>
   loadTextureWithChannels(const std::filesystem::path &imagePath, ChannelCount requiredChannels) = 0;
   virtual void
   loadTextureWithChannelsAsync(const std::filesystem::path &imagePath, ChannelCount requiredChannels,
-                               std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) = 0;
+                               std::function<void(tl::expected<std::shared_ptr<gpu::Texture>, std::string>)> onLoadDone) = 0;
 
  protected:
   void enqueue(std::invocable auto &&fnc) {
@@ -75,23 +75,23 @@ class StbImageLoader : public ImageLoader {
 
 class OpenGLStbImageLoader : public StbImageLoader {
  public:
-  OpenGLStbImageLoader(const std::shared_ptr<ThreadPool> &threadPool, std::shared_ptr<RenderThread> renderingThread);
+  OpenGLStbImageLoader(const std::shared_ptr<ThreadPool> &threadPool, std::shared_ptr<gpu::RenderThread> renderingThread);
 
-  [[nodiscard]] tl::expected<std::shared_ptr<Texture>, std::string>
+  [[nodiscard]] tl::expected<std::shared_ptr<gpu::Texture>, std::string>
   loadTexture(const std::filesystem::path &imagePath) override;
   void loadTextureAsync(const std::filesystem::path &imagePath,
-                        std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) override;
+                        std::function<void(tl::expected<std::shared_ptr<gpu::Texture>, std::string>)> onLoadDone) override;
 
-  tl::expected<std::shared_ptr<Texture>, std::string> loadTextureWithChannels(const std::filesystem::path &imagePath,
+  tl::expected<std::shared_ptr<gpu::Texture>, std::string> loadTextureWithChannels(const std::filesystem::path &imagePath,
                                                                               ChannelCount requiredChannels) override;
   void loadTextureWithChannelsAsync(
       const std::filesystem::path &imagePath, ChannelCount requiredChannels,
-      std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) override;
+      std::function<void(tl::expected<std::shared_ptr<gpu::Texture>, std::string>)> onLoadDone) override;
 
  private:
-  tl::expected<std::shared_ptr<Texture>, std::string> createAndFillTexture(const ImageData &data);
+  tl::expected<std::shared_ptr<gpu::Texture>, std::string> createAndFillTexture(const ImageData &data);
 
-  std::shared_ptr<RenderThread> renderThread;
+  std::shared_ptr<gpu::RenderThread> renderThread;
 };
 
 }  // namespace pf

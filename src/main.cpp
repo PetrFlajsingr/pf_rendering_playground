@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  auto renderThread = std::make_shared<pf::OpenGlRenderThread>(window);
+  auto renderThread = std::make_shared<pf::gpu::OpenGlRenderThread>(window);
   // setting opengl api context ownership to rendering thread
   glfwMakeContextCurrent(nullptr);
   renderThread->enqueue([&window] { window->setCurrent(); });

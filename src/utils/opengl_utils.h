@@ -69,7 +69,8 @@ void setOGLUniform(GLuint programHandle, GLint uniformLocation, T value) {
 }
 
 inline std::variant<PF_SHADER_VALUE_TYPES> getOGLuniform(GLuint programHandle, GLint uniformLocation,
-                                                         ShaderValueType type) {
+                                                         gpu::ShaderValueType type) {
+  using namespace gpu;
 #define GET_UNIFORM_VALUE(type, function)                                                                              \
   [&] {                                                                                                                \
     type result;                                                                                                       \

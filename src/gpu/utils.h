@@ -11,7 +11,7 @@
 #include <imgui.h>
 #include <stb/stb_image.h>
 
-namespace pf {
+namespace pf::gpu {
 
 [[nodiscard]] inline ImTextureID getImTextureID(Texture &texture) {
   if (const auto oGlTexture = texture.as<OpenGlTexture>(); oGlTexture.has_value()) {

@@ -95,7 +95,7 @@ set(GPU_INTERFACE_SRC
         src/gpu/utils.h
         src/gpu/RenderThread.cpp
         src/gpu/RenderThread.h
-        )
+        src/gpu/Buffer.cpp src/gpu/Buffer.h)
 
 set(OPENGL_INTERFACE_SRC
         src/gpu/opengl/OpenGl.h
@@ -160,7 +160,7 @@ set(SHADERTOY_SRC
         src/shader_toy/models/MainModel.h
         src/shader_toy/views/MainView.cpp
         src/shader_toy/views/MainView.h
-        src/shader_toy/views/AudioAssetsView.cpp src/shader_toy/views/AudioAssetsView.h)
+        src/shader_toy/views/AudioAssetsView.cpp src/shader_toy/views/AudioAssetsView.h src/shader_toy/models/AudioAssetsModel.cpp src/shader_toy/models/AudioAssetsModel.h)
 
 
 add_executable(${PROJECT_NAME}

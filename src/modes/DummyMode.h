@@ -13,7 +13,7 @@ class DummyMode : public Mode {
 
  protected:
   inline void initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &, const std::shared_ptr<glfw::Window> &,
-                              std::shared_ptr<ThreadPool>, std::shared_ptr<RenderThread>) override {}
+                              std::shared_ptr<ThreadPool>, std::shared_ptr<gpu::RenderThread>) override {}
   std::vector<std::shared_ptr<spdlog::sinks::sink>> createLoggerSinks() override { return {}; }
   inline void activate_impl() override {}
   inline void deactivate_impl() override {}

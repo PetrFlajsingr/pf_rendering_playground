@@ -5,7 +5,7 @@
 #include "Texture.h"
 #include <assert.hpp>
 
-namespace pf {
+namespace pf::gpu {
 
 OpenGlTexture::OpenGlTexture(TextureTarget target, TextureFormat format, TextureLevel levels, TextureSize size)
     : Texture(target, format, levels, size) {}

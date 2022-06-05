@@ -14,7 +14,7 @@ namespace pf::ui::ig {
 struct ImGuiGlfwOpenGLConfig {
   ImGuiConfig imgui;
   GLFWwindow *windowHandle;
-  std::shared_ptr<RenderThread> renderThread;
+  std::shared_ptr<gpu::RenderThread> renderThread;
 };
 
 class ImGuiGlfwOpenGLInterface final : public ImGuiInterface {
@@ -33,7 +33,7 @@ class ImGuiGlfwOpenGLInterface final : public ImGuiInterface {
   void renderDrawData_impl(ImDrawData *drawData) override;
 
  private:
-  std::shared_ptr<RenderThread> renderThread;
+  std::shared_ptr<gpu::RenderThread> renderThread;
 };
 
 }  // namespace pf::ui::ig

@@ -8,7 +8,7 @@
 #include <glad/glad.h>
 #include <optional>
 
-namespace pf {
+namespace pf::gpu {
 
 template<std::invocable<GLuint> Deleter>
 class OpenGlHandle {

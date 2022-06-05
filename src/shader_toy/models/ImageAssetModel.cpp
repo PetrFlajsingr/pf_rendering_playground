@@ -6,7 +6,7 @@
 
 namespace pf {
 
-TextureAssetModel::TextureAssetModel(std::string name, std::filesystem::path path, std::shared_ptr<Texture> texture)
+TextureAssetModel::TextureAssetModel(std::string name, std::filesystem::path path, std::shared_ptr<gpu::Texture> texture)
     : name(std::move(name)), imagePath(std::move(path)), texture(std::move(texture)) {}
 
 toml::table TextureAssetModel::toToml() const { return toml::table{{"name", *name}, {"path", imagePath->string()}}; }
@@ -27,7 +27,7 @@ std::string TextureAssetModel::getDebugString() const {
 const UserImageAssetsModel::TextureModels &UserImageAssetsModel::getTextures() const { return textures; }
 
 std::optional<std::string> UserImageAssetsModel::addTexture(std::string_view name, std::filesystem::path path,
-                                                            std::shared_ptr<Texture> texture) {
+                                                            std::shared_ptr<gpu::Texture> texture) {
   return addTexture(std::make_shared<TextureAssetModel>(std::string{name}, std::move(path), std::move(texture)));
 }
 

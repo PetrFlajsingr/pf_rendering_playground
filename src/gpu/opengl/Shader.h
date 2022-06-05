@@ -7,7 +7,7 @@
 #include "../Shader.h"
 #include "OpenGl.h"
 
-namespace pf {
+namespace pf::gpu {
 
 class OpenGlShader : public Shader, public OpenGlHandleOwner {
  public:

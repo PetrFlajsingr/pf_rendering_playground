@@ -15,7 +15,7 @@
 #include <variant>
 #include <vector>
 
-namespace pf {
+namespace pf::gpu {
 
 using UniformLocation = fluent::NamedType<std::uint32_t, struct UniformLocationTag>;
 using AttributeLocation = fluent::NamedType<std::uint32_t, struct AttributeLocationTag>;

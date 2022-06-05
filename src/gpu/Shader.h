@@ -9,7 +9,7 @@
 #include "utils/glsl/glsl_typenames.h"
 #include <string>
 
-namespace pf {
+namespace pf::gpu {
 
 enum class ShaderError { Compilation };
 

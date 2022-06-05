@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace pf {
+namespace pf::gpu {
 
 enum class GpuApi {
   OpenGl  // TODO more
@@ -57,7 +57,8 @@ class GpuObject {
   enum class Type {
     Texture,
     Shader,
-    Program  // TODO more
+    Program,
+    Buffer // TODO more
   };
   virtual ~GpuObject() = 0;
 
@@ -106,7 +107,7 @@ inline GpuObject::~GpuObject() = default;
 
 }  // namespace pf
 
-template<std::derived_from<pf::GpuObject> TGPUObject>
+template<std::derived_from<pf::gpu::GpuObject> TGPUObject>
 struct fmt::formatter<TGPUObject> : fmt::formatter<std::string> {
   auto format(const TGPUObject &object, fmt::format_context &ctx) {
     return fmt::format_to(ctx.out(), "{}", object.getDebugString());

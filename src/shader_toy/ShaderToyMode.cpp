@@ -38,7 +38,7 @@ std::string ShaderToyMode::getName() const { return "ShaderToy"; }
 
 void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                                     const std::shared_ptr<glfw::Window> &window, std::shared_ptr<ThreadPool> threadPool,
-                                    std::shared_ptr<RenderThread> renderThread) {
+                                    std::shared_ptr<gpu::RenderThread> renderThread) {
   auto isFirstRun = true;
   if (const auto iter = config.find("initialized"); iter != config.end()) {
     isFirstRun = !iter->second.value_or(false);
@@ -82,8 +82,8 @@ void ShaderToyMode::activate_impl() {
   mainController->show();
   imGuiInterface->setStateFromConfig();
   // TODO: load data from config
-  initializeTexture(TextureSize{TextureWidth{models.output->resolution->first},
-                                TextureHeight{models.output->resolution->second}, TextureDepth{0u}});
+  initializeTexture(gpu::TextureSize{gpu::TextureWidth{models.output->resolution->first},
+                                     gpu::TextureHeight{models.output->resolution->second}, gpu::TextureDepth{0u}});
 }
 
 void ShaderToyMode::deactivate_impl() {
@@ -136,18 +136,18 @@ void ShaderToyMode::resetCounters() {
   totalTime = std::chrono::nanoseconds{0};
 }
 
-void ShaderToyMode::initializeTexture(TextureSize textureSize) {
+void ShaderToyMode::initializeTexture(gpu::TextureSize textureSize) {
   getLogger().info("Updating texture size to {}x{}", textureSize.width.get(), textureSize.height.get());
   renderingThread->enqueue([=, this] {
-    auto newTexture =
-        std::make_shared<OpenGlTexture>(TextureTarget::_2D, TextureFormat::RGBA32F, TextureLevel{0}, textureSize);
+    auto newTexture = std::make_shared<gpu::OpenGlTexture>(gpu::TextureTarget::_2D, gpu::TextureFormat::RGBA32F,
+                                                           gpu::TextureLevel{0}, textureSize);
     if (const auto err = newTexture->create(); err.has_value()) {
       // FIXME
       VERIFY(false, "Texture creation failure handling not implemented");
     }
     getLogger().debug("Texture created: {}", *newTexture);
-    newTexture->setParam(TextureMinificationFilter::Linear);
-    newTexture->setParam(TextureMagnificationFilter::Linear);
+    newTexture->setParam(gpu::TextureMinificationFilter::Linear);
+    newTexture->setParam(gpu::TextureMagnificationFilter::Linear);
 
     MainLoop::Get()->enqueue([this, newTexture] {
       outputTexture = newTexture;
@@ -212,8 +212,8 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
     const auto texFormat = (*tex->texture)->getFormat();
     std::string formatStr;
     switch (texFormat) {
-      case TextureFormat::R8: formatStr = "r8"; break;
-      case TextureFormat::RGBA8: formatStr = "rgba8"; break;
+      case gpu::TextureFormat::R8: formatStr = "r8"; break;
+      case gpu::TextureFormat::RGBA8: formatStr = "rgba8"; break;
       default:
         getLogger().error("Unsupported image type '{}' in ShaderToyMode::compileShader_impl",
                           magic_enum::enum_name(texFormat));
@@ -243,21 +243,21 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
       mainController->glslEditorController->clearErrorMarkers();
       if (spirvResult.has_value()) {
         renderingThread->enqueue([=, this] {
-          auto shader = std::make_shared<OpenGlShader>();
+          auto shader = std::make_shared<gpu::OpenGlShader>();
           //FIXME const auto shaderCreateResult = shader->create(spirvResult.value(), "main");
           const auto shaderCreateResult = shader->create(source);
           if (shaderCreateResult.has_value()) {
             getLogger().error("Shader creation failed:");
             getLogger().error("{}", shaderCreateResult.value().message());
           } else {
-            auto newProgram = std::make_unique<OpenGlProgram>(std::move(shader));
+            auto newProgram = std::make_unique<gpu::OpenGlProgram>(std::move(shader));
             const auto programCreateResult = newProgram->create();
             if (programCreateResult.has_value()) {
               getLogger().error("Program creation failed:");
               getLogger().error("{}", programCreateResult->message());
             } else {
               MainLoop::Get()->enqueue([this, source, programPtr = newProgram.release()]() mutable {
-                mainProgram = std::unique_ptr<OpenGlProgram>(programPtr);
+                mainProgram = std::unique_ptr<gpu::OpenGlProgram>(programPtr);
 
                 totalTime = std::chrono::nanoseconds{0};
                 frameCounter = 0;
@@ -327,13 +327,16 @@ void ShaderToyMode::setUniforms(float timeFloat, float timeDeltaFloat, MouseStat
 void ShaderToyMode::setBindings() {
   auto ignoredResult = mainProgram->getUniformValue(
       "outImage",
-      Visitor{[&](int binding) { outputTexture->bindImage(Binding{binding}, ImageTextureUnitAccess::ReadWrite); },
-              [](auto) {}});
+      Visitor{
+          [&](int binding) { outputTexture->bindImage(gpu::Binding{binding}, gpu::ImageTextureUnitAccess::ReadWrite); },
+          [](auto) {}});
   // TODO: read only?
   std::ranges::for_each(models.imageAssets->getTextures(), [&](const auto &tex) {
     ignoredResult = mainProgram->getUniformValue(
         *tex->name,
-        Visitor{[&](int binding) { (*tex->texture)->bindImage(Binding{binding}, ImageTextureUnitAccess::ReadWrite); },
+        Visitor{[&](int binding) {
+                  (*tex->texture)->bindImage(gpu::Binding{binding}, gpu::ImageTextureUnitAccess::ReadWrite);
+                },
                 [](auto) {}});
   });
 }
@@ -355,7 +358,8 @@ void ShaderToyMode::updateConfig() {
 
 void ShaderToyMode::createModels() {
   const auto updateTextureSize = [this](auto resolution) {
-    const TextureSize textureSize{TextureWidth{resolution.first}, TextureHeight{resolution.second}, TextureDepth{0u}};
+    const gpu::TextureSize textureSize{gpu::TextureWidth{resolution.first}, gpu::TextureHeight{resolution.second},
+                                       gpu::TextureDepth{0u}};
     initializeTexture(textureSize);
   };
   const auto markShaderChanged = [this](auto...) {
@@ -426,7 +430,7 @@ void ShaderToyMode::loadModelsFromConfig() {
   }
   std::ranges::for_each(models.imageAssets->getTextures(), [this](const auto &textureModel) {
     if (*textureModel->texture == nullptr) {
-      const auto onLoadDone = [=, this](const tl::expected<std::shared_ptr<Texture>, std::string> &loadingResult) {
+      const auto onLoadDone = [=, this](const tl::expected<std::shared_ptr<gpu::Texture>, std::string> &loadingResult) {
         MainLoop::Get()->enqueue([=] {
           if (loadingResult.has_value()) {
             *textureModel->texture.modify() = loadingResult.value();

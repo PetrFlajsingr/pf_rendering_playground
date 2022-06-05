@@ -10,7 +10,7 @@
 #include "Shader.h"
 #include <utility>
 
-namespace pf {
+namespace pf::gpu {
 
 class OpenGlProgram : public Program, public OpenGlHandleOwner {
  public:

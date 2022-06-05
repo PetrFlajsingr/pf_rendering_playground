@@ -29,10 +29,10 @@ class NormalizedPosition {
 
 class OutputModel : public SavableModel {
  public:
-  OutputModel(std::pair<std::uint32_t, std::uint32_t> res, std::shared_ptr<Texture> tex);
+  OutputModel(std::pair<std::uint32_t, std::uint32_t> res, std::shared_ptr<gpu::Texture> tex);
 
   Observable<std::pair<std::uint32_t, std::uint32_t>> resolution;
-  Observable<std::shared_ptr<Texture>> texture;
+  Observable<std::shared_ptr<gpu::Texture>> texture;
   Observable<NormalizedPosition> mousePositionOnImageUV{};
   Observable<bool> textureHovered{};
 

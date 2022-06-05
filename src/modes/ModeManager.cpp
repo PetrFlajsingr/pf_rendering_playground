@@ -13,7 +13,7 @@ namespace pf {
 namespace gui = ui::ig;
 // TODO: ui controller
 ModeManager::ModeManager(std::shared_ptr<gui::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> glfwWindow,
-                         std::shared_ptr<RenderThread> renderingThread, toml::table config,
+                         std::shared_ptr<gpu::RenderThread> renderingThread, toml::table config,
                          std::size_t workerThreadCount)
     : imguiInterface(std::move(imGuiInterface)), window(std::move(glfwWindow)), config(std::move(config)),
       workerThreads(std::make_shared<ThreadPool>(workerThreadCount)), renderThread(std::move(renderingThread)),

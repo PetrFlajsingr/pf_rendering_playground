@@ -29,11 +29,11 @@ class Mode {
  protected:
   void initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                   const std::shared_ptr<glfw::Window> &window, toml::table modeConfig,
-                  std::shared_ptr<ThreadPool> workerThreads, std::shared_ptr<RenderThread> renderThread);
+                  std::shared_ptr<ThreadPool> workerThreads, std::shared_ptr<gpu::RenderThread> renderThread);
 
   virtual void initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                                const std::shared_ptr<glfw::Window> &window, std::shared_ptr<ThreadPool> workerThreads,
-                               std::shared_ptr<RenderThread> renderThread) = 0;
+                               std::shared_ptr<gpu::RenderThread> renderThread) = 0;
 
   virtual std::vector<std::shared_ptr<spdlog::sinks::sink>> createLoggerSinks() = 0;
 

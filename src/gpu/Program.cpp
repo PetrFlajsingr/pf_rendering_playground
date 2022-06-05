@@ -4,7 +4,7 @@
 
 #include "Program.h"
 
-namespace pf {
+namespace pf::gpu {
 
 GpuOperationResult<ProgramError> Program::create() {
   if (auto result = createImpl(); result.has_value()) { return result; }

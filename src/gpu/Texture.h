@@ -10,7 +10,7 @@
 #include "pf_common/algorithms.h"
 #include <glad/glad.h>
 
-namespace pf {
+namespace pf::gpu {
 
 enum class TextureError { InvalidCoordinates, WrongDataLength, WrongDataFormat, UnsupportedDataFormat };
 

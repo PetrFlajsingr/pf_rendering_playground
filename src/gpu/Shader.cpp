@@ -4,7 +4,7 @@
 
 #include "Shader.h"
 
-namespace pf {
+namespace pf::gpu {
 
 ShaderType Shader::getShaderType() const { return shaderType; }
 

@@ -5,7 +5,7 @@
 #include "Shader.h"
 #include <assert.hpp>
 
-namespace pf {
+namespace pf::gpu {
 
 GpuOperationResult<ShaderError> OpenGlShader::create(const SpirvCompilationResult &spirvData,
                                                      const std::string &entryPoint) {

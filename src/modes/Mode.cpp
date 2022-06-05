@@ -19,7 +19,7 @@ ModeState Mode::getState() const { return state; }
 
 void Mode::initialize(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                       const std::shared_ptr<glfw::Window> &window, toml::table modeConfig,
-                      std::shared_ptr<ThreadPool> workerThreads, std::shared_ptr<RenderThread> renderThread) {
+                      std::shared_ptr<ThreadPool> workerThreads, std::shared_ptr<gpu::RenderThread> renderThread) {
   VERIFY(imguiInterface != nullptr);
   VERIFY(window != nullptr);
   VERIFY(workerThreads != nullptr);

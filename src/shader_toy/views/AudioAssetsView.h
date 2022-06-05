@@ -19,11 +19,11 @@ class AudioAssetRecordElement : public ui::ig::Element, public ui::ig::Labellabl
                           std::chrono::seconds length);
 
   [[nodiscard]] const std::string &getFormat() const;
-  void setFormat(const std::string &format);
+  void setFormat(const std::string & newFormat);
   [[nodiscard]] bool isPlay() const;
-  void setPlay(bool play);
+  void setPlay(bool newPlay);
   [[nodiscard]] const std::chrono::seconds &getLength() const;
-  void setLength(const std::chrono::seconds &length);
+  void setLength(std::chrono::seconds newLength);
 
   Subscription addRemoveClickListener(std::invocable auto &&listener) {
     return removeObservableImpl.addListener(std::forward<decltype(listener)>(listener));

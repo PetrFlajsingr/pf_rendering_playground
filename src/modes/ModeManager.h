@@ -17,7 +17,7 @@ class ModeManager {
   using Error = std::string;
 
   ModeManager(std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface, std::shared_ptr<glfw::Window> glfwWindow,
-              std::shared_ptr<RenderThread> renderingThread, toml::table config, std::size_t workerThreadCount);
+              std::shared_ptr<gpu::RenderThread> renderingThread, toml::table config, std::size_t workerThreadCount);
   ~ModeManager();
 
   [[nodiscard]] toml::table getConfig() const;
@@ -50,7 +50,7 @@ class ModeManager {
   toml::table config;
 
   std::shared_ptr<ThreadPool> workerThreads;
-  std::shared_ptr<RenderThread> renderThread;
+  std::shared_ptr<gpu::RenderThread> renderThread;
 
   ModeRecord *activeMode = nullptr;
   std::list<ModeRecord> modes;

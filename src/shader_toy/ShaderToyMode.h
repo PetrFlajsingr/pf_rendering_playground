@@ -27,7 +27,7 @@ class ShaderToyMode : public Mode {
  protected:
   void initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface,
                        const std::shared_ptr<glfw::Window> &window, std::shared_ptr<ThreadPool> threadPool,
-                       std::shared_ptr<RenderThread> renderThread) override;
+                       std::shared_ptr<gpu::RenderThread> renderThread) override;
   std::vector<std::shared_ptr<spdlog::sinks::sink>> createLoggerSinks() override;
   void activate_impl() override;
   void deactivate_impl() override;
@@ -44,7 +44,7 @@ class ShaderToyMode : public Mode {
 
   void resetCounters();
 
-  void initializeTexture(TextureSize textureSize);
+  void initializeTexture(gpu::TextureSize textureSize);
 
   [[nodiscard]] glm::uvec2 getTextureSize() const;
 
@@ -67,9 +67,9 @@ class ShaderToyMode : public Mode {
   std::chrono::nanoseconds totalTime{0};
   bool timeCounterPaused = false;
 
-  std::shared_ptr<Texture> outputTexture = nullptr;
+  std::shared_ptr<gpu::Texture> outputTexture = nullptr;
 
-  std::unique_ptr<Program> mainProgram = nullptr;
+  std::unique_ptr<gpu::Program> mainProgram = nullptr;
 
   std::string currentShaderSrc{};
   std::shared_ptr<glfw::Window> glfwWindow = nullptr;
@@ -86,7 +86,7 @@ class ShaderToyMode : public Mode {
   std::chrono::time_point<std::chrono::steady_clock> lastShaderChangeTime = std::chrono::steady_clock::now();
 
   std::shared_ptr<ThreadPool> workerThreads = nullptr;
-  std::shared_ptr<RenderThread> renderingThread = nullptr;
+  std::shared_ptr<gpu::RenderThread> renderingThread = nullptr;
   std::vector<std::future<void>> unfinishedWorkerTasks{};
 
   bool previousShaderCompilationDone = true;

@@ -118,8 +118,8 @@ std::optional<ImageInfo> StbImageLoader::getImageInfo(const std::filesystem::pat
   int y;
   int n;
   if (stbi_info(imagePath.string().c_str(), &x, &y, &n)) {
-    const auto textureSize = TextureSize{TextureWidth{static_cast<std::uint32_t>(x)},
-                                         TextureHeight{static_cast<std::uint32_t>(y)}, TextureDepth{1}};
+    const auto textureSize = gpu::TextureSize{gpu::TextureWidth{static_cast<std::uint32_t>(x)},
+                                              gpu::TextureHeight{static_cast<std::uint32_t>(y)}, gpu::TextureDepth{1}};
     const auto channels = static_cast<std::uint8_t>(n);
     return ImageInfo{textureSize, ChannelCount{channels}};
   }
@@ -136,19 +136,19 @@ tl::expected<ImageData, std::string> StbImageLoader::loadImage(const std::filesy
   if (data == nullptr) { return tl::make_unexpected("Image loading failed"); }
   const auto dataSpan = std::span{reinterpret_cast<const std::byte *>(data), static_cast<std::size_t>(x * y * n)};
   auto stbFree = RAII{[&] { stbi_image_free(data); }};
-  return ImageData{{TextureSize{TextureWidth{static_cast<std::uint32_t>(x)},
-                                TextureHeight{static_cast<std::uint32_t>(y)}, TextureDepth{0}},
+  return ImageData{{gpu::TextureSize{gpu::TextureWidth{static_cast<std::uint32_t>(x)},
+                                     gpu::TextureHeight{static_cast<std::uint32_t>(y)}, gpu::TextureDepth{0}},
                     ChannelCount{static_cast<std::uint8_t>(n)}},
                    std::vector<std::byte>{dataSpan.begin(), dataSpan.end()}};
 }
 
 OpenGLStbImageLoader::OpenGLStbImageLoader(const std::shared_ptr<ThreadPool> &threadPool,
-                                           std::shared_ptr<RenderThread> renderingThread)
+                                           std::shared_ptr<gpu::RenderThread> renderingThread)
     : StbImageLoader(threadPool), renderThread(std::move(renderingThread)) {
   VERIFY(renderThread != nullptr);
 }
 
-tl::expected<std::shared_ptr<Texture>, std::string>
+tl::expected<std::shared_ptr<gpu::Texture>, std::string>
 OpenGLStbImageLoader::loadTexture(const std::filesystem::path &imagePath) {
   const auto imageData = loadImage(imagePath);
   if (imageData.has_value()) {
@@ -160,7 +160,7 @@ OpenGLStbImageLoader::loadTexture(const std::filesystem::path &imagePath) {
 
 void OpenGLStbImageLoader::loadTextureAsync(
     const std::filesystem::path &imagePath,
-    std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) {
+    std::function<void(tl::expected<std::shared_ptr<gpu::Texture>, std::string>)> onLoadDone) {
   enqueue([this, imagePath, onLoadDone] {
     auto imageData = loadImage(imagePath);
     if (imageData.has_value()) {
@@ -173,7 +173,7 @@ void OpenGLStbImageLoader::loadTextureAsync(
     }
   });
 }
-tl::expected<std::shared_ptr<Texture>, std::string>
+tl::expected<std::shared_ptr<gpu::Texture>, std::string>
 OpenGLStbImageLoader::loadTextureWithChannels(const std::filesystem::path &imagePath, ChannelCount requiredChannels) {
   VERIFY(false, "Not implemented - currently unsafe to use, since it's not updated for render thread");
   const auto imageData = loadImageWithChannels(imagePath, requiredChannels);
@@ -187,7 +187,7 @@ OpenGLStbImageLoader::loadTextureWithChannels(const std::filesystem::path &image
 
 void OpenGLStbImageLoader::loadTextureWithChannelsAsync(
     const std::filesystem::path &imagePath, ChannelCount requiredChannels,
-    std::function<void(tl::expected<std::shared_ptr<Texture>, std::string>)> onLoadDone) {
+    std::function<void(tl::expected<std::shared_ptr<gpu::Texture>, std::string>)> onLoadDone) {
   enqueue([this, imagePath, onLoadDone, requiredChannels] {
     auto imageData = loadImageWithChannels(imagePath, requiredChannels);
     if (imageData.has_value()) {
@@ -201,19 +201,21 @@ void OpenGLStbImageLoader::loadTextureWithChannelsAsync(
   });
 }
 
-tl::expected<std::shared_ptr<Texture>, std::string> OpenGLStbImageLoader::createAndFillTexture(const ImageData &data) {
-  TextureFormat textureFormat;
+tl::expected<std::shared_ptr<gpu::Texture>, std::string>
+OpenGLStbImageLoader::createAndFillTexture(const ImageData &data) {
+  gpu::TextureFormat textureFormat;
   switch (data.info.channels.get()) {
-    case 1: textureFormat = TextureFormat::R8; break;
-    case 3: textureFormat = TextureFormat::RGB8; break;
-    case 4: textureFormat = TextureFormat::RGBA8; break;
+    case 1: textureFormat = gpu::TextureFormat::R8; break;
+    case 3: textureFormat = gpu::TextureFormat::RGB8; break;
+    case 4: textureFormat = gpu::TextureFormat::RGBA8; break;
     default: return tl::make_unexpected(fmt::format("Unsupported channel count '{}'", data.info.channels.get()));
   }
-  auto texture = std::make_shared<OpenGlTexture>(TextureTarget::_2D, textureFormat, TextureLevel{0}, data.info.size);
+  auto texture = std::make_shared<gpu::OpenGlTexture>(gpu::TextureTarget::_2D, textureFormat, gpu::TextureLevel{0},
+                                                      data.info.size);
   if (const auto errOpt = texture->create(); errOpt.has_value()) {
     return tl::make_unexpected(std::string{errOpt.value().message()});
   }
-  const auto setResult = texture->set2Ddata(std::span{data.data.data(), data.data.size()}, TextureLevel{0});
+  const auto setResult = texture->set2Ddata(std::span{data.data.data(), data.data.size()}, gpu::TextureLevel{0});
   if (setResult.has_value()) { return tl::make_unexpected(std::string{setResult->message()}); }
   return texture;
 }

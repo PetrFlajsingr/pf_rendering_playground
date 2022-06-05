@@ -6,7 +6,7 @@
 
 #include <NamedType/named_type.hpp>
 
-namespace pf {
+namespace pf::gpu {
 
 using TextureLevel = fluent::NamedType<std::uint32_t, struct TextureLevelTag, fluent::Comparable>;
 using TextureWidth = fluent::NamedType<std::uint32_t, struct TextureWidthTag, fluent::Comparable, fluent::Addable,

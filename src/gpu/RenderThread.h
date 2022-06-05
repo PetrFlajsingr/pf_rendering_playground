@@ -11,7 +11,7 @@
 #include <thread>
 #include <vector>
 
-namespace pf {
+namespace pf::gpu {
 
 struct RenderCommand {
   RenderCommand() = default;

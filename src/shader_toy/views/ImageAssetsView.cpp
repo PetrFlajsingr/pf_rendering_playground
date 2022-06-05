@@ -8,7 +8,7 @@
 
 namespace pf {
 namespace gui = ui::ig;
-ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<Texture> newTexture)
+ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr<gpu::Texture> newTexture)
     : ui::ig::Element(name), Resizable(size), layout("layout", size), texture(std::move(newTexture)) {
   layout.setDrawBorder(true);
 
@@ -28,7 +28,7 @@ ImageTile::ImageTile(const std::string &name, ui::ig::Size size, std::shared_ptr
   image->setTooltip(name);
 }
 
-void ImageTile::setTexture(std::shared_ptr<Texture> newTexture) {
+void ImageTile::setTexture(std::shared_ptr<gpu::Texture> newTexture) {
   texture = std::move(newTexture);
   if (texture != nullptr) {
     image->setTextureId(getImTextureID(*this->texture));
@@ -47,8 +47,9 @@ ui::ig::Size ImageTile::calculateImageSize() const {
   // TODO: some placeholder thing
   // total height minus heights of other elements
   const auto maxImageHeight = static_cast<float>(getSize().height) - 80.f;
-  const auto textureSize =
-      texture != nullptr ? texture->getSize() : TextureSize{TextureWidth{1024}, TextureHeight{1024}, TextureDepth{1}};
+  const auto textureSize = texture != nullptr
+      ? texture->getSize()
+      : gpu::TextureSize{gpu::TextureWidth{1024}, gpu::TextureHeight{1024}, gpu::TextureDepth{1}};
   const auto textureHeightAspectRatio =
       static_cast<float>(textureSize.height.get()) / static_cast<float>(textureSize.width.get());
   const auto textureWidthAspectRatio =
@@ -79,7 +80,7 @@ ImageAssetsView::ImageAssetsView(std::shared_ptr<ui::ig::ImGuiInterface> imguiIn
   createTooltips();
 }
 
-ImageTile &ImageAssetsView::addImageTile(std::string_view name, std::shared_ptr<Texture> texture) {
+ImageTile &ImageAssetsView::addImageTile(std::string_view name, std::shared_ptr<gpu::Texture> texture) {
   auto &newTile = imagesLayout->createChild<ImageTile>(std::string{name}, tileSize, std::move(texture));
   imageTiles.emplace_back(&newTile);
   return newTile;

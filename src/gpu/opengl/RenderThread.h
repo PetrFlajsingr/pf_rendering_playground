@@ -7,7 +7,7 @@
 #include "../RenderThread.h"
 #include <pf_glfw/Window.h>
 
-namespace pf {
+namespace pf::gpu {
 
 class OpenGlRenderThread : public RenderThread {
  public:

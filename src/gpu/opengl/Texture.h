@@ -7,7 +7,7 @@
 #include "../Texture.h"
 #include "OpenGl.h"
 
-namespace pf {
+namespace pf::gpu {
 
 // TODO: format support check?
 class OpenGlTexture final : public Texture, public OpenGlHandleOwner {

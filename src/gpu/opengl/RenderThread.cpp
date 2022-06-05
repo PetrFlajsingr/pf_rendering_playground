@@ -5,7 +5,7 @@
 #include "RenderThread.h"
 #include <glad/glad.h>
 
-namespace pf {
+namespace pf::gpu {
 void OpenGlRenderThread::waitForDone() {
   auto promise = std::make_shared<std::promise<void>>();
   auto fence = promise->get_future();
