@@ -53,13 +53,6 @@ void saveConfig(toml::table config, pf::ui::ig::ImGuiInterface &imguiInterface,
   ofstream << config;
 }
 
-#include "utils/AudioLoader.h"
-#include "audio/Device.h"
-#include "audio/Context.h"
-#include "audio/Listener.h"
-#include "audio/Source.h"
-#include "audio/Buffer.h"
-
 int main(int argc, char *argv[]) {
   spdlog::default_logger()->set_level(spdlog::level::trace);
   spdlog::default_logger()->sinks().clear();
@@ -120,17 +113,6 @@ int main(int argc, char *argv[]) {
   modeManager.addMode(std::make_shared<pf::DummyMode>());
 
   renderThread->enqueue([&glfw] { glfw.setSwapInterval(0); });
-
-  pf::AVAudioLoader loader{};
-  [[maybe_unused]] auto audioData = loader.loadAudioFile("C:\\Users\\Petr\\Desktop\\file_example_MP3_2MG.mp3");
-
-  auto audioDevice = pf::audio::Device::Create().value();
-  auto audioContext = audioDevice->createContext().value();
-  VERIFY(!audioContext->makeCurrent().has_value());
-  auto audioSource = audioContext->createSource().value();
-  auto audioBuffer = audioContext->createBuffer().value();
-  VERIFY(!audioBuffer->setData(audioData->data, pf::audio::Format::Mono8, audioData->sampleRate).has_value());
-  audioSource->setBuffer(audioBuffer);
 
   pf::MainLoop::Get()->setOnMainLoop([&](auto time) {
     if (window->shouldClose()) { pf::MainLoop::Get()->stop(); }
