@@ -7,6 +7,7 @@
 #include "GpuObject.h"
 #include "Shader.h"
 #include "Types.h"
+#include "common.h"
 #include "glad/glad.h"
 #include <NamedType/named_type.hpp>
 #include <memory>
@@ -19,7 +20,6 @@ namespace pf::gpu {
 
 using UniformLocation = fluent::NamedType<std::uint32_t, struct UniformLocationTag>;
 using AttributeLocation = fluent::NamedType<std::uint32_t, struct AttributeLocationTag>;
-using Binding = fluent::NamedType<std::int32_t, struct BindingTag>;
 
 struct UniformInfo {
   inline UniformInfo(UniformLocation location, ShaderValueType type, std::string name, uint32_t size)
@@ -116,4 +116,4 @@ GpuOperationResult<ProgramError> Program::setUniform(const std::string &name, On
   return GpuError{ProgramError::UniformNotFound, fmt::format("Uniform '{}' is not active.", name)};
 }
 
-}  // namespace pf
+}  // namespace pf::gpu

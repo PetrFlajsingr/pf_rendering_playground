@@ -12,4 +12,4 @@ std::string Shader::getDebugString() const {
   return fmt::format("{}\tType: {}", GpuObject::getDebugString(), magic_enum::enum_name(shaderType));
 }
 
-}  // namespace pf
+}  // namespace pf::gpu

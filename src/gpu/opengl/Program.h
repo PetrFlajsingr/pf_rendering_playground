@@ -42,4 +42,4 @@ class OpenGlProgram : public Program, public OpenGlHandleOwner {
   void deleteOpenGlObject(GLuint objectHandle) const override;
 };
 
-}  // namespace pf
+}  // namespace pf::gpu

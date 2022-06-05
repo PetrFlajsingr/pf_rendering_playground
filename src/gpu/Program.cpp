@@ -43,4 +43,4 @@ std::optional<const UniformInfo *> Program::findUniformInfo(const std::string &n
 
 std::string Program::getDebugString() const { return GpuObject::getDebugString(); }
 
-}  // namespace pf
+}  // namespace pf::gpu

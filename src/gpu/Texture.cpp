@@ -34,4 +34,4 @@ std::size_t Texture::calculateExpectedDataSize(TextureWidth width, TextureHeight
   return width.get() * height.get() * elementCount;
 }
 
-}  // namespace pf
+}  // namespace pf::gpu

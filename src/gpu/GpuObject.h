@@ -58,7 +58,7 @@ class GpuObject {
     Texture,
     Shader,
     Program,
-    Buffer // TODO more
+    Buffer  // TODO more
   };
   virtual ~GpuObject() = 0;
 
@@ -105,7 +105,7 @@ class GpuObject {
 
 inline GpuObject::~GpuObject() = default;
 
-}  // namespace pf
+}  // namespace pf::gpu
 
 template<std::derived_from<pf::gpu::GpuObject> TGPUObject>
 struct fmt::formatter<TGPUObject> : fmt::formatter<std::string> {

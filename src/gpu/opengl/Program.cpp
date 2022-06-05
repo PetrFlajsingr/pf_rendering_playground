@@ -192,4 +192,4 @@ std::variant<PF_SHADER_VALUE_TYPES> OpenGlProgram::getUniformValueImpl(const Uni
   return getOGLuniform(*handle, static_cast<GLint>(info.location.get()), info.type);
 }
 
-}  // namespace pf
+}  // namespace pf::gpu

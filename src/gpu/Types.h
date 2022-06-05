@@ -85,4 +85,4 @@ constexpr Flags<ShaderValueType> getShaderValueTypeForType() {
   return Flags<ShaderValueType>{};
 }
 
-}  // namespace pf
+}  // namespace pf::gpu

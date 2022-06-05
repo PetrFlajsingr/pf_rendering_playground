@@ -94,4 +94,4 @@ enum class TextureFormat {
   Depth32F_Stencil8
 };
 
-}  // namespace pf
+}  // namespace pf::gpu

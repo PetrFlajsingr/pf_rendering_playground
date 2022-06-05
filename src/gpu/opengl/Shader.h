@@ -48,4 +48,4 @@ GpuOperationResult<ShaderError> OpenGlShader::createImpl(std::invocable<GLuint> 
   return std::nullopt;
 }
 
-}  // namespace pf
+}  // namespace pf::gpu

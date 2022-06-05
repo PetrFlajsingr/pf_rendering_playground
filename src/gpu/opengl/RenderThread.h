@@ -20,4 +20,4 @@ class OpenGlRenderThread : public RenderThread {
   std::shared_ptr<glfw::Window> context;
 };
 
-}  // namespace pf
+}  // namespace pf::gpu

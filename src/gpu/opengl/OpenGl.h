@@ -88,4 +88,4 @@ class OpenGlHandleOwner {
   OpenGlHandle<Deleter> handle;
 };
 
-}  // namespace pf
+}  // namespace pf::gpu

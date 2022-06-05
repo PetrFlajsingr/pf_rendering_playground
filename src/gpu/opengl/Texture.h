@@ -37,4 +37,4 @@ class OpenGlTexture final : public Texture, public OpenGlHandleOwner {
   void deleteOpenGlObject(GLuint objectHandle) const override;
 };
 
-}  // namespace pf
+}  // namespace pf::gpu

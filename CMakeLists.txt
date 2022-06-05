@@ -95,7 +95,7 @@ set(GPU_INTERFACE_SRC
         src/gpu/utils.h
         src/gpu/RenderThread.cpp
         src/gpu/RenderThread.h
-        src/gpu/Buffer.cpp src/gpu/Buffer.h)
+        src/gpu/Buffer.cpp src/gpu/Buffer.h src/gpu/common.h)
 
 set(OPENGL_INTERFACE_SRC
         src/gpu/opengl/OpenGl.h
@@ -107,7 +107,7 @@ set(OPENGL_INTERFACE_SRC
         src/gpu/opengl/Program.h
         src/gpu/opengl/RenderThread.cpp
         src/gpu/opengl/RenderThread.h
-        )
+        src/gpu/opengl/Buffer.cpp src/gpu/opengl/Buffer.h)
 
 set(AUDIO_SRC
         src/audio/Device.cpp

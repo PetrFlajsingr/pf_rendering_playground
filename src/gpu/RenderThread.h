@@ -57,4 +57,4 @@ class RenderThread {
   std::thread thread;
 };
 
-}  // namespace pf
+}  // namespace pf::gpu

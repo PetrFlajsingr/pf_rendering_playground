@@ -17,4 +17,4 @@ void OpenGlRenderThread::waitForDone() {
   fence.get();
 }
 
-}  // namespace pf
+}  // namespace pf::gpu

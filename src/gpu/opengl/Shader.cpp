@@ -40,4 +40,4 @@ constexpr GLenum OpenGlShader::ShaderTypeToOpenGlConstant(ShaderType shaderType)
 }
 
 void OpenGlShader::deleteOpenGlObject(GLuint objectHandle) const { glDeleteShader(objectHandle); }
-}  // namespace pf
+}  // namespace pf::gpu

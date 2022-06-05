@@ -77,4 +77,4 @@ class Texture : public GpuObject {
   TextureSize size;
 };
 
-}  // namespace pf
+}  // namespace pf::gpu

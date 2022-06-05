@@ -45,4 +45,4 @@ getTextureData(const std::filesystem::path &path) {
   return std::vector<std::byte>{dataSpan.begin(), dataSpan.end()};
 }
 
-}  // namespace pf
+}  // namespace pf::gpu

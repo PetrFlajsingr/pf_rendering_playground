@@ -4,4 +4,8 @@
 
 #include "Buffer.h"
 
-namespace pf::gpu {}
+namespace pf::gpu {
+
+BufferMapping::~BufferMapping() { unmap(owner); }
+
+}  // namespace pf::gpu

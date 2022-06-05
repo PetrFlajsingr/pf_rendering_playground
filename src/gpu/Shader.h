@@ -40,4 +40,4 @@ class Shader : public GpuObject {
   ShaderType shaderType;
 };
 
-}  // namespace pf
+}  // namespace pf::gpu

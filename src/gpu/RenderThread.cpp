@@ -32,4 +32,4 @@ void RenderThread::runImpl() {
 
 void RenderThread::run() { runImpl(); }
 
-}  // namespace pf
+}  // namespace pf::gpu

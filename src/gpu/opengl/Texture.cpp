@@ -226,4 +226,4 @@ GpuOperationResult<TextureError> OpenGlTexture::set2DdataImpl(std::span<const st
 
 void OpenGlTexture::deleteOpenGlObject(GLuint objectHandle) const { glDeleteTextures(1, &objectHandle); }
 
-}  // namespace pf
+}  // namespace pf::gpu
