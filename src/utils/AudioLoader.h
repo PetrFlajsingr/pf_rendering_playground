@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include <vector>
 #include <filesystem>
 #include <string>
 #include <tl/expected.hpp>
+#include <vector>
 
 namespace pf {
 
@@ -17,20 +17,24 @@ struct AudioData {
   std::vector<std::byte> data;
 };
 
+enum class AudioPCMFormat { U8Mono, U16Mono, U8Stereo, U16Stereo };
+
 class AudioLoader {
  public:
   virtual ~AudioLoader() = 0;
 
-  [[nodiscard]] virtual tl::expected<AudioData, std::string> loadAudioFile(const std::filesystem::path &path) = 0;
+  [[nodiscard]] virtual tl::expected<AudioData, std::string> loadAudioFile(const std::filesystem::path &path,
+                                                                           AudioPCMFormat requestedFormat,
+                                                                           std::optional<int> requestedSampleRate) = 0;
 };
 
 class AVAudioLoader : public AudioLoader {
  public:
   ~AVAudioLoader() override;
-  tl::expected<AudioData, std::string> loadAudioFile(const std::filesystem::path &path) override;
+  tl::expected<AudioData, std::string> loadAudioFile(const std::filesystem::path &path, AudioPCMFormat requestedFormat,
+                                                     std::optional<int> requestedSampleRate) override;
 };
 
 inline AudioLoader::~AudioLoader() = default;
 
 }  // namespace pf
-

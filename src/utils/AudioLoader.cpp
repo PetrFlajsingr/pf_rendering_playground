@@ -6,6 +6,7 @@
 #include "AudioLoader.h"
 #include "fmt/format.h"
 #include "pf_common/RAII.h"
+#include "pf_common/algorithms.h"
 #include "range/v3/view/transform.hpp"
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -20,7 +21,9 @@ namespace pf {
 
 AVAudioLoader::~AVAudioLoader() = default;
 
-tl::expected<AudioData, std::string> AVAudioLoader::loadAudioFile(const std::filesystem::path &path) {
+tl::expected<AudioData, std::string> AVAudioLoader::loadAudioFile(const std::filesystem::path &path,
+                                                                  AudioPCMFormat requestedFormat,
+                                                                  std::optional<std::size_t> requestedSampleRate) {
   // get format from audio file
   const auto avFormatCtxDeleter = [](auto format) { avformat_free_context(format); };
   auto format =
@@ -51,18 +54,33 @@ tl::expected<AudioData, std::string> AVAudioLoader::loadAudioFile(const std::fil
     return tl::make_unexpected(fmt::format("Could not open decoder for file '{}'", path.string()));
   }
   auto closeCodecScopeExit = RAII{[&codecContext] { avcodec_close(codecContext.get()); }};
-  // TODO: loading with resampling
+
+  int outChannels = 0;
+  switch (requestedFormat) {
+    case AudioPCMFormat::U8Mono: outChannels = 1; break;
+    case AudioPCMFormat::U16Mono: outChannels = 2; break;
+    case AudioPCMFormat::U8Stereo: outChannels = 1; break;
+    case AudioPCMFormat::U16Stereo: outChannels = 2; break;
+  }
+  int channelLayout = AV_CH_LAYOUT_MONO;
+  if (isIn(requestedFormat, std::vector{AudioPCMFormat::U8Stereo, AudioPCMFormat::U16Stereo})) {
+    channelLayout = AV_CH_LAYOUT_STEREO;
+  }
+  AVSampleFormat sampleFormat = AV_SAMPLE_FMT_U8;
+  if (isIn(requestedFormat, std::vector{AudioPCMFormat::U8Stereo, AudioPCMFormat::U16Stereo})) {
+    sampleFormat = AV_SAMPLE_FMT_S16;
+  }
   // prepare resampler
   const auto swrDeleter = [](auto swr) { swr_free(&swr); };
   auto swr = std::unique_ptr<struct SwrContext, decltype(swrDeleter)>(swr_alloc(), swrDeleter);
   av_opt_set_int(swr.get(), "in_channel_count", codecContext->channels, 0);
-  av_opt_set_int(swr.get(), "out_channel_count", 1, 0);
+  av_opt_set_int(swr.get(), "out_channel_count", outChannels, 0);
   av_opt_set_int(swr.get(), "in_channel_layout", static_cast<std::int64_t>(codecContext->channel_layout), 0);
   av_opt_set_int(swr.get(), "out_channel_layout", AV_CH_LAYOUT_MONO, 0);
   av_opt_set_int(swr.get(), "in_sample_rate", codecContext->sample_rate, 0);
-  av_opt_set_int(swr.get(), "out_sample_rate", codecContext->sample_rate, 0);
+  av_opt_set_int(swr.get(), "out_sample_rate", requestedSampleRate.value_or(codecContext->sample_rate), 0);
   av_opt_set_sample_fmt(swr.get(), "in_sample_fmt", codecContext->sample_fmt, 0);
-  av_opt_set_sample_fmt(swr.get(), "out_sample_fmt", AV_SAMPLE_FMT_U8, 0);
+  av_opt_set_sample_fmt(swr.get(), "out_sample_fmt", sampleFormat, 0);
   swr_init(swr.get());
   if (!swr_is_initialized(swr.get())) { return tl::make_unexpected("Error during resampler initialisation"); }
 
@@ -89,9 +107,8 @@ tl::expected<AudioData, std::string> AVAudioLoader::loadAudioFile(const std::fil
     }
     // resample frames
     std::uint8_t* buffer;
-    av_samples_alloc((uint8_t**) &buffer, nullptr, 1, frame->nb_samples, AV_SAMPLE_FMT_U8, 0);
+    av_samples_alloc((uint8_t**) &buffer, nullptr, 1, frame->nb_samples, sampleFormat, 0);
     int frame_count = swr_convert(swr.get(), (uint8_t**) &buffer, frame->nb_samples, (const uint8_t**) frame->data, frame->nb_samples);
-
 
     auto frameData = std::span{buffer, static_cast<std::size_t>(frame_count)};
 
