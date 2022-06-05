@@ -18,7 +18,7 @@ Context::~Context() {
 ALCcontext *Context::getHandle() const { return context; }
 
 Context::Context(ALCcontext *handle, const std::shared_ptr<Device> &parent)
-    : context(handle), owner(parent), listener(new Listener{shared_from_this()}) {}
+    : context(handle), owner(parent) {}
 
 std::optional<OpenALError> Context::makeCurrent() {
   DEBUG_ASSERT(!owner.expired(), "Context's device is destroyed");
@@ -35,11 +35,9 @@ bool Context::isCurrent() const {
 
 const std::shared_ptr<Listener> &Context::getListener() {
   DEBUG_ASSERT(!owner.expired(), "Context's device is destroyed");
-  return listener;
-}
-
-std::shared_ptr<const Listener> Context::getListener() const {
-  DEBUG_ASSERT(!owner.expired(), "Context's device is destroyed");
+  if (listener == nullptr) {
+    listener = std::shared_ptr<Listener>{new Listener{shared_from_this()}};
+  }
   return listener;
 }
 

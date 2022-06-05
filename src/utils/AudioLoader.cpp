@@ -2,9 +2,11 @@
 // Created by Petr on 04/06/2022.
 //
 
+#pragma warning( disable : 4996 )
 #include "AudioLoader.h"
 #include "fmt/format.h"
 #include "pf_common/RAII.h"
+#include "range/v3/view/transform.hpp"
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -60,7 +62,7 @@ tl::expected<AudioData, std::string> AVAudioLoader::loadAudioFile(const std::fil
   av_opt_set_int(swr.get(), "in_sample_rate", codecContext->sample_rate, 0);
   av_opt_set_int(swr.get(), "out_sample_rate", codecContext->sample_rate, 0);
   av_opt_set_sample_fmt(swr.get(), "in_sample_fmt", codecContext->sample_fmt, 0);
-  av_opt_set_sample_fmt(swr.get(), "out_sample_fmt", AV_SAMPLE_FMT_DBL, 0);
+  av_opt_set_sample_fmt(swr.get(), "out_sample_fmt", AV_SAMPLE_FMT_U8, 0);
   swr_init(swr.get());
   if (!swr_is_initialized(swr.get())) { return tl::make_unexpected("Error during resampler initialisation"); }
 
@@ -77,32 +79,31 @@ tl::expected<AudioData, std::string> AVAudioLoader::loadAudioFile(const std::fil
   audioData.channelCount = 1;
   // iterate through frames
   while (av_read_frame(format.get(), packet.get()) >= 0) {
-    auto result = avcodec_send_packet(codecContext.get(), packet.get());
-    if (result < 0) { return tl::make_unexpected("Error sending packet to decoder"); }
-    while (!result) {
-      result = avcodec_receive_frame(codecContext.get(), frame.get());
-      if (result == AVERROR(EAGAIN) || result == AVERROR_EOF) {
-        break;
-      } else if (result < 0) {
-        return tl::make_unexpected("Error during decoding");
-      }
+    // decode one frame
+    int gotFrame;
+    if (avcodec_decode_audio4(codecContext.get(), frame.get(), &gotFrame, packet.get()) < 0) {
+      break;
     }
-
+    if (!gotFrame) {
+      continue;
+    }
     // resample frames
-    double *buffer;
-    av_samples_alloc((uint8_t **) &buffer, nullptr, 1, frame->nb_samples, AV_SAMPLE_FMT_DBL, 0);
-    int frame_count = swr_convert(swr.get(), (uint8_t **) &buffer, frame->nb_samples, (const uint8_t **) frame->data,
-                                  frame->nb_samples);
-    // append resampled frames to data
+    std::uint8_t* buffer;
+    av_samples_alloc((uint8_t**) &buffer, nullptr, 1, frame->nb_samples, AV_SAMPLE_FMT_U8, 0);
+    int frame_count = swr_convert(swr.get(), (uint8_t**) &buffer, frame->nb_samples, (const uint8_t**) frame->data, frame->nb_samples);
+
+
     auto frameData = std::span{buffer, static_cast<std::size_t>(frame_count)};
 
     audioData.data.reserve(audioData.data.size() + frameData.size());
-    std::ranges::copy(frameData, std::back_inserter(audioData.data));
+    std::ranges::copy(frameData | ranges::views::transform([](auto val) { return std::byte{val}; }),
+                      std::back_inserter(audioData.data));
 
-    av_freep(buffer);
+    av_freep(&buffer);
 
     av_frame_unref(frame.get());
   }
+
 
   // success
   return audioData;

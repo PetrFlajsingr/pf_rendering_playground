@@ -14,7 +14,7 @@ namespace pf {
 struct AudioData {
   std::size_t sampleRate;
   std::uint8_t channelCount;
-  std::vector<double> data;
+  std::vector<std::byte> data;
 };
 
 class AudioLoader {

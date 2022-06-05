@@ -24,7 +24,7 @@ class Source;
 class Listener;
 class Buffer;
 // TODO: attributes
-class Context : std::enable_shared_from_this<Context> {
+class Context : public std::enable_shared_from_this<Context> {
   friend class Device;
 
  public:
@@ -35,7 +35,6 @@ class Context : std::enable_shared_from_this<Context> {
   [[nodiscard]] bool isCurrent() const;
 
   [[nodiscard]] const std::shared_ptr<Listener> &getListener();
-  [[nodiscard]] std::shared_ptr<const Listener> getListener() const;
 
   [[nodiscard]] tl::expected<std::shared_ptr<Source>, OpenALError> createSource();
   [[nodiscard]] tl::expected<std::shared_ptr<Buffer>, OpenALError> createBuffer();
@@ -57,7 +56,7 @@ class Context : std::enable_shared_from_this<Context> {
   Context(ALCcontext *handle, const std::shared_ptr<Device> &parent);
   ALCcontext *context;
   std::weak_ptr<Device> owner;
-  std::shared_ptr<Listener> listener;
+  std::shared_ptr<Listener> listener = nullptr;
 };
 
 }  // namespace pf::audio

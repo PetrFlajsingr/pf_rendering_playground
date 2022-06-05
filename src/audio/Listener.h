@@ -10,7 +10,7 @@
 
 namespace pf::audio {
 
-class Listener : std::enable_shared_from_this<Listener> {
+class Listener : public std::enable_shared_from_this<Listener> {
   friend class Context;
 
  public:

@@ -14,7 +14,7 @@ namespace pf::audio {
 class Context;
 using DeviceId = fluent::NamedType<std::string, struct DeviceIdTag>;
 
-class Device : std::enable_shared_from_this<Device> {
+class Device : public std::enable_shared_from_this<Device> {
  public:
   [[nodiscard]] static std::vector<DeviceId> ListDevices();
 

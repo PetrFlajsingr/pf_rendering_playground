@@ -15,7 +15,7 @@
 
 namespace pf::audio {
 
-class Source : std::enable_shared_from_this<Source> {
+class Source : public std::enable_shared_from_this<Source> {
   friend class Context;
 
  public:

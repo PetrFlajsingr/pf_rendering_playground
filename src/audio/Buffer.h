@@ -17,6 +17,9 @@ enum class Format {
 };
 
 class Context;
+/**
+ * @brief Buffer containing audio data.
+ */
 class Buffer {
   friend class Context;
 
