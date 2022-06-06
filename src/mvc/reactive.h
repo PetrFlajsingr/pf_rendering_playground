@@ -108,7 +108,7 @@ class Observable {
     Detector detector;
   };
 
-  Observable()
+  Observable() //-V730 //-V832
     requires(std::is_default_constructible_v<value_type>)
   : value{} {}
   explicit Observable(value_type val) : value(std::move(val)) {}

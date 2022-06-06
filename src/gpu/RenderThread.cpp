@@ -23,7 +23,7 @@ void RenderThread::runImpl() {
   while (true) {
     auto command = commandQueue.dequeue();
     if (command.has_value()) {
-      command.value()->execute();
+      (*command)->execute();
     } else {
       return;
     }

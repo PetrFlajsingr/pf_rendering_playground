@@ -57,9 +57,9 @@ tl::expected<AudioData, std::string> AVAudioLoader::loadAudioFile(const std::fil
 
   int outChannels = 0;
   switch (requestedFormat) {
-    case AudioPCMFormat::U8Mono: outChannels = 1; break;
-    case AudioPCMFormat::U16Mono: outChannels = 2; break;
+    case AudioPCMFormat::U8Mono: [[fallthrough]];
     case AudioPCMFormat::U8Stereo: outChannels = 1; break;
+    case AudioPCMFormat::U16Mono: [[fallthrough]];
     case AudioPCMFormat::U16Stereo: outChannels = 2; break;
   }
   int channelLayout = AV_CH_LAYOUT_MONO;

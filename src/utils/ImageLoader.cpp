@@ -28,7 +28,7 @@ void ImageLoader::loadImageAsync(const std::filesystem::path &imagePath,
 }
 
 tl::expected<ImageData, std::string> ImageLoader::loadImageWithChannels(const std::filesystem::path &imagePath,
-                                                                        ChannelCount requiredChannels) {
+                                                                        ChannelCount requiredChannels) { //-V813
   auto data = loadImage(imagePath);
   if (data.has_value()) {
     return convertImageChannels(std::move(data.value()), requiredChannels);

@@ -36,7 +36,7 @@ bool Context::isCurrent() const {
 const std::shared_ptr<Listener> &Context::getListener() {
   DEBUG_ASSERT(!owner.expired(), "Context's device is destroyed");
   if (listener == nullptr) {
-    listener = std::shared_ptr<Listener>{new Listener{shared_from_this()}};
+    listener = std::shared_ptr<Listener>{new Listener{shared_from_this()}}; //-V824
   }
   return listener;
 }
@@ -46,7 +46,7 @@ tl::expected<std::shared_ptr<Source>, OpenALError> Context::createSource() {
   DEBUG_ASSERT(isCurrent(), "Context is not current");
   ALuint handle;
   alGenSources(1, &handle);
-  return std::shared_ptr<Source>(new Source{handle, shared_from_this()});
+  return std::shared_ptr<Source>(new Source{handle, shared_from_this()}); //-V824
 }
 
 tl::expected<std::shared_ptr<Buffer>, OpenALError> Context::createBuffer() {
@@ -54,7 +54,7 @@ tl::expected<std::shared_ptr<Buffer>, OpenALError> Context::createBuffer() {
   DEBUG_ASSERT(isCurrent(), "Context is not current");
   ALuint handle;
   alGenBuffers(1, &handle);
-  return std::shared_ptr<Buffer>(new Buffer{handle, shared_from_this()});
+  return std::shared_ptr<Buffer>(new Buffer{handle, shared_from_this()}); //-V824
 }
 
 void Context::setDopplerFactor(float factor) {

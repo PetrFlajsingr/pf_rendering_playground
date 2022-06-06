@@ -38,7 +38,7 @@ tl::expected<std::shared_ptr<Device>, OpenALError> Device::CreateImpl(const ALCc
     return tl::make_unexpected(
         OpenALError{details::checkOpenAlError().value_or(ErrorType::Unknown), "Failure while creating device"});
   }
-  return std::shared_ptr<Device>(new Device{handle});
+  return std::shared_ptr<Device>(new Device{handle}); //-V824
 }
 
 Device::~Device() { alcCloseDevice(device); }
@@ -49,7 +49,7 @@ Device::Device(ALCdevice *handle) : device(handle) {}
 
 tl::expected<std::shared_ptr<Context>, OpenALError> Device::createContext() {
   const auto handle = alcCreateContext(device, nullptr);
-  return std::shared_ptr<Context>(new Context{handle, shared_from_this()});
+  return std::shared_ptr<Context>(new Context{handle, shared_from_this()}); //-V824
 }
 
 }  // namespace pf::audio

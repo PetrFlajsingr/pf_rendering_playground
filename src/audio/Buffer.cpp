@@ -18,7 +18,7 @@ std::optional<OpenALError> Buffer::setData(std::span<std::byte> data, Format for
   alBufferData(buffer, static_cast<ALenum>(format), data.data(), static_cast<ALsizei>(data.size()),
                static_cast<ALsizei>(frequency));
   const auto err = details::checkOpenAlError();
-  if (err.has_value()) { return OpenALError{err.value(), "Error setting buffer's data"}; }
+  if (err.has_value()) { return OpenALError{*err, "Error setting buffer's data"}; }
   return std::nullopt;
 }
 

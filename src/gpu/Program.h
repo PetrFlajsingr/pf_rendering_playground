@@ -64,7 +64,7 @@ class Program : public GpuObject {
   [[nodiscard]] ExpectedGpuOperationResult<ShaderValueType, ProgramError> getUniformType(const std::string &name) const;
   [[nodiscard]] GpuOperationResult<ProgramError> getUniformValue(const std::string &name, auto &&visitor) {
     if (const auto infoOpt = findUniformInfo(name); infoOpt.has_value()) {
-      const auto uniformValue = getUniformValueImpl(*infoOpt.value());
+      const auto uniformValue = getUniformValueImpl(**infoOpt);
       std::visit(visitor, uniformValue);
       return std::nullopt;
     }
@@ -105,11 +105,11 @@ class Program : public GpuObject {
 
 GpuOperationResult<ProgramError> Program::setUniform(const std::string &name, OneOf<PF_SHADER_VALUE_TYPES> auto value) {
   if (const auto uniformInfo = findUniformInfo(name); uniformInfo.has_value()) {
-    if (!getShaderValueTypeForType<decltype(value)>().is(uniformInfo.value()->type)) {
+    if (!getShaderValueTypeForType<decltype(value)>().is((*uniformInfo)->type)) {
       return GpuError{ProgramError::WrongUniformType,
-                      fmt::format("Uniform is of type '{}'.", magic_enum::enum_name(uniformInfo.value()->type))};
+                      fmt::format("Uniform is of type '{}'.", magic_enum::enum_name((*uniformInfo)->type))};
     }
-    setUniformImpl(uniformInfo.value()->location, value);
+    setUniformImpl((*uniformInfo)->location, value);
     return std::nullopt;
   }
   return GpuError{ProgramError::UniformNotFound, fmt::format("Uniform '{}' is not active.", name)};

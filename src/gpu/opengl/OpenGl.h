@@ -17,8 +17,8 @@ class OpenGlHandle {
  public:
   OpenGlHandle()
     requires(std::is_default_constructible_v<Deleter>)
-  : handle(INVALID_HANDLE) {}
-  explicit OpenGlHandle(GLuint handle)
+  = default;
+  explicit OpenGlHandle(GLuint handle) //-V730
     requires(std::is_default_constructible_v<Deleter>)
   : handle(handle) {}
 
@@ -65,7 +65,7 @@ class OpenGlHandle {
     if (isValid()) { deleter(handle); }
   }
 
-  GLuint handle;
+  GLuint handle = INVALID_HANDLE;
   Deleter deleter;
 };
 

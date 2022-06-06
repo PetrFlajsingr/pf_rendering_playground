@@ -22,7 +22,7 @@ float Listener::getGain() const {
   return result;
 }
 
-void Listener::setPosition(glm::vec3 position) {
+void Listener::setPosition(glm::vec3 position) { //-V813
   checkOwnerAsserts();
   alListener3f(AL_POSITION, position.x, position.y, position.z);
 }
@@ -34,7 +34,7 @@ glm::vec3 Listener::getPosition() const {
   return result;
 }
 
-void Listener::setVelocity(glm::vec3 velocity) {
+void Listener::setVelocity(glm::vec3 velocity) { //-V813
   checkOwnerAsserts();
   alListener3f(AL_VELOCITY, velocity.x, velocity.y, velocity.z);
 }

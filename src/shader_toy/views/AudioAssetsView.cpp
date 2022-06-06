@@ -42,7 +42,7 @@ void AudioAssetRecordElement::setPlay(bool newPlay) { play = newPlay; }
 
 const std::chrono::seconds &AudioAssetRecordElement::getLength() const { return length; }
 
-void AudioAssetRecordElement::setLength(std::chrono::seconds newLength) {
+void AudioAssetRecordElement::setLength(std::chrono::seconds newLength) { //-V813
   length = newLength;
 }
 

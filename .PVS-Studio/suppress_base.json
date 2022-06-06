@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "warnings": [
+    {
+      "FileName": "common.h",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 479056460,
+      "CodeCurrent": -1226286004,
+      "CodeNext": 125
+    },
+    {
+      "FileName": "Buffer.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 125,
+      "CodeCurrent": -2050106137,
+      "CodeNext": 22109
+    },
+    {
+      "FileName": "utils.h",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 3053,
+      "CodeCurrent": 1849385320,
+      "CodeNext": 22109
+    },
+    {
+      "FileName": "ShaderVariablesController.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": -320635789,
+      "CodeCurrent": -1091305216,
+      "CodeNext": -969335159
+    },
+    {
+      "FileName": "ImageLoader.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": -329297787,
+      "CodeCurrent": 156092894,
+      "CodeNext": 125
+    },
+    {
+      "FileName": "MainController.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": -775546249,
+      "CodeCurrent": 468601089,
+      "CodeNext": 233894145
+    },
+    {
+      "FileName": "utils.h",
+      "ErrorCode": "V1028",
+      "Message": "Possible overflow. Consider casting operands of the \u0027x * y * _\u0027 operator to the \u0027std::size_t\u0027 type, not the result.",
+      "CodePrev": -441321318,
+      "CodeCurrent": 1977445725,
+      "CodeNext": -114500024
+    },
+    {
+      "FileName": "ImageAssetsController.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 1222080657,
+      "CodeCurrent": -1091305216,
+      "CodeNext": -79415033
+    },
+    {
+      "FileName": "View.h",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 1793664988,
+      "CodeCurrent": -1091305216,
+      "CodeNext": 125
+    },
+    {
+      "FileName": "opengl_utils.h",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": -2054150392,
+      "CodeCurrent": -2051509267,
+      "CodeNext": 22109
+    },
+    {
+      "FileName": "Types.h",
+      "ErrorCode": "V1037",
+      "Message": "Two or more case-branches perform the same actions. Check lines: _, _",
+      "CodePrev": 738654922,
+      "CodeCurrent": -1421128148,
+      "CodeNext": -883567605
+    },
+    {
+      "FileName": "Controller.h",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 230391491,
+      "CodeCurrent": 233894145,
+      "CodeNext": 468601089
+    },
+    {
+      "FileName": "Shader.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 125,
+      "CodeCurrent": -1543717484,
+      "CodeNext": 22109
+    },
+    {
+      "FileName": "ShaderVariablesController.cpp",
+      "ErrorCode": "V547",
+      "Message": "Expression \u0027unsupportedType\u0027 is always false.",
+      "CodePrev": -1016763707,
+      "CodeCurrent": -1096598017,
+      "CodeNext": 22588779
+    },
+    {
+      "FileName": "ShaderToyMode.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 2487,
+      "CodeCurrent": -1155254991,
+      "CodeNext": 125
+    },
+    {
+      "FileName": "opengl_utils.h",
+      "ErrorCode": "V1037",
+      "Message": "Two or more case-branches perform the same actions. Check lines: _, _, _",
+      "CodePrev": 309767926,
+      "CodeCurrent": 263881569,
+      "CodeNext": 125
+    },
+    {
+      "FileName": "ImageLoader.cpp",
+      "ErrorCode": "V1028",
+      "Message": "Possible overflow. Consider casting operands of the \u0027x * y * n\u0027 operator to the \u0027std::size_t\u0027 type, not the result.",
+      "CodePrev": -441321318,
+      "CodeCurrent": 1977446285,
+      "CodeNext": -114500024
+    },
+    {
+      "FileName": "Mode.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": -428814103,
+      "CodeCurrent": -651951818,
+      "CodeNext": 935686401
+    },
+    {
+      "FileName": "ModeManager.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": -2093943218,
+      "CodeCurrent": -651951818,
+      "CodeNext": 935686401
+    },
+    {
+      "FileName": "Texture.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 125,
+      "CodeCurrent": 383879459,
+      "CodeNext": 22109
+    }
+  ]
+}

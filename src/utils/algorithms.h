@@ -23,7 +23,7 @@ namespace pf {
 
 template<typename T>
 [[nodiscard]] inline std::vector<T>
-erase_and_extract_if(std::vector<T> &vec, std::predicate<typename std::vector<T>::value_type> auto &&pred) {
+erase_and_extract_if(std::vector<T> &vec, std::predicate<typename std::vector<T>::value_type> auto &&pred) { //-V826
   std::vector<T> result{};
   auto iter = std::ranges::find_if(vec, pred);
   for (; iter != vec.end(); iter = std::ranges::find_if(vec, pred)) {

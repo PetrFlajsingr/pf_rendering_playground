@@ -80,7 +80,7 @@ std::optional<ModeManager::Error> ModeManager::activateMode(const std::string &n
     return std::nullopt;
   }
   if (const auto modeOpt = findModeByName(name); modeOpt.has_value()) {
-    const auto &mode = modeOpt.value();
+    const auto &mode = *modeOpt;
     activateMode_impl(mode);
     return std::nullopt;
   }

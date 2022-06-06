@@ -46,7 +46,7 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   config.insert_or_assign("initialized", true);
   glfwWindow = window;
   workerThreads = threadPool;
-  renderingThread = renderThread;
+  renderingThread = std::move(renderThread);
   imGuiInterface = imguiInterface;
 
   renderingThread->enqueue([] {
@@ -275,7 +275,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
           if (!rec.line.has_value()) { continue; }
           const auto errMessage = fmt::format("{}: {}", rec.error, rec.errorDesc);
           const auto marker =
-              ui::ig::TextEditorMarker{static_cast<uint32_t>(shaderLineMapping(rec.line.value())), errMessage};
+              ui::ig::TextEditorMarker{static_cast<uint32_t>(shaderLineMapping(*rec.line)), errMessage};
           getLogger().error("{}", errMessage);
           switch (rec.type) {
             case Warning: mainController->glslEditorController->addWarningMarker(marker); break;

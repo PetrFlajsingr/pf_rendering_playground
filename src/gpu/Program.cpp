@@ -15,7 +15,7 @@ GpuOperationResult<ProgramError> Program::create() {
 const std::vector<UniformInfo> &Program::getUniforms() const { return infos.uniforms; }
 
 ExpectedGpuOperationResult<ShaderValueType, ProgramError> Program::getUniformType(const std::string &name) const {
-  if (const auto infoOpt = findUniformInfo(name); infoOpt.has_value()) { return infoOpt.value()->type; }
+  if (const auto infoOpt = findUniformInfo(name); infoOpt.has_value()) { return (*infoOpt)->type; }
   return tl::make_unexpected(GpuError{ProgramError::UniformNotFound, fmt::format("Uniform '{}' is not active.", name)});
 }
 

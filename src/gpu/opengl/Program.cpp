@@ -64,8 +64,8 @@ std::vector<UniformInfo> OpenGlProgram::extractUniforms() {
     }
     location = glGetUniformLocation(*handle, name.c_str());
     if (const auto shaderValueType = ShaderValueTypeFromGlConstant(type); shaderValueType.has_value()) {
-      result.emplace_back(UniformLocation{static_cast<std::uint32_t>(location)}, shaderValueType.value(),
-                          std::move(name), length);
+      result.emplace_back(UniformLocation{static_cast<std::uint32_t>(location)}, *shaderValueType, std::move(name),
+                          length);
     } else {
       DEBUG_ASSERT(false, "Came across unsupported type in shader program");
     }
@@ -94,8 +94,8 @@ std::vector<AttributeInfo> OpenGlProgram::extractAttributes() {
     }
     location = glGetAttribLocation(*handle, name.c_str());
     if (const auto shaderValueType = ShaderValueTypeFromGlConstant(type); shaderValueType.has_value()) {
-      result.emplace_back(AttributeLocation{static_cast<std::uint32_t>(location)}, shaderValueType.value(),
-                          std::move(name), length);
+      result.emplace_back(AttributeLocation{static_cast<std::uint32_t>(location)}, *shaderValueType, std::move(name),
+                          length);
     } else {
       DEBUG_ASSERT(false, "Came across an unsupported type in shader program");
     }

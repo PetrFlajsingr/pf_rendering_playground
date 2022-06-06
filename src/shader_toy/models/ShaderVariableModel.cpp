@@ -69,14 +69,14 @@ void ShaderVariableModel::setFromToml(const toml::table &src) {
                               glm::uvec3, glm::uvec4, glm::bvec2, glm::bvec3, glm::bvec4>) {
             if (auto valuePtr = valueIter->second.as_array(); valuePtr != nullptr) {
               if (auto vecValue = ui::ig::safeDeserializeGlmVec<T>(*valuePtr); vecValue.has_value()) {
-                *value.modify() = vecValue.value();
+                *value.modify() = *vecValue;
               }
             }
           }
           if constexpr (OneOf<T, glm::mat2, glm::mat3, glm::mat4>) {
             if (auto valuePtr = valueIter->second.as_array(); valuePtr != nullptr) {
               if (const auto matValue = ui::ig::safeDeserializeGlmMat<T>(*valuePtr); matValue.has_value()) {
-                *value.modify() = matValue.value();
+                *value.modify() = *matValue;
               }
             }
           }

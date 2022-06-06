@@ -32,7 +32,7 @@ constexpr GLenum OpenGlShader::ShaderTypeToOpenGlConstant(ShaderType shaderType)
     case Vertex: return GL_VERTEX_SHADER;
     case TesselationControl: return GL_TESS_CONTROL_SHADER;
     case TesselationEvaluation: return GL_TESS_EVALUATION_SHADER;
-    case Geometry: return GL_COMPUTE_SHADER;
+    case Geometry: return GL_GEOMETRY_SHADER;
     case Fragment: return GL_FRAGMENT_SHADER;
   }
   VERIFY(false, "This should be unreachable, since all shader types should be covered");

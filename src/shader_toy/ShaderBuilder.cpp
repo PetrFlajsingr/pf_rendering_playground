@@ -73,7 +73,7 @@ ShaderBuilder &ShaderBuilder::addDefine(std::string name, std::string value) {
   return *this;
 }
 
-ShaderBuilder &ShaderBuilder::setLocalGroupSize(glm::uvec2 size) {
+ShaderBuilder &ShaderBuilder::setLocalGroupSize(glm::uvec2 size) { //-V813
   localGroupSize = size;
   return *this;
 }

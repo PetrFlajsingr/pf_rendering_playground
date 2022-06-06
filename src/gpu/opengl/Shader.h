@@ -26,7 +26,7 @@ class OpenGlShader : public Shader, public OpenGlHandleOwner {
   [[nodiscard]] GpuOperationResult<ShaderError> createImpl(std::invocable<GLuint> auto &&compileFnc);
 };
 
-GpuOperationResult<ShaderError> OpenGlShader::createImpl(std::invocable<GLuint> auto &&compileFnc) {
+GpuOperationResult<ShaderError> OpenGlShader::createImpl(std::invocable<GLuint> auto &&compileFnc) { //-V669
   const auto shaderHandle = glCreateShader(ShaderTypeToOpenGlConstant(shaderType));
 
   compileFnc(shaderHandle);

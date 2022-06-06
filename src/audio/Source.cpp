@@ -154,7 +154,7 @@ float Source::getReferenceDistance() const {
   return getSourceF(AL_REFERENCE_DISTANCE);
 }
 
-void Source::setPosition(glm::vec3 position) {
+void Source::setPosition(glm::vec3 position) { //-V813
   checkOwnerAsserts();
   alSource3f(source, AL_POSITION, position.x, position.y, position.z);
 }
@@ -166,7 +166,7 @@ glm::vec3 Source::getPosition() const {
   return result;
 }
 
-void Source::setVelocity(glm::vec3 velocity) {
+void Source::setVelocity(glm::vec3 velocity) { //-V813
   checkOwnerAsserts();
   alSource3f(source, AL_VELOCITY, velocity.x, velocity.y, velocity.z);
 }
@@ -178,7 +178,7 @@ glm::vec3 Source::getVelocity() const {
   return result;
 }
 
-void Source::setDirection(glm::vec3 direction) {
+void Source::setDirection(glm::vec3 direction) { //-V813
   DEBUG_ASSERT(direction.x + direction.y + direction.z - 1.0f < 0.000001f, "Direction is not normalized");
   checkOwnerAsserts();
   alSource3f(source, AL_VELOCITY, direction.x, direction.y, direction.z);
@@ -187,7 +187,7 @@ void Source::setDirection(glm::vec3 direction) {
 glm::vec3 Source::getDirection() const {
   checkOwnerAsserts();
   glm::vec3 result;
-  alGetSource3f(source, AL_VELOCITY, &result.x, &result.y, &result.z);
+  alGetSource3f(source, AL_DIRECTION, &result.x, &result.y, &result.z);
   return result;
 }
 
@@ -202,11 +202,11 @@ float Source::getSourceF(ALenum param) const {
   return result;
 }
 
-void Source::appendBuffersImpl(std::vector<ALuint> buffers) {
+void Source::appendBuffersImpl(std::vector<ALuint> buffers) { //-V813
   alSourceQueueBuffers(source, static_cast<ALsizei>(buffers.size()), buffers.data());
 }
 
-void Source::clearBuffersImpl(std::vector<ALuint> buffers) {
+void Source::clearBuffersImpl(std::vector<ALuint> buffers) { //-V813
   alSourceUnqueueBuffers(source, static_cast<ALsizei>(buffers.size()), buffers.data());
 }
 

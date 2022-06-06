@@ -74,7 +74,7 @@ void ShaderVariablesController::showAddVariableDialog() {
   const auto varSelectValidator = [=](std::string_view typeName,
                                       std::string_view varName) -> std::optional<std::string> {
     if (typeName.empty()) { return "Select a type"; }
-    if (const auto nameErr = varNameValidator(varName); nameErr.has_value()) { return nameErr.value(); }
+    if (const auto nameErr = varNameValidator(varName); nameErr.has_value()) { return *nameErr; }
     bool unsupportedType = false;
     getTypeForGlslName(typeName, [&]<typename T>() { unsupportedType = isUnsupportedType.operator()<T>(); });
     if (unsupportedType) { return "Selected type is not currently supported"; }
