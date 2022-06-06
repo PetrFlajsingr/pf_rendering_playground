@@ -10,6 +10,7 @@
 #include "mvc/reactive.h"
 #include "utils/enums.h"
 #include <chrono>
+#include <filesystem>
 
 namespace pf {
 
@@ -20,6 +21,11 @@ class AudioAssetModel : public SavableModel {
   Observable<std::shared_ptr<gpu::Buffer>> gpuBuffer;
   Observable<AudioPCMFormat> format;
   Observable<std::chrono::seconds> length;
+  Observable<std::filesystem::path> assetPath;
+
+  [[nodiscard]] std::string getDebugString() const override;
+  [[nodiscard]] toml::table toToml() const override;
+  void setFromToml(const toml::table &src) override;
 };
 
 class AudioAssetsModel : public SavableModel {
