@@ -29,6 +29,8 @@ class OpenGlBuffer final : public Buffer, public OpenGlHandleOwner {
 
  private:
   void createHandle();
+
+  [[nodiscard]] static GLenum BufferTargetToGlEnum(BufferTarget target);
 };
 
 }  // namespace pf::gpu

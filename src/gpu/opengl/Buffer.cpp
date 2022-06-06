@@ -62,15 +62,19 @@ GpuOperationResult<BufferError> OpenGlBuffer::setData(std::size_t offsetInBytes,
 
 GpuOperationResult<BufferError> OpenGlBuffer::bind(BufferTarget target, Binding binding) {
   DEBUG_ASSERT(handle.isValid(), "It's likely create hasn't been called");
-  GLuint buffer{};
-  switch (target) {
-    case BufferTarget::AtomicCounter: buffer = GL_ATOMIC_COUNTER_BUFFER; break;
-    case BufferTarget::TransformFeedback: buffer = GL_TRANSFORM_FEEDBACK_BUFFER; break;
-    case BufferTarget::Uniform: buffer = GL_UNIFORM_BUFFER; break;
-    case BufferTarget::Storage: buffer = GL_SHADER_STORAGE_BUFFER; break;
-  }
-  glBindBufferBase(*handle, static_cast<GLuint>(binding.get()), buffer);
+  glBindBufferBase(*handle, static_cast<GLuint>(binding.get()), BufferTargetToGlEnum(target));
   return std::nullopt;
+}
+
+GLenum OpenGlBuffer::BufferTargetToGlEnum(BufferTarget target) {
+  switch (target) {
+    case BufferTarget::AtomicCounter: return GL_ATOMIC_COUNTER_BUFFER;
+    case BufferTarget::TransformFeedback: return GL_TRANSFORM_FEEDBACK_BUFFER;
+    case BufferTarget::Uniform: return GL_UNIFORM_BUFFER;
+    case BufferTarget::Storage: return GL_SHADER_STORAGE_BUFFER;
+  }
+  VERIFY(false, "Unhandled enum value");
+  return {};
 }
 
 }  // namespace pf::gpu
