@@ -8,6 +8,7 @@
 #include <string>
 #include <tl/expected.hpp>
 #include <vector>
+#include "enums.h"
 
 namespace pf {
 
@@ -17,7 +18,6 @@ struct AudioData {
   std::vector<std::byte> data;
 };
 
-enum class AudioPCMFormat { U8Mono, U16Mono, U8Stereo, U16Stereo };
 
 class AudioLoader {
  public:

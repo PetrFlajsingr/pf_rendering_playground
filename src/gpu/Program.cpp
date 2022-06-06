@@ -23,8 +23,6 @@ const std::vector<AttributeInfo> &Program::getAttributes() const { return infos.
 
 const std::vector<BufferInfo> &Program::getBuffers() const { return infos.buffers; }
 
-void Program::use() { useImpl(); }
-
 GpuOperationResult<ProgramError> Program::dispatch(std::uint32_t x, std::uint32_t y, std::uint32_t z) {
   if (std::ranges::any_of(
           shaders, [](ShaderType type) { return type != ShaderType::Compute; }, &Shader::getShaderType)) {

@@ -80,7 +80,8 @@ set(UTILS_SRC
         src/utils/glsl/DefaultBuiltinResource.h
         src/utils/logging.h
         src/utils/AudioLoader.cpp
-        src/utils/AudioLoader.h)
+        src/utils/AudioLoader.h
+        src/utils/enums.h)
 
 set(GPU_INTERFACE_SRC
         src/gpu/Texture.cpp
@@ -95,7 +96,9 @@ set(GPU_INTERFACE_SRC
         src/gpu/utils.h
         src/gpu/RenderThread.cpp
         src/gpu/RenderThread.h
-        src/gpu/Buffer.cpp src/gpu/Buffer.h src/gpu/common.h)
+        src/gpu/Buffer.cpp
+        src/gpu/Buffer.h
+        src/gpu/common.h)
 
 set(OPENGL_INTERFACE_SRC
         src/gpu/opengl/OpenGl.h
@@ -107,7 +110,8 @@ set(OPENGL_INTERFACE_SRC
         src/gpu/opengl/Program.h
         src/gpu/opengl/RenderThread.cpp
         src/gpu/opengl/RenderThread.h
-        src/gpu/opengl/Buffer.cpp src/gpu/opengl/Buffer.h)
+        src/gpu/opengl/Buffer.cpp
+        src/gpu/opengl/Buffer.h)
 
 set(AUDIO_SRC
         src/audio/Device.cpp
@@ -160,7 +164,10 @@ set(SHADERTOY_SRC
         src/shader_toy/models/MainModel.h
         src/shader_toy/views/MainView.cpp
         src/shader_toy/views/MainView.h
-        src/shader_toy/views/AudioAssetsView.cpp src/shader_toy/views/AudioAssetsView.h src/shader_toy/models/AudioAssetsModel.cpp src/shader_toy/models/AudioAssetsModel.h)
+        src/shader_toy/views/AudioAssetsView.cpp
+        src/shader_toy/views/AudioAssetsView.h
+        src/shader_toy/models/AudioAssetsModel.cpp
+        src/shader_toy/models/AudioAssetsModel.h)
 
 
 add_executable(${PROJECT_NAME}
