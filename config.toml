@@ -4,27 +4,25 @@ resources_path = 'C:\Users\xflajs00\CLionProjects\pf_rendering_playground\resour
 [imgui]
 file_dialog_bookmark = ''
 imgui_ini = '''[Window][##background_dock_window]
-Pos=0,20
-Size=2076,1036
+Pos=0,19
+Size=1998,1061
 Collapsed=0
 
 [Window][Output##output_window]
 Pos=8,28
-Size=1309,721
+Size=1309,704
 Collapsed=0
-DockId=0x00000003,0
 
 [Window][Editor##text_input_window]
 Pos=1319,28
-Size=749,1020
+Size=749,1003
 Collapsed=0
-DockId=0x00000002,0
 
 [Window][Log##log_window]
-Pos=8,751
-Size=1309,297
+Pos=8,777
+Size=1237,295
 Collapsed=0
-DockId=0x00000004,0
+DockId=0x00000004,1
 
 [Window][Debug##Default]
 Pos=60,60
@@ -32,7 +30,7 @@ Size=400,400
 Collapsed=0
 
 [Window][Select variable type and name]
-Pos=774,436
+Pos=789,450
 Size=300,110
 Collapsed=0
 
@@ -60,6 +58,46 @@ Collapsed=0
 Pos=788,388
 Size=500,300
 Collapsed=0
+
+[Window][Shader variables##shader_vars_win]
+Pos=1247,27
+Size=743,1045
+Collapsed=0
+DockId=0x00000002,1
+
+[Window][Images##image_assets_win]
+Pos=1247,27
+Size=743,1045
+Collapsed=0
+DockId=0x00000002,2
+
+[Window][Select an image##FileDialog1]
+Pos=788,388
+Size=500,300
+Collapsed=0
+
+[Window][Select an image##FileDialog2]
+Pos=788,388
+Size=500,300
+Collapsed=0
+
+[Window][Code##glsl_editor_win]
+Pos=1247,27
+Size=743,1045
+Collapsed=0
+DockId=0x00000002,0
+
+[Window][Output##output_win]
+Pos=8,27
+Size=1237,748
+Collapsed=0
+DockId=0x00000003,0
+
+[Window][Combined log##combined_log_win]
+Pos=8,777
+Size=1237,295
+Collapsed=0
+DockId=0x00000004,0
 
 [Table][0x66C13287,4]
 RefScale=14
@@ -221,12 +259,76 @@ Column 0  Sort=0v
 RefScale=14
 Column 0  Sort=0v
 
+[Table][0xCC29E617,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0x5F7A32E3,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0xC9F58C44,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0xAC06E509,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0x04A80756,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0x0F4C9111,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0x8D860C9A,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0x64B1D439,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0xBAA268E6,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0x4A274D70,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0x53ACF9A7,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0x6F4D3824,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0x87E3CC0F,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0xE463CA28,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0xCC583456,4]
+RefScale=14
+Column 0  Sort=0v
+
+[Table][0x69B4BB39,4]
+RefScale=14
+Column 0  Sort=0v
+
 [Docking][Data]
-DockSpace     ID=0x52D07672 Window=0x946640CE Pos=8,28 Size=2060,1020 Split=X
-  DockNode    ID=0x00000001 Parent=0x52D07672 SizeRef=1793,990 Split=Y
-    DockNode  ID=0x00000003 Parent=0x00000001 SizeRef=1110,691 CentralNode=1 Selected=0x5DD61B6A
-    DockNode  ID=0x00000004 Parent=0x00000001 SizeRef=1110,297 Selected=0xEE7D7E4A
-  DockNode    ID=0x00000002 Parent=0x52D07672 SizeRef=749,990 Selected=0xB0A508ED
+DockSpace     ID=0x52D07672 Window=0x946640CE Pos=8,27 Size=1982,1045 Split=X
+  DockNode    ID=0x00000001 Parent=0x52D07672 SizeRef=1237,1155 Split=Y
+    DockNode  ID=0x00000003 Parent=0x00000001 SizeRef=1215,746 CentralNode=1 Selected=0x62F261AB
+    DockNode  ID=0x00000004 Parent=0x00000001 SizeRef=1215,295 Selected=0xEE7D7E4A
+  DockNode    ID=0x00000002 Parent=0x52D07672 SizeRef=743,1155 Selected=0x655BFAE3
 
 '''
 path_icons = 'C:\Users\xflajs00\CLionProjects\opengl_template\resources\icons'
@@ -239,6 +341,10 @@ path_icons = 'C:\Users\xflajs00\CLionProjects\opengl_template\resources\icons'
 
     [imgui.checkbox_1]
     checked = false
+
+    [imgui.combined_log_win_log_panel]
+    autoscroll = true
+    textwrap = true
 
     [[imgui.global_vars_panel.values]]
     isColor = true
@@ -299,11 +405,15 @@ path_icons = 'C:\Users\xflajs00\CLionProjects\opengl_template\resources\icons'
     [imgui.list_box_1]
     selected = 'item1'
 
+    [imgui.log_window_log_panel]
+    autoscroll = true
+    textwrap = true
+
     [imgui.pause_cbkx]
     checked = false
 
     [imgui.show_main_log]
-    checked = false
+    checked = true
 
     [imgui.text_editor]
     text = '''float sdSquare(vec2 uv, float size, vec2 offset) {
@@ -390,7 +500,7 @@ void main() {
 
 	const float sX = max(0.3, sin((texCoord.x / 500.0 + time)));
 
-	color.rgb = mix(vingetteColor.rgb, color.rgb, vignette);
+	color.rgb = mix(vignetteColor.rgb, color.rgb, vignette);
 	color.rgb *= sX;
 	imageStore(outImage, texCoord, color);
 }'''
@@ -400,7 +510,154 @@ void main() {
 [modes.ShaderToy]
 initialized = true
 
+    [modes.ShaderToy.editor]
+    autoCompile = true
+    autoCompilePeriod = 300
+    code = '''float sdSquare(vec2 uv, float size, vec2 offset) {
+    float x = uv.x - offset.x;
+    float y = uv.y - offset.y;
+
+    return max(abs(x), abs(y)) - size;
+}
+
+float sdCircle(vec2 uv, float r, vec2 offset) {
+
+    float x = uv.x - offset.x;
+    float y = uv.y - offset.y;
+
+    return length(vec2(x, y)) - r;  
+}
+
+float sdHeart(vec2 uv, float size, vec2 offset) {
+// Credit: https://mathworld.wolfram.com/HeartCurve.html
+    float x = uv.x - offset.x; 
+    float y = uv.y - offset.y;
+    float xx = x * x;
+    float yy = y * y;
+    float yyy = yy * y; 
+    float group = xx + yy - size;
+
+    return group * group * group - xx * yyy;
+}
+
+float sdStar5(vec2 p, float r, float rf, vec2 offset)
+// Credit: https://iquilezles.org/articles/distfunctions2d
+{
+    p -= offset;
+    const vec2 k1 = vec2(0.809016994375, -0.587785252292);
+    const vec2 k2 = vec2(-k1.x,k1.y);
+    p.x = abs(p.x);
+    p -= 2.0*max(dot(k1,p),0.0)*k1;
+    p -= 2.0*max(dot(k2,p),0.0)*k2;
+    p.x = abs(p.x);
+    p.y -= r;
+    vec2 ba = rf*vec2(-k1.y,k1.x) - vec2(0,1);
+    float h = clamp( dot(p,ba)/dot(ba,ba), 0.0, r );
+
+    return length(p-ba*h) * sign(p.y*ba.x-p.x*ba.y);
+}
+
+vec3 getBackgroundColor(vec2 uv) {
+	const ivec2 bkgImgSize = imageSize(testImg);
+	 ivec2 texCoord = ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y);
+	return imageLoad(testImg,  texCoord).rgb;
+	uv.y += 0.5;
+	return backgroundColor1.rgb * uv.y + backgroundColor2.rgb * (1.0 - uv.y);
+}
+
+vec3 drawScene(vec2 uv) {
+	vec3 col = getBackgroundColor(uv);
+    float heart = sdHeart(uv, 0.04, vec2(-0.5, 0.));
+    float square = sdSquare(uv, 0.1, vec2(0., 0.));
+    float circle = sdCircle(uv, 0.1, vec2(0.3, 0.));
+    float star = sdStar5(uv, 0.12, 0.45, vec2(0.6, 0.));
+
+    col = mix(heartColor.rgb, col, step(0., heart));
+    col = mix(squareColor.rgb, col, step(0., square));
+    col = mix(sphereColor.rgb, col, step(0., circle));
+    col = mix(starColor.rgb, col, step(0., star));
+
+    return col;
+}
+
+void main() {
+	const ivec2 texSize = imageSize(outImage);
+	const ivec2 texCoord = ivec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y);
+
+	vec2 uv = vec2(texCoord) / vec2(texSize) - 0.5;
+	uv.x *= texSize.x / texSize.y;
+	uv.y *= -1;
+
+	vec4 color = vec4(drawScene(uv), 1.0);
+
+	const float dist = distance(texCoord, mousePos.xy);
+	if (mouseState == MOUSE_STATE_LEFTDOWN) {
+		color.rgb *= 1 - dist / highlightRadius;
+	}
+
+	const float vignette = imageLoad(vin, texCoord).r;
+
+	const float sX = max(0.3, sin((texCoord.x / 500.0 + time)));
+
+	color.rgb = mix(vignetteColor.rgb, color.rgb, vignette);  
+	color.rgb *= sX;
+	imageStore(outImage, texCoord, color);
+}  '''
+    timePaused = false
+
+    [[modes.ShaderToy.images.images]]
+    name = 'testImg'
+    path = 'C:\Users\xflajs00\CLionProjects\pf_rendering_playground\cmake-build-debug-visual-studio-2022\test_background.png'
+
+    [[modes.ShaderToy.images.images]]
+    name = 'vin'
+    path = 'C:\Users\xflajs00\CLionProjects\pf_rendering_playground\cmake-build-debug-visual-studio-2022\vignette.png'
+
+    [modes.ShaderToy.output]
+    height = 1024
+    width = 2048
+
+    [[modes.ShaderToy.shader_variables.variables]]
+    name = 'backgroundColor1'
+    type = 'color'
+    value = [ 0.7450980544090271, 0.0, 0.9137255549430847, 1.0 ]
+
+    [[modes.ShaderToy.shader_variables.variables]]
+    name = 'backgroundColor2'
+    type = 'color'
+    value = [ 0.0, 0.847058892250061, 1.0, 1.0 ]
+
+    [[modes.ShaderToy.shader_variables.variables]]
+    name = 'heartColor'
+    type = 'color'
+    value = [ 1.0, 0.0, 0.0, 1.0 ]
+
+    [[modes.ShaderToy.shader_variables.variables]]
+    name = 'squareColor'
+    type = 'color'
+    value = [ 0.0, 1.0, 0.007843137718737125, 1.0 ]
+
+    [[modes.ShaderToy.shader_variables.variables]]
+    name = 'sphereColor'
+    type = 'color'
+    value = [ 0.0, 0.0941176563501358, 1.0, 1.0 ]
+
+    [[modes.ShaderToy.shader_variables.variables]]
+    name = 'starColor'
+    type = 'color'
+    value = [ 0.8823530077934265, 1.0, 0.0, 1.0 ]
+
+    [[modes.ShaderToy.shader_variables.variables]]
+    name = 'highlightRadius'
+    type = 'float'
+    value = 717.9000244140625
+
+    [[modes.ShaderToy.shader_variables.variables]]
+    name = 'vignetteColor'
+    type = 'color'
+    value = [ 0.0, 0.0, 0.0, 1.0 ]
+
 [window]
-height = 1076
+height = 1099
 title = 'OpenGL'
-width = 2076
+width = 1998

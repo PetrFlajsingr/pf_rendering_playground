@@ -60,13 +60,13 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
 
   createControllers();
 
+  getLogger().sinks().emplace_back(mainController->logWindowController->createSpdlogSink());
+
   loadModelsFromConfig();
   if (isFirstRun) {
     mainController->resetDocking(ui::ig::Size{static_cast<float>(glfwWindow->getSize().width),
                                               static_cast<float>(glfwWindow->getSize().height)});
   }
-
-  getLogger().sinks().emplace_back(mainController->logWindowController->createSpdlogSink());
 
   mainController->hide();
 
@@ -431,10 +431,12 @@ void ShaderToyMode::loadModelsFromConfig() {
   std::ranges::for_each(models.imageAssets->getTextures(), [this](const auto &textureModel) {
     if (*textureModel->texture == nullptr) {
       const auto onLoadDone = [=, this](const tl::expected<std::shared_ptr<gpu::Texture>, std::string> &loadingResult) {
-        MainLoop::Get()->enqueue([=] {
+        MainLoop::Get()->enqueue([=, this] {
           if (loadingResult.has_value()) {
             *textureModel->texture.modify() = loadingResult.value();
           } else {
+            getLogger().error("Texture loading failed for image '{}': {}", *textureModel->imagePath,
+                              loadingResult.error());
             imGuiInterface->getNotificationManager()
                 .createNotification("notif_loading_err", "Texture loading failed")
                 .createChild<ui::ig::Text>(
@@ -449,6 +451,8 @@ void ShaderToyMode::loadModelsFromConfig() {
         ChannelCount requiredChannels{imgInfo->channels};
         if (requiredChannels.get() == 3) { requiredChannels = ChannelCount{4}; }
         imageLoader->loadTextureWithChannelsAsync(*textureModel->imagePath, requiredChannels, onLoadDone);
+      } else {
+        getLogger().error("Image loading failed for image '{}': File not found", *textureModel->imagePath);
       }
     }
   });
