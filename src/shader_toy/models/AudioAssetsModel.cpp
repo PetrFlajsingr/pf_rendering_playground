@@ -39,9 +39,9 @@ void AudioAssetModel::setFromToml(const toml::table &src) {
   }
 }
 
-const AudioAssetsModels::AudioModels &AudioAssetsModels::getAudioModels() const { return audioModels; }
+const AudioAssetsModel::AudioModels &AudioAssetsModel::getAudioModels() const { return audioModels; }
 
-std::optional<std::string> AudioAssetsModels::addAudio(std::string name, bool playback,
+std::optional<std::string> AudioAssetsModel::addAudio(std::string name, bool playback,
                                                        std::shared_ptr<audio::Buffer> aBuffer,
                                                        std::shared_ptr<gpu::Buffer> gBuffer, AudioPCMFormat dataFormat,
                                                        std::chrono::seconds duration, std::filesystem::path path) {
@@ -54,7 +54,7 @@ std::optional<std::string> AudioAssetsModels::addAudio(std::string name, bool pl
   return std::nullopt;
 }
 
-std::optional<std::string> AudioAssetsModels::addAudio(std::shared_ptr<AudioAssetModel> audioAssetModel) {
+std::optional<std::string> AudioAssetsModel::addAudio(std::shared_ptr<AudioAssetModel> audioAssetModel) {
   if (const auto iter =
           std::ranges::find(audioModels, *audioAssetModel->name, [](const auto &audio) { return *audio->name; });
       iter != audioModels.end()) {
@@ -64,25 +64,25 @@ std::optional<std::string> AudioAssetsModels::addAudio(std::shared_ptr<AudioAsse
   return std::nullopt;
 }
 
-void AudioAssetsModels::removeAudio(std::string_view modelName) {
+void AudioAssetsModel::removeAudio(std::string_view modelName) {
   const auto toRemove =
       erase_and_extract_if(audioModels, [modelName](const auto &audio) { return *audio->name == modelName; });
   std::ranges::for_each(toRemove, [this](const auto &var) { audioRemovedEvent.notify(var); });
 }
 
-void AudioAssetsModels::clearAudios() {
+void AudioAssetsModel::clearAudios() {
   const auto toRemove = audioModels;
   audioModels.clear();
   std::ranges::for_each(toRemove, [this](const auto &audio) { audioRemovedEvent.notify(audio); });
 }
 
-toml::table AudioAssetsModels::toToml() const {
+toml::table AudioAssetsModel::toToml() const {
   auto audioArray = toml::array{};
   std::ranges::transform(audioModels, std::back_inserter(audioArray), &AudioAssetModel::toToml);
   return toml::table{{"audioAssets", std::move(audioArray)}};
 }
 
-void AudioAssetsModels::setFromToml(const toml::table &src) {
+void AudioAssetsModel::setFromToml(const toml::table &src) {
   if (const auto iter = src.find("audioAssets"); iter != src.end()) {
     if (const auto audioArray = iter->second.as_array(); audioArray != nullptr) {
       std::ranges::for_each(*audioArray, [&](const auto &record) {
@@ -97,7 +97,7 @@ void AudioAssetsModels::setFromToml(const toml::table &src) {
   }
 }
 
-std::string AudioAssetsModels::getDebugString() const {
+std::string AudioAssetsModel::getDebugString() const {
   return fmt::format("audio assets count: '{}'", audioModels.size());
 }
 

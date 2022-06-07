@@ -33,10 +33,10 @@ class AudioAssetModel : public SavableModel {
   void setFromToml(const toml::table &src) override;
 };
 // TODO: create a template for thus model container kinda class
-class AudioAssetsModels : public SavableModel {
+class AudioAssetsModel : public SavableModel {
   using AudioModels = std::vector<std::shared_ptr<AudioAssetModel>>;
   template<typename... Args>
-  using Event = ClassEvent<AudioAssetsModels, Args...>;
+  using Event = ClassEvent<AudioAssetsModel, Args...>;
   using AudioAddedEvent = Event<std::shared_ptr<AudioAssetModel>>;
   using AudioRemovedEvent = Event<std::shared_ptr<AudioAssetModel>>;
 

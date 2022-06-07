@@ -167,7 +167,9 @@ set(SHADERTOY_SRC
         src/shader_toy/views/AudioAssetsView.cpp
         src/shader_toy/views/AudioAssetsView.h
         src/shader_toy/models/AudioAssetsModel.cpp
-        src/shader_toy/models/AudioAssetsModel.h)
+        src/shader_toy/models/AudioAssetsModel.h
+        src/shader_toy/controllers/AudioAssetsController.cpp
+        src/shader_toy/controllers/AudioAssetsController.h)
 
 
 add_executable(${PROJECT_NAME}
