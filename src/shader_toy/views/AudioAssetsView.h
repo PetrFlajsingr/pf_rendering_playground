@@ -10,16 +10,17 @@
 #include <pf_imgui/interface/Element.h>
 #include <pf_imgui/layouts/HorizontalLayout.h>
 #include <pf_imgui/layouts/VerticalLayout.h>
+#include <pf_imgui/layouts/WrapLayout.h>
 
 namespace pf {
 
-class AudioAssetRecordElement : public ui::ig::Element, public ui::ig::Labellable {
+class AudioAssetRecordTile : public ui::ig::Element, public ui::ig::Labellable, public ui::ig::Resizable {
  public:
-  AudioAssetRecordElement(const std::string &name, const std::string &label, const std::string &format, bool play,
-                          std::chrono::seconds length);
+  AudioAssetRecordTile(const std::string &name, const std::string &label, ui::ig::Size size, const std::string &format,
+                       bool play, std::chrono::seconds length);
 
   [[nodiscard]] const std::string &getFormat() const;
-  void setFormat(const std::string & newFormat);
+  void setFormat(const std::string &newFormat);
   [[nodiscard]] bool isPlay() const;
   void setPlay(bool newPlay);
   [[nodiscard]] const std::chrono::seconds &getLength() const;
@@ -50,20 +51,21 @@ class AudioAssetsView : public UIViewWindow {
   AudioAssetsView(const std::shared_ptr<ui::ig::ImGuiInterface> &imguiInterface, const std::string_view &windowName,
                   const std::string_view &windowTitle);
 
-  AudioAssetRecordElement &addAssetElement(const std::string &label, const std::string &format, bool play,
-                                           std::chrono::seconds length);
+  AudioAssetRecordTile &addAssetElement(const std::string &label, const std::string &format, bool play,
+                                        std::chrono::seconds length);
 
   // clang-format off
   ui::ig::HorizontalLayout *controlsLayout;
     ui::ig::Button *addButton;
     ui::ig::Separator *controlsSep;
     ui::ig::InputText *searchTextInput;
-  ui::ig::VerticalLayout *recordsLayout;
-    std::vector<AudioAssetRecordElement*> records;
+  ui::ig::WrapLayout *audioLayout;
+    std::vector<AudioAssetRecordTile*> audioTiles;
   // clang-format on
 
  private:
   void createTooltips();
+  ui::ig::Size tileSize{220, 120};
 };
 
 }  // namespace pf

@@ -41,15 +41,15 @@ AudioAssetsController::AudioAssetsController(std::unique_ptr<AudioAssetsView> ui
       subscriptions.erase(iter);
       // FIXME: this is messed up when model's name changes - need to fix that maybe with some unique identifier or something
       // same goes for other models/UIs
-      const auto [rmBeg, rmEnd] = std::ranges::remove(view->records, *audioModel->name, &gui::Element::getName);
-      view->records.erase(rmBeg, rmEnd);
-      view->recordsLayout->removeChild(*audioModel->name);
+      const auto [rmBeg, rmEnd] = std::ranges::remove(view->audioTiles, *audioModel->name, &gui::Element::getName);
+      view->audioTiles.erase(rmBeg, rmEnd);
+      view->audioLayout->removeChild(*audioModel->name);
     });
   });
 }
 
 void AudioAssetsController::filterAssetsByName(std::string_view searchStr) {
-  std::ranges::for_each(view->records, [searchStr](const auto &element) {
+  std::ranges::for_each(view->audioTiles, [searchStr](const auto &element) {
     const auto label = element->getLabel();
     const auto containsSearchStr = std::string_view{label}.find(searchStr) != std::string_view::npos;
     element->setVisibility(containsSearchStr ? gui::Visibility::Visible : gui::Visibility::Invisible);
