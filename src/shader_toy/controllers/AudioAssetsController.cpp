@@ -144,4 +144,8 @@ void AudioAssetsController::createUIForAudioModel(const std::shared_ptr<AudioAss
   subscriptions.emplace(audioModel, std::move(modelsSubscriptions));
 }
 
+void AudioAssetsController::show() { view->getWindow().setVisibility(gui::Visibility::Visible); }
+
+void AudioAssetsController::hide() { view->getWindow().setVisibility(gui::Visibility::Invisible); }
+
 }  // namespace pf

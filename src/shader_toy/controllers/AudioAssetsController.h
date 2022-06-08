@@ -6,13 +6,13 @@
 
 #include "../models/AudioAssetsModel.h"
 #include "../views/AudioAssetsView.h"
+#include "audio/Context.h"
 #include "gpu/RenderThread.h"
 #include "mvc/Controller.h"
 #include "utils/AudioLoader.h"
-#include <unordered_set>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
-#include "audio/Context.h"
 
 namespace pf {
 
@@ -28,6 +28,9 @@ class AudioAssetsController : public Controller<AudioAssetsView, AudioAssetsMode
   std::unordered_set<std::string> disallowedNames;
 
   void showAddAssetDialog();
+
+  void show();
+  void hide();
 
  private:
   void createUIForAudioModel(const std::shared_ptr<AudioAssetModel> &audioModel);

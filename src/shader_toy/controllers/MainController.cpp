@@ -37,6 +37,7 @@ void MainController::show() {
   glslEditorController->show();
   shaderVariablesController->show();
   imageAssetsController->show();
+  audioAssetsController->show();
 }
 
 void MainController::hide() {
@@ -46,6 +47,7 @@ void MainController::hide() {
   glslEditorController->hide();
   shaderVariablesController->hide();
   imageAssetsController->hide();
+  audioAssetsController->hide();
 }
 
 void MainController::resetDocking(gui::Size windowSize) {
