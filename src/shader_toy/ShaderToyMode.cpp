@@ -362,6 +362,8 @@ void ShaderToyMode::updateConfig() {
   config.insert_or_assign("editor", std::move(glslEditorToml));
   auto outputToml = models.output->toToml();
   config.insert_or_assign("output", std::move(outputToml));
+  auto audioToml = models.audioAssets->toToml();
+  config.insert_or_assign("audio", audioToml);
 }
 
 void ShaderToyMode::createModels() {
