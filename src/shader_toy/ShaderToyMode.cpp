@@ -45,9 +45,12 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   }
   config.insert_or_assign("initialized", true);
   glfwWindow = window;
-  workerThreads = threadPool;
+  workerThreads = std::move(threadPool);
   renderingThread = std::move(renderThread);
   imGuiInterface = imguiInterface;
+  audioDevice = audio::Device::Create().value();        // FIXME: check
+  audioContext = audioDevice->createContext().value();  // FIXME: check
+  ASSERT(!audioContext->makeCurrent().has_value());
 
   renderingThread->enqueue([] {
     glEnable(GL_DEBUG_OUTPUT);
@@ -55,6 +58,7 @@ void ShaderToyMode::initialize_impl(const std::shared_ptr<ui::ig::ImGuiInterface
   });
 
   imageLoader = std::make_shared<OpenGLStbImageLoader>(workerThreads, renderingThread);
+  audioLoader = std::make_shared<AVAudioLoader>(workerThreads);
 
   createModels();
 
@@ -100,6 +104,11 @@ void ShaderToyMode::deinitialize_impl() {
   workerThreads.reset();
   getLogger().debug("Took {}", workerThreadWaitMeasure.getTimeElapsed());
   renderingThread.reset();
+  models.reset();
+  imageLoader.reset();
+  audioLoader.reset();
+  audioContext.reset();
+  audioDevice.reset();
 }
 
 void ShaderToyMode::render(std::chrono::nanoseconds timeDelta) {
@@ -274,8 +283,7 @@ void ShaderToyMode::compileShader_impl(const std::string &shaderCode) {
           using enum SpirvErrorRecord::Type;
           if (!rec.line.has_value()) { continue; }
           const auto errMessage = fmt::format("{}: {}", rec.error, rec.errorDesc);
-          const auto marker =
-              ui::ig::TextEditorMarker{static_cast<uint32_t>(shaderLineMapping(*rec.line)), errMessage};
+          const auto marker = ui::ig::TextEditorMarker{static_cast<uint32_t>(shaderLineMapping(*rec.line)), errMessage};
           getLogger().error("{}", errMessage);
           switch (rec.type) {
             case Warning: mainController->glslEditorController->addWarningMarker(marker); break;
@@ -392,21 +400,37 @@ void ShaderToyMode::createModels() {
   models.shaderVariables->variableAddedEvent.addEventListener([this, markShaderChanged](const auto &varModel) {
     markShaderChanged();
     mainController->imageAssetsController->disallowedNames.emplace(*varModel->name);
+    mainController->audioAssetsController->disallowedNames.emplace(*varModel->name);
   });
   models.shaderVariables->variableRemovedEvent.addEventListener(
       [this, markShaderChangedOrRecompile](const auto &varModel) {
         markShaderChangedOrRecompile();
         mainController->imageAssetsController->disallowedNames.erase(*varModel->name);
+        mainController->audioAssetsController->disallowedNames.erase(*varModel->name);
       });
 
   models.imageAssets = std::make_shared<UserImageAssetsModel>();
   models.imageAssets->imageAddedEvent.addEventListener([this, markShaderChanged](const auto &imgModel) {
     markShaderChanged();
     mainController->shaderVariablesController->disallowedNames.emplace(*imgModel->name);
+    mainController->audioAssetsController->disallowedNames.emplace(*imgModel->name);
   });
   models.imageAssets->imageRemovedEvent.addEventListener([this, markShaderChangedOrRecompile](const auto &imgModel) {
     markShaderChangedOrRecompile();
     mainController->shaderVariablesController->disallowedNames.erase(*imgModel->name);
+    mainController->audioAssetsController->disallowedNames.erase(*imgModel->name);
+  });
+
+  models.audioAssets = std::make_shared<AudioAssetsModel>();
+  models.audioAssets->audioAddedEvent.addEventListener([this, markShaderChanged](const auto &audioModel) {
+    markShaderChanged();
+    mainController->shaderVariablesController->disallowedNames.emplace(*audioModel->name);
+    mainController->imageAssetsController->disallowedNames.emplace(*audioModel->name);
+  });
+  models.audioAssets->audioRemovedEvent.addEventListener([this, markShaderChangedOrRecompile](const auto &audioModel) {
+    markShaderChangedOrRecompile();
+    mainController->shaderVariablesController->disallowedNames.erase(*audioModel->name);
+    mainController->imageAssetsController->disallowedNames.erase(*audioModel->name);
   });
 
   models.codeEditor->code.addValueListener(markShaderChanged);
@@ -482,11 +506,15 @@ void ShaderToyMode::createControllers() {
   auto imageAssetsController = std::make_unique<ImageAssetsController>(
       std::make_unique<ImageAssetsView>(imGuiInterface, "image_assets_win", "Images"), models.imageAssets,
       imGuiInterface, imageLoader);
+  auto audioAssetsController = std::make_unique<AudioAssetsController>(
+      std::make_unique<AudioAssetsView>(imGuiInterface, "audio_assets_win", "Audio"), models.audioAssets,
+      imGuiInterface, audioLoader, renderingThread, audioContext);
 
   mainController = std::make_unique<MainController>(
       std::make_unique<MainView>(imGuiInterface), std::make_unique<MainModel>(), imGuiInterface,
       ShaderToyControllers{std::move(outputController), std::move(logWindowController), std::move(glslEditorController),
-                           std::move(shaderVariablesController), std::move(imageAssetsController)});
+                           std::move(shaderVariablesController), std::move(imageAssetsController),
+                           std::move(audioAssetsController)});
 }
 
 }  // namespace pf::shader_toy

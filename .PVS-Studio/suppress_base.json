@@ -2,14 +2,6 @@
   "version": 1,
   "warnings": [
     {
-      "FileName": "common.h",
-      "ErrorCode": "V001",
-      "Message": "A code fragment cannot be analyzed.",
-      "CodePrev": 479056460,
-      "CodeCurrent": -1226286004,
-      "CodeNext": 125
-    },
-    {
       "FileName": "Buffer.cpp",
       "ErrorCode": "V001",
       "Message": "A code fragment cannot be analyzed.",
@@ -24,6 +16,70 @@
       "CodePrev": 3053,
       "CodeCurrent": 1849385320,
       "CodeNext": 22109
+    },
+    {
+      "FileName": "Types.h",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 125,
+      "CodeCurrent": 1122430390,
+      "CodeNext": 125
+    },
+    {
+      "FileName": "AudioAssetsController.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": -828974991,
+      "CodeCurrent": -562969827,
+      "CodeNext": 1028548059
+    },
+    {
+      "FileName": "AudioAssetsController.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": -60039271,
+      "CodeCurrent": -1091305216,
+      "CodeNext": 937310465
+    },
+    {
+      "FileName": "utils.h",
+      "ErrorCode": "V1028",
+      "Message": "Possible overflow. Consider casting operands of the \u0027x * y * _\u0027 operator to the \u0027std::size_t\u0027 type, not the result.",
+      "CodePrev": -441321318,
+      "CodeCurrent": 1977445725,
+      "CodeNext": -114500024
+    },
+    {
+      "FileName": "Types.h",
+      "ErrorCode": "V1037",
+      "Message": "Two or more case-branches perform the same actions. Check lines: _, _",
+      "CodePrev": 738654922,
+      "CodeCurrent": -1421128148,
+      "CodeNext": -883567605
+    },
+    {
+      "FileName": "Mode.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": -428814103,
+      "CodeCurrent": -651951818,
+      "CodeNext": 935686401
+    },
+    {
+      "FileName": "AudioAssetsController.PVS-Studio.i",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 0,
+      "CodeCurrent": 598087326,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "common.h",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 479056460,
+      "CodeCurrent": -1226286004,
+      "CodeNext": 125
     },
     {
       "FileName": "ShaderVariablesController.cpp",
@@ -50,12 +106,12 @@
       "CodeNext": 233894145
     },
     {
-      "FileName": "utils.h",
-      "ErrorCode": "V1028",
-      "Message": "Possible overflow. Consider casting operands of the \u0027x * y * _\u0027 operator to the \u0027std::size_t\u0027 type, not the result.",
-      "CodePrev": -441321318,
-      "CodeCurrent": 1977445725,
-      "CodeNext": -114500024
+      "FileName": "MainController.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": -640247178,
+      "CodeCurrent": 468601089,
+      "CodeNext": 233894145
     },
     {
       "FileName": "ImageAssetsController.cpp",
@@ -80,14 +136,6 @@
       "CodePrev": -2054150392,
       "CodeCurrent": -2051509267,
       "CodeNext": 22109
-    },
-    {
-      "FileName": "Types.h",
-      "ErrorCode": "V1037",
-      "Message": "Two or more case-branches perform the same actions. Check lines: _, _",
-      "CodePrev": 738654922,
-      "CodeCurrent": -1421128148,
-      "CodeNext": -883567605
     },
     {
       "FileName": "Controller.h",
@@ -130,20 +178,28 @@
       "CodeNext": 125
     },
     {
+      "FileName": "ShaderToyMode.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 1898763634,
+      "CodeCurrent": 340427905,
+      "CodeNext": 0
+    },
+    {
+      "FileName": "ShaderToyMode.cpp",
+      "ErrorCode": "V001",
+      "Message": "A code fragment cannot be analyzed.",
+      "CodePrev": 1898763634,
+      "CodeCurrent": 335603329,
+      "CodeNext": 0
+    },
+    {
       "FileName": "ImageLoader.cpp",
       "ErrorCode": "V1028",
       "Message": "Possible overflow. Consider casting operands of the \u0027x * y * n\u0027 operator to the \u0027std::size_t\u0027 type, not the result.",
       "CodePrev": -441321318,
       "CodeCurrent": 1977446285,
       "CodeNext": -114500024
-    },
-    {
-      "FileName": "Mode.cpp",
-      "ErrorCode": "V001",
-      "Message": "A code fragment cannot be analyzed.",
-      "CodePrev": -428814103,
-      "CodeCurrent": -651951818,
-      "CodeNext": 935686401
     },
     {
       "FileName": "ModeManager.cpp",

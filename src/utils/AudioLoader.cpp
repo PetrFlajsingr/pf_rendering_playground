@@ -19,8 +19,20 @@ extern "C" {
 
 namespace pf {
 
-AVAudioLoader::~AVAudioLoader() = default;
+std::chrono::seconds AudioData::getLength() const {
+  return std::chrono::seconds{data.size() / sampleRate / channelCount};
+}
 
+AudioLoader::AudioLoader(std::shared_ptr<ThreadPool> threadPool) : pool(std::move(threadPool)) {}
+
+void AudioLoader::loadAudioFileAsync(const std::filesystem::path &path, AudioPCMFormat requestedFormat,
+                                 std::optional<int> requestedSampleRate,
+                                 std::function<void(tl::expected<AudioData, std::string>)> onLoadDone) {
+  enqueue([=, this] { onLoadDone(loadAudioFile(path, requestedFormat, requestedSampleRate)); });
+}
+
+AVAudioLoader::AVAudioLoader(std::shared_ptr<ThreadPool> threadPool) : AudioLoader(std::move(threadPool)) {}
+AVAudioLoader::~AVAudioLoader() = default;
 tl::expected<AudioData, std::string> AVAudioLoader::loadAudioFile(const std::filesystem::path &path,
                                                                   AudioPCMFormat requestedFormat,
                                                                   std::optional<int> requestedSampleRate) {
@@ -125,5 +137,4 @@ tl::expected<AudioData, std::string> AVAudioLoader::loadAudioFile(const std::fil
   // success
   return audioData;
 }
-
 }  // namespace pf

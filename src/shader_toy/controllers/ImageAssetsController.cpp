@@ -32,6 +32,7 @@ ImageAssetsController::ImageAssetsController(std::unique_ptr<ImageAssetsView> ui
   model->imageRemovedEvent.addEventListener([this](const auto &imageModel) {
     MainLoop::Get()->forceEnqueue([this, imageModel] {
       const auto iter = subscriptions.find(imageModel);
+      DEBUG_ASSERT(iter != subscriptions.end(), "Model should always have subscriptions record");
       std::ranges::for_each(iter->second, &Subscription::unsubscribe);
       subscriptions.erase(iter);
       const auto [rmBeg, rmEnd] = std::ranges::remove(view->imageTiles, *imageModel->name, &gui::Element::getName);

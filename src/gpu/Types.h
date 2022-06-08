@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "assert.hpp"
 namespace pf::gpu {
 
 #define PF_SHADER_VALUE_TYPES                                                                                          \
@@ -40,7 +41,7 @@ constexpr auto getTypeForShaderValueType(ShaderValueType valueType, auto &&visit
     case Bool: visitor.template operator()<bool>(); break;
     case Float: visitor.template operator()<float>(); break;
     case Uint: visitor.template operator()<unsigned int>(); break;
-    case Int: visitor.template operator()<int>(); break;
+    case Int: visitor.template operator()<int>(); break; //-V1037
     case Vec2: visitor.template operator()<glm::vec2>(); break;
     case Vec3: visitor.template operator()<glm::vec3>(); break;
     case Vec4: visitor.template operator()<glm::vec4>(); break;
@@ -58,7 +59,7 @@ constexpr auto getTypeForShaderValueType(ShaderValueType valueType, auto &&visit
     case Mat4: visitor.template operator()<glm::mat4>(); break;
     case Image2D: visitor.template operator()<int>(); break;
   }
-  assert(false && "this can't happen");
+  VERIFY(false, "Unhandled enum type");
 }
 
 template<OneOf<PF_SHADER_VALUE_TYPES> T>

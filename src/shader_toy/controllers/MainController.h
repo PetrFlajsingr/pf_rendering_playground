@@ -10,6 +10,7 @@
 #include "ImageAssetsController.h"
 #include "OutputController.h"
 #include "ShaderVariablesController.h"
+#include "AudioAssetsController.h"
 #include "common_ui/controllers/LogWindowController.h"
 #include "mvc/Controller.h"
 
@@ -21,6 +22,7 @@ struct ShaderToyControllers {
   std::unique_ptr<GlslEditorController> glslEditor;
   std::unique_ptr<ShaderVariablesController> shaderVariables;
   std::unique_ptr<ImageAssetsController> imageAssets;
+  std::unique_ptr<AudioAssetsController> audioAssets;
 };
 
 // TODO: MainModel -> ShaderToyModel containing all other models?
@@ -34,6 +36,7 @@ class MainController : public Controller<MainView, MainModel> {
   std::unique_ptr<GlslEditorController> glslEditorController{};
   std::unique_ptr<ShaderVariablesController> shaderVariablesController{};
   std::unique_ptr<ImageAssetsController> imageAssetsController{};
+  std::unique_ptr<AudioAssetsController> audioAssetsController{};
 
   void show();
   void hide();

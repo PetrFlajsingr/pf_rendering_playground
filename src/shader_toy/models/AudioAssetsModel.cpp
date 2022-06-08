@@ -8,14 +8,14 @@
 
 namespace pf {
 
-AudioAssetModel::AudioAssetModel(std::string assetName, bool playback, std::shared_ptr<audio::Buffer> aBuffer,
+AudioAssetModel::AudioAssetModel(std::string assetName, bool playback, std::shared_ptr<audio::Source> aSource,
                                  std::shared_ptr<gpu::Buffer> gBuffer, AudioPCMFormat dataFormat,
                                  std::chrono::seconds duration, std::filesystem::path path)
-    : name(std::move(assetName)), enablePlayback(playback), audioBuffer(std::move(aBuffer)),
+    : name(std::move(assetName)), enablePlayback(playback), audioSource(std::move(aSource)),
       gpuBuffer(std::move(gBuffer)), format(dataFormat), length(duration), assetPath(std::move(path)) {}
 
 std::string AudioAssetModel::getDebugString() const {
-  // TODO: audio buffer
+  // TODO: audio source
   return fmt::format("name: '{}', playback: '{}', gpu buffer: '{}', format: '{}', length: '{}', path: '{}'", *name,
                      *enablePlayback, *gpuBuffer != nullptr ? (*gpuBuffer)->getDebugString() : "null",
                      magic_enum::enum_name(*format), *length, assetPath->string());
@@ -42,7 +42,7 @@ void AudioAssetModel::setFromToml(const toml::table &src) {
 const AudioAssetsModel::AudioModels &AudioAssetsModel::getAudioModels() const { return audioModels; }
 
 std::optional<std::string> AudioAssetsModel::addAudio(std::string name, bool playback,
-                                                       std::shared_ptr<audio::Buffer> aBuffer,
+                                                       std::shared_ptr<audio::Source> aSource,
                                                        std::shared_ptr<gpu::Buffer> gBuffer, AudioPCMFormat dataFormat,
                                                        std::chrono::seconds duration, std::filesystem::path path) {
   if (const auto iter = std::ranges::find(audioModels, name, [](const auto &audio) { return *audio->name; });
@@ -50,7 +50,7 @@ std::optional<std::string> AudioAssetsModel::addAudio(std::string name, bool pla
     return "Duplicate audio asset name";
   }
   audioAddedEvent.notify(audioModels.emplace_back(std::make_shared<AudioAssetModel>(
-      std::move(name), playback, std::move(aBuffer), std::move(gBuffer), dataFormat, duration, std::move(path))));
+      std::move(name), playback, std::move(aSource), std::move(gBuffer), dataFormat, duration, std::move(path))));
   return std::nullopt;
 }
 

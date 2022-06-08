@@ -17,7 +17,8 @@ MainController::MainController(std::unique_ptr<MainView> uiView, std::shared_ptr
       outputController(std::move(controllers.output)), logWindowController(std::move(controllers.logWindow)),
       glslEditorController(std::move(controllers.glslEditor)),
       shaderVariablesController(std::move(controllers.shaderVariables)),
-      imageAssetsController(std::move(controllers.imageAssets)), interface(std::move(imguiInterface)) {
+      imageAssetsController(std::move(controllers.imageAssets)),
+      audioAssetsController(std::move(controllers.audioAssets)), interface(std::move(imguiInterface)) {
   VERIFY(model != nullptr);
   VERIFY(view != nullptr);
   VERIFY(logWindowController != nullptr);
@@ -25,6 +26,7 @@ MainController::MainController(std::unique_ptr<MainView> uiView, std::shared_ptr
   VERIFY(imageAssetsController != nullptr);
   VERIFY(glslEditorController != nullptr);
   VERIFY(outputController != nullptr);
+  VERIFY(audioAssetsController != nullptr);
   VERIFY(interface != nullptr);
 }
 

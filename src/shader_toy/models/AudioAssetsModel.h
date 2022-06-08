@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "audio/Buffer.h"
+#include "audio/Source.h"
 #include "gpu/Buffer.h"
 #include "mvc/Model.h"
 #include "mvc/reactive.h"
@@ -16,13 +16,13 @@ namespace pf {
 
 class AudioAssetModel : public SavableModel {
  public:
-  AudioAssetModel(std::string assetName, bool playback, std::shared_ptr<audio::Buffer> aBuffer,
+  AudioAssetModel(std::string assetName, bool playback, std::shared_ptr<audio::Source> aSource,
                   std::shared_ptr<gpu::Buffer> gBuffer, AudioPCMFormat dataFormat, std::chrono::seconds duration,
                   std::filesystem::path path);
 
   Observable<std::string> name;
   Observable<bool> enablePlayback;
-  Observable<std::shared_ptr<audio::Buffer>> audioBuffer;
+  Observable<std::shared_ptr<audio::Source>> audioSource;
   Observable<std::shared_ptr<gpu::Buffer>> gpuBuffer;
   Observable<AudioPCMFormat> format;
   Observable<std::chrono::seconds> length;
@@ -45,7 +45,7 @@ class AudioAssetsModel : public SavableModel {
 
   AudioAddedEvent audioAddedEvent;
   AudioRemovedEvent audioRemovedEvent;
-  std::optional<std::string> addAudio(std::string name, bool playback, std::shared_ptr<audio::Buffer> aBuffer,
+  std::optional<std::string> addAudio(std::string name, bool playback, std::shared_ptr<audio::Source> aSource,
                                       std::shared_ptr<gpu::Buffer> gBuffer, AudioPCMFormat dataFormat,
                                       std::chrono::seconds duration, std::filesystem::path path);
   std::optional<std::string> addAudio(std::shared_ptr<AudioAssetModel> audioAssetModel);

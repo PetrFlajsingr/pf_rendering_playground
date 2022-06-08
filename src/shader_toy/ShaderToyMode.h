@@ -4,11 +4,15 @@
 
 #pragma once
 
+#include "audio/Context.h"
+#include "audio/Device.h"
 #include "controllers/MainController.h"
 #include "glm/ext/vector_uint2.hpp"
 #include "gpu/Program.h"
 #include "gpu/Texture.h"
+#include "models/AudioAssetsModel.h"
 #include "modes/Mode.h"
+#include "utils/AudioLoader.h"
 #include <future>
 #include <glm/glm.hpp>
 #include <utils/FPSCounter.h>
@@ -19,7 +23,7 @@ enum class MouseState { None = 0, LeftDown = 1, RightDown = 2 };
 // todo: divide this up into more classes
 class ShaderToyMode : public Mode {
  public:
-  constexpr static glm::uvec2 COMPUTE_LOCAL_GROUP_SIZE{8, 8};
+  constexpr static glm::uvec2 COMPUTE_LOCAL_GROUP_SIZE{8, 4};
   explicit ShaderToyMode(std::filesystem::path resourcesPath);
 
   [[nodiscard]] std::string getName() const override;
@@ -75,6 +79,7 @@ class ShaderToyMode : public Mode {
   std::shared_ptr<glfw::Window> glfwWindow = nullptr;
   glm::vec2 mousePos{};
   std::shared_ptr<ImageLoader> imageLoader;
+  std::shared_ptr<AudioLoader> audioLoader;
   std::shared_ptr<ui::ig::ImGuiInterface> imGuiInterface = nullptr;
 
   std::function<std::size_t(std::size_t)> shaderLineMapping;
@@ -94,11 +99,24 @@ class ShaderToyMode : public Mode {
   struct {
     std::shared_ptr<ShaderVariablesModel> shaderVariables;
     std::shared_ptr<UserImageAssetsModel> imageAssets;
+    std::shared_ptr<AudioAssetsModel> audioAssets;
     std::shared_ptr<GlslEditorModel> codeEditor;
     std::shared_ptr<OutputModel> output;
+
+    inline void reset() {
+      shaderVariables.reset();
+      imageAssets.reset();
+      audioAssets.reset();
+      codeEditor.reset();
+      output.reset();
+    }
   } models;
 
   std::unique_ptr<MainController> mainController{};
+
+  // TODO: move to an audio manager or something
+  std::shared_ptr<audio::Context> audioContext;
+  std::shared_ptr<audio::Device> audioDevice;
 
   constexpr static auto DEFAULT_SHADER_SOURCE = R"glsl(
 void main() {

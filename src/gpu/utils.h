@@ -40,7 +40,7 @@ getTextureData(const std::filesystem::path &path) {
   int n;
   const auto data = stbi_load(path.string().c_str(), &x, &y, &n, 4);
   if (data == nullptr) { return tl::make_unexpected("Image loading failed"); }
-  const auto dataSpan = std::span{reinterpret_cast<const std::byte *>(data), static_cast<std::size_t>(x * y * 4)};
+  const auto dataSpan = std::span{reinterpret_cast<const std::byte *>(data), static_cast<std::size_t>(x * y * 4)}; //-V1028
   auto stbFree = RAII{[&] { stbi_image_free(data); }};
   return std::vector<std::byte>{dataSpan.begin(), dataSpan.end()};
 }
