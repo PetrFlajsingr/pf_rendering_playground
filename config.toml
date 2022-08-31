@@ -398,7 +398,7 @@ void main() {
 [modes.Dummy]
 
 [modes.ShaderToy]
-initialized = true
+initialized = false
 
 [window]
 height = 1076
